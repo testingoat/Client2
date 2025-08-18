@@ -86,15 +86,18 @@ export const authenticate = async (email, password) => {
 
         if (user.password === password) {
             console.log('✅ Authentication successful for:', email);
-            return Promise.resolve({
+            const authResult = {
                 email: user.email,
                 password: user.password,
                 name: user.name,
                 role: user.role,
-                id: user._id
-            });
+                id: user._id.toString()
+            };
+            console.log('🔄 Returning auth result:', authResult);
+            return Promise.resolve(authResult);
         } else {
             console.log('❌ Password mismatch for:', email);
+            console.log('❌ Expected:', user.password, 'Got:', password);
             return null;
         }
     } catch (error) {

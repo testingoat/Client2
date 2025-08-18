@@ -64,9 +64,10 @@ export const buildAdminRouter = async(app)=>{
             saveUnintialized: true,
             secret: COOKIE_PASSWORD,
             cookie: {
-              httpOnly: process.env.NODE_ENV === "production",
-              secure: process.env.NODE_ENV === "production",
-              sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
+              httpOnly: false, // Allow JavaScript access for debugging
+              secure: false,   // Allow HTTP for now to fix login
+              sameSite: 'lax', // More permissive for cross-origin
+              maxAge: 24 * 60 * 60 * 1000, // 24 hours
             },
         }
     );

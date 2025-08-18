@@ -3,7 +3,7 @@ import { Platform } from "react-native"
 // CLOUD-FIRST CONFIGURATION - PRODUCTION READY
 // Using your network IP for development, easily switchable to cloud
 const DEVELOPMENT_IP = '192.168.1.10'; // Your current network IP
-const CLOUD_API_URL = 'https://grocery-backend-latest.onrender.com'; // Updated with actual Render URL
+const CLOUD_API_URL = 'https://client-d9x3.onrender.com'; // Correct Render URL
 
 // Environment detection
 const IS_DEVELOPMENT = __DEV__;

@@ -134,6 +134,23 @@ const start = async()=>{
         }
     });
 
+    // Add session test route
+    app.get('/admin/test-session', async (request, reply) => {
+        try {
+            return {
+                status: 'success',
+                session: request.session,
+                cookies: request.cookies,
+                headers: request.headers
+            };
+        } catch (error) {
+            return {
+                status: 'error',
+                error: error.message
+            };
+        }
+    });
+
     await buildAdminRouter(app);
 
     app.listen({port:PORT,host:'0.0.0.0'},(err,addr)=>{
