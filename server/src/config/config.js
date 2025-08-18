@@ -1,16 +1,6 @@
-// Only load dotenv in development
-if (process.env.NODE_ENV !== 'production') {
-    try {
-        await import('dotenv/config');
-    } catch (error) {
-        console.log('dotenv not available, using environment variables directly');
-    }
-}
-
 import fastifySession from "@fastify/session";
 import ConnectMongoDBSession from "connect-mongodb-session";
 import { Admin } from "../models/index.js";
-
 
 export const PORT = process.env.PORT || 3000;
 export const COOKIE_PASSWORD = process.env.COOKIE_PASSWORD;
@@ -18,12 +8,38 @@ export const COOKIE_PASSWORD = process.env.COOKIE_PASSWORD;
 const MongoDBStore = ConnectMongoDBSession(fastifySession)
 
 // Debug MongoDB URI
-console.log('🔍 CONFIG.JS - MONGO_URI check:', !!process.env.MONGO_URI);
+console.log('🔍 CONFIG.JS - MONGO_URI exists:', !!process.env.MONGO_URI);
+console.log('🔍 CONFIG.JS - MONGO_URI length:', process.env.MONGO_URI?.length);
+console.log('🔍 CONFIG.JS - MONGO_URI starts with:', process.env.MONGO_URI?.substring(0, 20));
 
-export const sessionStore = new MongoDBStore({
-    uri: process.env.MONGO_URI || 'mongodb://localhost:27017/grocery-app',
-    collection: "sessions"
-})
+// Clean and validate MONGO_URI
+let mongoUri = process.env.MONGO_URI;
+if (mongoUri) {
+    // Remove any potential whitespace or newlines
+    mongoUri = mongoUri.trim();
+    console.log('🔍 CONFIG.JS - Cleaned MONGO_URI starts with:', mongoUri.substring(0, 20));
+}
+
+// Create session store only if MONGO_URI is available
+let sessionStore;
+if (mongoUri && (mongoUri.startsWith('mongodb://') || mongoUri.startsWith('mongodb+srv://'))) {
+    try {
+        sessionStore = new MongoDBStore({
+            uri: mongoUri,
+            collection: "sessions"
+        });
+        console.log('✅ SessionStore created successfully');
+    } catch (error) {
+        console.error('❌ Error creating SessionStore:', error.message);
+        sessionStore = null;
+    }
+} else {
+    console.error('❌ Invalid or missing MONGO_URI in config.js');
+    console.error('📝 MONGO_URI should start with mongodb:// or mongodb+srv://');
+    sessionStore = null;
+}
+
+export { sessionStore };
 
 sessionStore.on('error',(error)=>{
     console.log("Session store error",error)

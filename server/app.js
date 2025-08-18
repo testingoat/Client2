@@ -1,9 +1,11 @@
-// Only load dotenv in development
+// Load dotenv first if not in production
 if (process.env.NODE_ENV !== 'production') {
     try {
-        await import('dotenv/config');
+        const dotenv = await import('dotenv');
+        dotenv.config();
+        console.log('✅ dotenv loaded for development');
     } catch (error) {
-        console.log('dotenv not available, using environment variables directly');
+        console.log('ℹ️ dotenv not available, using environment variables directly');
     }
 }
 
