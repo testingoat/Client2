@@ -16,9 +16,19 @@ import { admin, buildAdminRouter } from './src/config/setup.js';
 import mongoose from 'mongoose';
 
 const start = async()=>{
+    // Debug environment variables
+    console.log('🔍 DEBUGGING ENVIRONMENT VARIABLES:');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('PORT:', process.env.PORT);
+    console.log('MONGO_URI exists:', !!process.env.MONGO_URI);
+    console.log('MONGO_URI value:', process.env.MONGO_URI ? 'SET' : 'UNDEFINED');
+    console.log('All env keys:', Object.keys(process.env).filter(key => key.includes('MONGO')));
+
     // Validate environment variables
     if (!process.env.MONGO_URI) {
         console.error('❌ MONGO_URI environment variable is required');
+        console.error('🔧 Please set MONGO_URI in Render dashboard Environment Variables');
+        console.error('📝 Value should be: mongodb+srv://testingoat24:Qwe_2897@cluster6.l5jkmi9.mongodb.net/Goatgoat?retryWrites=true&w=majority&appName=Cluster6');
         process.exit(1);
     }
 

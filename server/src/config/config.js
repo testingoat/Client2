@@ -17,6 +17,9 @@ export const COOKIE_PASSWORD = process.env.COOKIE_PASSWORD;
 
 const MongoDBStore = ConnectMongoDBSession(fastifySession)
 
+// Debug MongoDB URI
+console.log('🔍 CONFIG.JS - MONGO_URI check:', !!process.env.MONGO_URI);
+
 export const sessionStore = new MongoDBStore({
     uri: process.env.MONGO_URI || 'mongodb://localhost:27017/grocery-app',
     collection: "sessions"
