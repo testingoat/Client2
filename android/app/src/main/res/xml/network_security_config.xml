@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Allow cleartext traffic for local development -->
+    <!-- Allow cleartext traffic for local development and VPS IP -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">10.0.2.2</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
         <domain includeSubdomains="true">192.168.1.1</domain>
         <domain includeSubdomains="true">172.20.10.4</domain>
+        <!-- VPS IP (HTTP fallback) -->
+        <domain includeSubdomains="true">168.231.123.247</domain>
     </domain-config>
 
     <!-- Production HTTPS domains -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">client-d9x3.onrender.com</domain>
         <domain includeSubdomains="true">onrender.com</domain>
+        <!-- VPS HTTPS domain -->
+        <domain includeSubdomains="true">api.goatgoat.xyz</domain>
+        <domain includeSubdomains="true">goatgoat.xyz</domain>
     </domain-config>
 
     <!-- Default configuration for all other domains -->

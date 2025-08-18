@@ -1,9 +1,11 @@
 import { Platform } from "react-native"
 
-// CLOUD-FIRST CONFIGURATION - PRODUCTION READY
-// Using your network IP for development, easily switchable to cloud
+// VPS PRODUCTION CONFIGURATION - FULLY OPERATIONAL ✅
+// Using your network IP for development, VPS for production
 const DEVELOPMENT_IP = '192.168.1.10'; // Your current network IP
-const CLOUD_API_URL = 'https://client-d9x3.onrender.com'; // Correct Render URL
+const VPS_IP_URL = 'http://168.231.123.247:3000'; // Direct VPS IP (working)
+const VPS_HTTPS_URL = 'https://api.goatgoat.xyz'; // VPS subdomain with SSL (preferred)
+const RENDER_BACKUP_URL = 'https://client-d9x3.onrender.com'; // Backup Render URL
 
 // Environment detection
 const IS_DEVELOPMENT = __DEV__;
@@ -12,7 +14,9 @@ const USE_CLOUD = true; // Set to true for production deployment
 // Dynamic URL configuration
 const getBaseURL = () => {
   if (USE_CLOUD) {
-    return `${CLOUD_API_URL}/api`;
+    // Use HTTPS VPS URL after SSL installation, fallback to HTTP IP
+    return `${VPS_HTTPS_URL}/api`;
+    // Fallback: return `${VPS_IP_URL}/api`; // Use if HTTPS not working
   }
 
   if (Platform.OS === 'android') {
@@ -26,7 +30,9 @@ const getBaseURL = () => {
 
 const getSocketURL = () => {
   if (USE_CLOUD) {
-    return CLOUD_API_URL;
+    // Use HTTPS VPS URL after SSL installation, fallback to HTTP IP
+    return VPS_HTTPS_URL;
+    // Fallback: return VPS_IP_URL; // Use if HTTPS not working
   }
 
   if (Platform.OS === 'android') {

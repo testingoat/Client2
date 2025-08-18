@@ -1,24 +1,26 @@
-# Production APK Installation and Testing Guide - UPDATED
+# Production APK Installation and Testing Guide - VPS HTTPS FINAL
 
 ## Overview
-This guide provides instructions for installing and testing the **UPDATED** production APK that connects to the correct deployed Render server.
+This guide provides instructions for installing and testing the **FINAL PRODUCTION APK** that connects to our own Hostinger VPS with SSL certificates.
 
-## APK Details - UPDATED BUILD
+## APK Details - FINAL VPS BUILD ✅
 - **File Location**: `android/app/build/outputs/apk/release/app-release.apk`
 - **Build Type**: Release (Production)
-- **Server Configuration**: Points to `https://client-d9x3.onrender.com` ✅ **CORRECTED**
+- **Server Configuration**: Points to `https://api.goatgoat.xyz` ✅ **VPS WITH SSL**
 - **Database**: Connected to production MongoDB Atlas cluster
-- **Build Date**: Generated on 2025-08-18 (Updated Build)
-- **Admin Login**: Verified working at `https://client-d9x3.onrender.com/admin/login`
+- **Build Date**: Generated on 2025-08-18 (Final VPS Build)
+- **SSL Certificate**: Valid Let's Encrypt certificate installed
+- **Admin Panel**: Accessible at `https://api.goatgoat.xyz/admin`
 
-## Production Configuration Verified ✅ UPDATED
-✅ **API Endpoint**: `https://client-d9x3.onrender.com/api` (**CORRECTED URL**)
-✅ **Socket URL**: `https://client-d9x3.onrender.com` (**CORRECTED URL**)
+## Production Configuration Verified ✅ FINAL VPS
+✅ **API Endpoint**: `https://api.goatgoat.xyz/api` (**VPS WITH SSL**)
+✅ **Socket URL**: `https://api.goatgoat.xyz` (**VPS WITH SSL**)
 ✅ **Cloud Mode**: Enabled (`USE_CLOUD = true`)
-✅ **Network Security**: HTTPS enforced for correct production domain
+✅ **Network Security**: HTTPS enforced for VPS domain
 ✅ **MongoDB**: Connected to Atlas cluster
-✅ **Admin Panel**: Working and accessible
-✅ **Server Health**: Confirmed operational
+✅ **SSL Certificate**: Valid until 2025-11-16 (89 days)
+✅ **VPS Server**: Hostinger VPS (168.231.123.247)
+✅ **Admin Panel**: Working and accessible via HTTPS
 
 ## Installation Requirements
 
@@ -148,36 +150,43 @@ adb install -r android/app/build/outputs/apk/release/app-release.apk
 
 ## Production Server Verification
 
-### Health Check ✅ UPDATED
-Test the production server directly:
+### Health Check ✅ VPS HTTPS
+Test the VPS production server directly:
 ```bash
-curl https://client-d9x3.onrender.com/health
+curl https://api.goatgoat.xyz/health
 ```
 
 Expected response:
 ```json
 {
   "status": "healthy",
-  "timestamp": "2025-08-18T...",
+  "timestamp": "2025-08-18T21:07:53.359Z",
   "database": "connected",
-  "uptime": 123.45,
-  "memory": {...},
+  "uptime": 732.957593642,
+  "memory": {
+    "rss": 150302720,
+    "heapTotal": 74534912,
+    "heapUsed": 69362680,
+    "external": 22594296,
+    "arrayBuffers": 19007220
+  },
   "version": "1.0.0"
 }
 ```
 
-### API Endpoints Test ✅ UPDATED
+### API Endpoints Test ✅ VPS HTTPS
 ```bash
 # Test API base URL
-curl https://client-d9x3.onrender.com/api/
+curl https://api.goatgoat.xyz/api/
 
 # Test admin debug endpoint
-curl https://client-d9x3.onrender.com/admin/debug
+curl https://api.goatgoat.xyz/admin/debug
 
-# Test authentication endpoint
-curl -X POST https://client-d9x3.onrender.com/admin/test-auth \
-  -H "Content-Type: application/json" \
-  -d '{"email": "prabhudevarlimatti@gmail.com", "password": "Qwe_2896"}'
+# Test admin panel (web interface)
+# Open in browser: https://api.goatgoat.xyz/admin
+
+# Test SSL certificate
+curl -I https://api.goatgoat.xyz/health
 ```
 
 ## App Configuration Details
