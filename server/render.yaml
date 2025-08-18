@@ -3,6 +3,7 @@ services:
     name: grocery-backend
     env: node
     plan: free
+    rootDir: server
     buildCommand: npm install
     startCommand: node app.js
     healthCheckPath: /health
