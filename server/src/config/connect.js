@@ -10,19 +10,13 @@ export const connectDB = async(uri)=>{
             maxIdleTimeMS: 30000,     // Close connections after 30 seconds of inactivity
             serverSelectionTimeoutMS: 5000, // How long to try selecting a server
             socketTimeoutMS: 45000,   // How long a send or receive on a socket can take
-            bufferMaxEntries: 0,      // Disable mongoose buffering
-            bufferCommands: false,    // Disable mongoose buffering
 
             // Retry settings
             retryWrites: true,
             retryReads: true,
 
             // Compression for better performance over network
-            compressors: ['zlib'],
-
-            // Use new URL parser and topology engine
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
+            compressors: ['zlib']
         };
 
         await mongoose.connect(uri, options);

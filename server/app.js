@@ -18,6 +18,22 @@ import { admin, buildAdminRouter } from './src/config/setup.js';
 import mongoose from 'mongoose';
 
 const start = async()=>{
+    // Clean environment variables (remove any prefixes)
+    const cleanEnvVar = (value) => {
+        if (!value) return value;
+        // Remove any "KEY=" prefix that might have been accidentally added
+        const cleaned = value.replace(/^[A-Z_]+=/, '');
+        return cleaned;
+    };
+
+    // Clean critical environment variables
+    if (process.env.NODE_ENV) {
+        process.env.NODE_ENV = cleanEnvVar(process.env.NODE_ENV);
+    }
+    if (process.env.MONGO_URI) {
+        process.env.MONGO_URI = cleanEnvVar(process.env.MONGO_URI);
+    }
+
     // Debug environment variables
     console.log('🔍 DEBUGGING ENVIRONMENT VARIABLES:');
     console.log('NODE_ENV:', process.env.NODE_ENV);
