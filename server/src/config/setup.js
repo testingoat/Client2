@@ -46,22 +46,30 @@ export const admin = new AdminJS({
 })
 
 export const buildAdminRouter = async(app)=>{
+    console.log('🔧 Building AdminJS router...');
+    console.log('🔍 COOKIE_PASSWORD exists:', !!COOKIE_PASSWORD);
+    console.log('🔍 SessionStore exists:', !!sessionStore);
+    console.log('🔍 Environment:', process.env.NODE_ENV);
+
     await AdminJSFastify.buildAuthenticatedRouter(
         admin,
         {
             authenticate,
-            cookiePassword:COOKIE_PASSWORD,
-            cookieName:'adminjs'
+            cookiePassword: COOKIE_PASSWORD,
+            cookieName: 'adminjs'
         },
         app,
         {
-            store:sessionStore,
+            store: sessionStore,
             saveUnintialized: true,
             secret: COOKIE_PASSWORD,
             cookie: {
               httpOnly: process.env.NODE_ENV === "production",
               secure: process.env.NODE_ENV === "production",
+              sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
             },
         }
-    )
+    );
+
+    console.log('✅ AdminJS router built successfully');
 }

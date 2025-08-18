@@ -47,33 +47,58 @@ if (sessionStore) {
     });
 }
 
-export const authenticate =async(email,password)=>{
+export const authenticate = async (email, password) => {
+    console.log('🔐 AUTHENTICATION ATTEMPT:', { email, passwordLength: password?.length });
 
-     // UNCOMMENT THIS WHEN CREATING ADMIN  FIRST TIME
-
-    // if(email && password){
-    //     if(email=='ritik@gmail.com' && password==="12345678"){
-    //         return Promise.resolve({ email: email, password: password }); 
-    //     }else{
-    //         return null
-    //     }
-    // }
-
-
-    // UNCOMMENT THIS WHEN ALREADY CREATED ADMIN ON DATABASE
-
-    if(email && password){
-        const user = await Admin.findOne({email});
-        if(!user){
-            return null
+    try {
+        if (!email || !password) {
+            console.log('❌ Missing email or password');
+            return null;
         }
-        if(user.password===password){
-            return Promise.resolve({ email: email, password: password }); 
-        }else{
-            return null
+
+        // Debug: Check database connection
+        console.log('🔍 Searching for admin with email:', email);
+
+        // Query the Admin collection
+        const user = await Admin.findOne({ email: email });
+        console.log('🔍 Database query result:', user ? 'User found' : 'User not found');
+
+        if (!user) {
+            console.log('❌ No admin user found with email:', email);
+            return null;
         }
+
+        console.log('🔍 Found user:', {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            isActivated: user.isActivated,
+            passwordLength: user.password?.length
+        });
+
+        // Compare passwords (plain text comparison)
+        console.log('🔍 Password comparison:', {
+            provided: password,
+            stored: user.password,
+            match: user.password === password
+        });
+
+        if (user.password === password) {
+            console.log('✅ Authentication successful for:', email);
+            return Promise.resolve({
+                email: user.email,
+                password: user.password,
+                name: user.name,
+                role: user.role,
+                id: user._id
+            });
+        } else {
+            console.log('❌ Password mismatch for:', email);
+            return null;
+        }
+    } catch (error) {
+        console.error('💥 Authentication error:', error);
+        return null;
     }
-    
-
-    return null
 }

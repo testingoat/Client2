@@ -90,6 +90,50 @@ const start = async()=>{
 
     await registerRoutes(app)
 
+    // Add admin debug route
+    app.get('/admin/debug', async (request, reply) => {
+        try {
+            const { Admin } = await import('./src/models/index.js');
+            const admins = await Admin.find({});
+            return {
+                status: 'success',
+                totalAdmins: admins.length,
+                admins: admins.map(admin => ({
+                    id: admin._id,
+                    email: admin.email,
+                    name: admin.name,
+                    role: admin.role,
+                    isActivated: admin.isActivated,
+                    passwordLength: admin.password?.length
+                }))
+            };
+        } catch (error) {
+            return {
+                status: 'error',
+                error: error.message
+            };
+        }
+    });
+
+    // Add authentication test route
+    app.post('/admin/test-auth', async (request, reply) => {
+        try {
+            const { email, password } = request.body;
+            const { authenticate } = await import('./src/config/config.js');
+            const result = await authenticate(email, password);
+            return {
+                status: 'success',
+                authenticated: !!result,
+                result: result
+            };
+        } catch (error) {
+            return {
+                status: 'error',
+                error: error.message
+            };
+        }
+    });
+
     await buildAdminRouter(app);
 
     app.listen({port:PORT,host:'0.0.0.0'},(err,addr)=>{
