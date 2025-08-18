@@ -1,4 +1,12 @@
-import "dotenv/config";
+// Only load dotenv in development
+if (process.env.NODE_ENV !== 'production') {
+    try {
+        await import('dotenv/config');
+    } catch (error) {
+        console.log('dotenv not available, using environment variables directly');
+    }
+}
+
 import fastifySession from "@fastify/session";
 import ConnectMongoDBSession from "connect-mongodb-session";
 import { Admin } from "../models/index.js";
@@ -10,8 +18,8 @@ export const COOKIE_PASSWORD = process.env.COOKIE_PASSWORD;
 const MongoDBStore = ConnectMongoDBSession(fastifySession)
 
 export const sessionStore = new MongoDBStore({
-    uri:process.env.MONGO_URI,
-    collection:"sessions"
+    uri: process.env.MONGO_URI || 'mongodb://localhost:27017/grocery-app',
+    collection: "sessions"
 })
 
 sessionStore.on('error',(error)=>{

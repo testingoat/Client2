@@ -1,4 +1,12 @@
-import 'dotenv/config'
+// Only load dotenv in development
+if (process.env.NODE_ENV !== 'production') {
+    try {
+        await import('dotenv/config');
+    } catch (error) {
+        console.log('dotenv not available, using environment variables directly');
+    }
+}
+
 import { connectDB } from "./src/config/connect.js";
 import fastify from 'fastify';
 import { PORT } from "./src/config/config.js";
@@ -8,6 +16,13 @@ import { admin, buildAdminRouter } from './src/config/setup.js';
 import mongoose from 'mongoose';
 
 const start = async()=>{
+    // Validate environment variables
+    if (!process.env.MONGO_URI) {
+        console.error('❌ MONGO_URI environment variable is required');
+        process.exit(1);
+    }
+
+    console.log('🔗 Connecting to MongoDB...');
     await connectDB(process.env.MONGO_URI);
     const app = fastify()
 
