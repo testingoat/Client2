@@ -7,12 +7,12 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "echo 'No build step required'",
+    "build": "npm install --legacy-peer-deps",
     "postinstall": "echo 'Installation complete'"
   },
   "engines": {
-    "node": "18.x",
-    "npm": "8.x"
+    "node": "20.x",
+    "npm": "10.x"
   },
   "keywords": [],
   "author": "",
@@ -27,7 +27,7 @@
     "adminjs": "^7.8.15",
     "connect-mongodb-session": "^5.0.0",
     "dotenv": "^16.4.7",
-    "fastify": "^5.5.0",
+    "fastify": "^4.28.1",
     "fastify-socket.io": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.18.0",
