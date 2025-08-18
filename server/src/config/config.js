@@ -41,9 +41,11 @@ if (mongoUri && (mongoUri.startsWith('mongodb://') || mongoUri.startsWith('mongo
 
 export { sessionStore };
 
-sessionStore.on('error',(error)=>{
-    console.log("Session store error",error)
-})
+if (sessionStore) {
+    sessionStore.on('error',(error)=>{
+        console.log("Session store error",error)
+    });
+}
 
 export const authenticate =async(email,password)=>{
 
