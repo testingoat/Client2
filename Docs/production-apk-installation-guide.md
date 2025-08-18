@@ -1,21 +1,24 @@
-# Production APK Installation and Testing Guide
+# Production APK Installation and Testing Guide - UPDATED
 
 ## Overview
-This guide provides instructions for installing and testing the production APK that connects to the deployed Render server.
+This guide provides instructions for installing and testing the **UPDATED** production APK that connects to the correct deployed Render server.
 
-## APK Details
+## APK Details - UPDATED BUILD
 - **File Location**: `android/app/build/outputs/apk/release/app-release.apk`
 - **Build Type**: Release (Production)
-- **Server Configuration**: Points to `https://grocery-backend-latest.onrender.com`
+- **Server Configuration**: Points to `https://client-d9x3.onrender.com` ✅ **CORRECTED**
 - **Database**: Connected to production MongoDB Atlas cluster
-- **Build Date**: Generated on 2025-08-18
+- **Build Date**: Generated on 2025-08-18 (Updated Build)
+- **Admin Login**: Verified working at `https://client-d9x3.onrender.com/admin/login`
 
-## Production Configuration Verified
-✅ **API Endpoint**: `https://grocery-backend-latest.onrender.com/api`  
-✅ **Socket URL**: `https://grocery-backend-latest.onrender.com`  
-✅ **Cloud Mode**: Enabled (`USE_CLOUD = true`)  
-✅ **Network Security**: HTTPS enforced for production domains  
-✅ **MongoDB**: Connected to Atlas cluster  
+## Production Configuration Verified ✅ UPDATED
+✅ **API Endpoint**: `https://client-d9x3.onrender.com/api` (**CORRECTED URL**)
+✅ **Socket URL**: `https://client-d9x3.onrender.com` (**CORRECTED URL**)
+✅ **Cloud Mode**: Enabled (`USE_CLOUD = true`)
+✅ **Network Security**: HTTPS enforced for correct production domain
+✅ **MongoDB**: Connected to Atlas cluster
+✅ **Admin Panel**: Working and accessible
+✅ **Server Health**: Confirmed operational
 
 ## Installation Requirements
 
@@ -145,10 +148,10 @@ adb install -r android/app/build/outputs/apk/release/app-release.apk
 
 ## Production Server Verification
 
-### Health Check
+### Health Check ✅ UPDATED
 Test the production server directly:
 ```bash
-curl https://grocery-backend-latest.onrender.com/health
+curl https://client-d9x3.onrender.com/health
 ```
 
 Expected response:
@@ -163,47 +166,54 @@ Expected response:
 }
 ```
 
-### API Endpoints Test
+### API Endpoints Test ✅ UPDATED
 ```bash
 # Test API base URL
-curl https://grocery-backend-latest.onrender.com/api/
+curl https://client-d9x3.onrender.com/api/
 
-# Test specific endpoints (if available)
-curl https://grocery-backend-latest.onrender.com/api/auth/test
+# Test admin debug endpoint
+curl https://client-d9x3.onrender.com/admin/debug
+
+# Test authentication endpoint
+curl -X POST https://client-d9x3.onrender.com/admin/test-auth \
+  -H "Content-Type: application/json" \
+  -d '{"email": "prabhudevarlimatti@gmail.com", "password": "Qwe_2896"}'
 ```
 
 ## App Configuration Details
 
-### Network Configuration
+### Network Configuration ✅ UPDATED
 The APK is configured with:
 ```javascript
-// Production configuration
+// Production configuration ✅ CORRECTED
 const USE_CLOUD = true;
-const CLOUD_API_URL = 'https://grocery-backend-latest.onrender.com';
+const CLOUD_API_URL = 'https://client-d9x3.onrender.com';
 
-// API endpoints
-BASE_URL = 'https://grocery-backend-latest.onrender.com/api'
-SOCKET_URL = 'https://grocery-backend-latest.onrender.com'
+// API endpoints ✅ CORRECTED
+BASE_URL = 'https://client-d9x3.onrender.com/api'
+SOCKET_URL = 'https://client-d9x3.onrender.com'
 ```
 
-### Security Configuration
+### Security Configuration ✅ UPDATED
 ```xml
-<!-- Network security allows HTTPS to production domains -->
+<!-- Network security allows HTTPS to correct production domain -->
 <domain-config cleartextTrafficPermitted="false">
-    <domain includeSubdomains="true">grocery-backend-latest.onrender.com</domain>
+    <domain includeSubdomains="true">client-d9x3.onrender.com</domain>
     <domain includeSubdomains="true">onrender.com</domain>
 </domain-config>
 ```
 
 ## Expected Behavior
 
-### ✅ What Should Work
+### ✅ What Should Work - UPDATED
 - App launches and connects to production server
-- All API calls go to `https://grocery-backend-latest.onrender.com`
+- All API calls go to `https://client-d9x3.onrender.com` (**CORRECTED URL**)
 - HTTPS connections are enforced
 - Real-time features work via WebSocket
 - Data is stored in production MongoDB Atlas
 - No development server references
+- **Admin panel accessible and working**
+- **Database operations fully functional**
 
 ### ❌ What Should NOT Happen
 - No localhost connections
@@ -238,7 +248,7 @@ adb logcat > app_logs.txt
 
 ### Common Log Patterns
 Look for these patterns in logs:
-- **Success**: `API Configuration: BASE_URL: https://grocery-backend-latest.onrender.com/api`
+- **Success**: `API Configuration: BASE_URL: https://client-d9x3.onrender.com/api` (**UPDATED**)
 - **Network**: `Connected to production server`
 - **Error**: `Network request failed` or `Connection timeout`
 
@@ -286,10 +296,33 @@ After successful APK testing:
 
 ---
 
-## Contact Information
+## Contact Information ✅ UPDATED
 
 For technical support or issues:
-- Check server status: https://grocery-backend-latest.onrender.com/health
+- **Check server status**: https://client-d9x3.onrender.com/health (**CORRECTED URL**)
+- **Admin panel**: https://client-d9x3.onrender.com/admin/login (**WORKING**)
+- **Debug endpoint**: https://client-d9x3.onrender.com/admin/debug
 - Review deployment logs in Render dashboard
 - Collect device logs using ADB logcat
 - Document specific error messages and reproduction steps
+
+## ✅ CONFIRMATION: APK READY FOR PRODUCTION
+
+### Server URL Corrections Applied:
+- ❌ **Previous (Wrong)**: `https://grocery-backend-latest.onrender.com`
+- ✅ **Current (Correct)**: `https://client-d9x3.onrender.com`
+
+### Database Connectivity Confirmed:
+- ✅ **MongoDB Atlas**: Connected and operational
+- ✅ **Admin Login**: Working with credentials `prabhudevarlimatti@gmail.com` / `Qwe_2896`
+- ✅ **API Endpoints**: All functional and responding
+- ✅ **Health Check**: Server healthy and database connected
+
+### APK Production Readiness:
+- ✅ **Correct Server URL**: Points to working production server
+- ✅ **Database Operations**: Will work correctly through verified API
+- ✅ **Network Security**: Configured for correct domain
+- ✅ **Admin Panel Access**: Fully functional for data management
+- ✅ **Real-time Features**: WebSocket connections to correct server
+
+**This APK is now correctly configured and ready for production use with full database connectivity!** 🎉
