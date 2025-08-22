@@ -1,0 +1,61 @@
+import { Platform } from 'react-native';
+import Config from 'react-native-config';
+
+// VPS PRODUCTION CONFIGURATION - FULLY OPERATIONAL ✅
+// Using your network IP for development, VPS for production
+const DEVELOPMENT_IP = '192.168.1.10'; // Your current network IP
+const VPS_IP_URL = 'http://168.231.123.247:3000'; // Direct VPS IP (working)
+const VPS_HTTPS_URL = 'https://api.goatgoat.xyz'; // VPS subdomain with SSL (preferred)
+// const _RENDER_BACKUP_URL = 'https://client-d9x3.onrender.com'; // Backup Render URL
+
+// Environment detection
+const IS_DEVELOPMENT = __DEV__;
+const USE_CLOUD = Config.USE_CLOUD === 'true' || true; // Set to true for production deployment
+
+// Dynamic URL configuration
+const getBaseURL = () => {
+  if (USE_CLOUD) {
+    // MAINTAIN API CONSISTENCY - Always use https://api.goatgoat.xyz
+    return `${VPS_HTTPS_URL}/api`;
+    // Fallback: return `${VPS_IP_URL}/api`; // Use if HTTPS not working
+  }
+
+  if (Platform.OS === 'android') {
+    return IS_DEVELOPMENT
+      ? `http://${DEVELOPMENT_IP}:3000/api`  // Use network IP for real device
+      : 'http://10.0.2.2:3000/api';         // Use emulator localhost
+  }
+
+  return `http://${DEVELOPMENT_IP}:3000/api`; // iOS/other platforms
+};
+
+const getSocketURL = () => {
+  if (USE_CLOUD) {
+    // Use HTTPS VPS URL after SSL installation, fallback to HTTP IP
+    return VPS_HTTPS_URL;
+    // Fallback: return VPS_IP_URL; // Use if HTTPS not working
+  }
+
+  if (Platform.OS === 'android') {
+    return IS_DEVELOPMENT
+      ? `http://${DEVELOPMENT_IP}:3000`      // Use network IP for real device
+      : 'http://10.0.2.2:3000';             // Use emulator localhost
+  }
+
+  return `http://${DEVELOPMENT_IP}:3000`;   // iOS/other platforms
+};
+
+export const BASE_URL = getBaseURL();
+export const SOCKET_URL = getSocketURL();
+export const GOOGLE_MAP_API = Config.GOOGLE_MAP_API || 'YOUR_DEFAULT_API_KEY';
+export const BRANCH_ID = Config.BRANCH_ID || '68a1a76e2c93ad61799983b3';
+
+// Debug logging
+if (__DEV__) {
+  console.log('🔧 API Configuration:');
+  console.log('📡 BASE_URL:', BASE_URL);
+  console.log('🔌 SOCKET_URL:', SOCKET_URL);
+  console.log('🌍 Platform:', Platform.OS);
+  console.log('☁️ Using Cloud:', USE_CLOUD);
+}
+
