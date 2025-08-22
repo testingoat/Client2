@@ -3,15 +3,50 @@ import {BRANCH_ID} from './config';
 
 export const createOrder = async (items: any, totalPrice: number, deliveryLocation: { latitude: number; longitude: number }) => {
   try {
+    // Validate input parameters
+    if (!items || items.length === 0) {
+      console.error('Create Order Error: No items provided');
+      return null;
+    }
+
+    if (!deliveryLocation || !deliveryLocation.latitude || !deliveryLocation.longitude) {
+      console.error('Create Order Error: Invalid delivery location', deliveryLocation);
+      return null;
+    }
+
+    console.log('Creating order with:', {
+      items: items.length,
+      totalPrice,
+      deliveryLocation,
+      branch: BRANCH_ID
+    });
+
     const response = await appAxios.post('/order', {
       items: items,
       branch: BRANCH_ID,
       totalPrice: totalPrice,
       deliveryLocation: deliveryLocation,
     });
+
+    console.log('Order created successfully:', response.data);
     return response.data;
   } catch (error: any) {
-    console.log('Create Order Error', error.response?.data || error.message);
+    console.error('Create Order Error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      deliveryLocation
+    });
+
+    // Return more specific error information
+    if (error.response?.status === 400) {
+      console.error('Validation error - check delivery location data');
+    } else if (error.response?.status === 404) {
+      console.error('Resource not found - check branch or customer data');
+    } else if (error.response?.status === 500) {
+      console.error('Server error - check server logs');
+    }
+
     return null;
   }
 };

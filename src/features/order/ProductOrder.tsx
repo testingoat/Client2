@@ -21,6 +21,7 @@ import {hocStyles} from '@styles/GlobalStyles';
 import ArrowButton from '@components/ui/ArrowButton';
 import { createOrder } from '@service/orderService';
 import { navigate } from '@utils/NavigationUtils';
+import { getValidatedDeliveryLocation } from '@service/locationService';
 
 const ProductOrder = () => {
   const {getTotalPrice, cart, clearCart} = useCartStore();
@@ -36,11 +37,6 @@ const ProductOrder = () => {
         return;
     }
 
-    if (!user?.address?.latitude || !user?.address?.longitude) {
-        Alert.alert('Delivery location not available. Please update your address.');
-        return;
-    }
-
     const formattedData = cart.map(item => ({
         id: item._id,
         item: item._id,
@@ -53,19 +49,45 @@ const ProductOrder = () => {
     }
 
     setLoading(true);
-    const deliveryLocation = {
-        latitude: user.address.latitude,
-        longitude: user.address.longitude,
-    };
+
+    // Try to get location from user state first
+    let deliveryLocation = null;
+    if (user?.address?.latitude && user?.address?.longitude) {
+        deliveryLocation = {
+            latitude: user.address.latitude,
+            longitude: user.address.longitude,
+        };
+    } else {
+        // If no location in user state, try to get current location
+        try {
+            deliveryLocation = await getValidatedDeliveryLocation();
+        } catch (error) {
+            console.error('Error getting current location:', error);
+        }
+    }
+
+    if (!deliveryLocation) {
+        Alert.alert(
+            'Location Required',
+            'Please enable location services or update your address to place an order.',
+            [{ text: 'OK' }]
+        );
+        setLoading(false);
+        return;
+    }
+
     const data = await createOrder(formattedData, totalItemPrice, deliveryLocation);
 
     if (data != null) {
         setCurrentOrder(data);
         clearCart();
         navigate('OrderSuccess', { ...data });
-    }
- else {
-        Alert.alert('There was an error');
+    } else {
+        Alert.alert(
+            'Order Failed',
+            'Unable to place your order. Please check your location and try again.',
+            [{ text: 'OK' }]
+        );
     }
 
     setLoading(false);
