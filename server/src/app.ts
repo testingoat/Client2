@@ -61,6 +61,11 @@ const start = async()=>{
         console.log('📋 Project ID:', serviceAccount.project_id);
         console.log('📧 Client Email:', serviceAccount.client_email);
 
+        // Normalize PEM newlines if provided via env to avoid Invalid PEM formatted message
+        if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string') {
+            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
+
         // Dynamically import firebase-admin
         let adminModule;
         try {

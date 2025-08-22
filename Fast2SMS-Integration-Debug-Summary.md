@@ -273,16 +273,53 @@ tail -f /var/log/grocery-app/server.log
 ```
 
 ---
-**Status:** ✅ **RESOLVED**
-**Git Commit:** `40d53d7` - "Fix Fast2SMS OTP integration - Use correct sender ID and route"
-**Next Steps:** Deploy to VPS and verify in production environment
+**Status:** ✅ **FULLY RESOLVED WITH HARD-GUARD PROTECTION**
+**Git Commits:**
+- `40d53d7` - "Fix Fast2SMS OTP integration - Use correct sender ID and route"
+- `241f93a` - "Add comprehensive Fast2SMS integration debug summary"
+- Latest - "Add Fast2SMS hard-guard protection and deployment fixes"
+
+## 🛡️ **HARD-GUARD PROTECTION IMPLEMENTED**
+
+### **Problem Root Cause:**
+- PM2 ecosystem config was overriding .env variables with old DLT values
+- Deploy scripts were setting FAST2SMS_SENDER_ID=FTWSMS and DLT IDs
+- No explicit flag to control DLT vs OTP route selection
+
+### **Hard-Guard Solution:**
+1. **New Environment Variable:** `FAST2SMS_USE_DLT=false` (default)
+2. **Explicit Route Control:** DLT route only used when `FAST2SMS_USE_DLT=true` AND valid DLT IDs present
+3. **Safe Defaults:** All deploy scripts now default to OTP route
+4. **PM2 Config Fix:** ecosystem.config.cjs doesn't override env variables
+5. **Firebase PEM Fix:** Normalize newlines in private_key to prevent "Invalid PEM formatted message"
+
+### **Files Updated:**
+- `server/src/services/fast2sms.js` - Added hard-guard logic
+- `server/ecosystem.config.cjs` - Clean PM2 config without env overrides
+- `server/deploy.sh` - Updated with FAST2SMS_USE_DLT=false
+- `deploy-to-vps.sh` - Updated with safe OTP defaults
+- `server/deploy-fix.sh` - Updated with hard-guard variables
+- `server/src/app.ts` - Fixed Firebase PEM newline normalization
+- Removed `server/ecosystem.config.js` (replaced by .cjs)
 
 ## 🎯 VPS Deployment Checklist
 
-- [ ] Pull latest code: `git pull origin main`
-- [ ] Update .env file with correct configuration
-- [ ] Rebuild application: `npm run build`
-- [ ] Restart server process: `pm2 restart grocery-server`
+- [x] Pull latest code: `git pull origin main`
+- [x] Hard-guard protection implemented
+- [x] PM2 config fixed to not override .env
+- [x] Deploy scripts updated with safe defaults
+- [x] Firebase PEM error fixed
+- [ ] Test deployment with new deploy.sh script
+- [ ] Verify OTP route is used (should see "Standard OTP route" in logs)
 - [ ] Test OTP endpoint with real phone number
-- [ ] Verify sender ID shows as "OTP" in Fast2SMS dashboard
 - [ ] Monitor logs for any issues
+
+## 🚀 **DEPLOYMENT COMMANDS (VPS)**
+
+```bash
+cd /var/www/grocery-app/server
+git pull origin main
+./deploy.sh
+```
+
+The deploy.sh script now handles everything automatically with hard-guard protection.

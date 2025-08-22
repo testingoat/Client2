@@ -6,9 +6,12 @@ dotenv.config();
 // FAST2SMS API Configuration
 const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY;
 const FAST2SMS_BASE_URL = 'https://www.fast2sms.com/dev/bulkV2';
-const SENDER_ID = process.env.FAST2SMS_SENDER_ID || 'FTWSMS';
+// Default to OTP sender; only use custom sender for DLT when explicitly enabled
+const SENDER_ID = process.env.FAST2SMS_SENDER_ID || 'OTP';
 const DLT_ENTITY_ID = process.env.DLT_ENTITY_ID;
 const DLT_TEMPLATE_ID = process.env.DLT_TEMPLATE_ID;
+// Hard guard: DLT route must be explicitly enabled via env
+const FAST2SMS_USE_DLT = (process.env.FAST2SMS_USE_DLT === 'true' || process.env.FAST2SMS_USE_DLT === '1');
 
 // Check if required environment variables are set
 if (!FAST2SMS_API_KEY) {
@@ -99,12 +102,12 @@ class Fast2SMSService {
     }
 
     try {
-      // Check if DLT configuration is available
+      // Hard guard: Require explicit flag to use DLT AND valid IDs; otherwise force OTP route
       const hasDLTConfig = DLT_ENTITY_ID && DLT_ENTITY_ID !== 'YOUR_DEFAULT_ENTITY_ID' &&
                           DLT_TEMPLATE_ID && DLT_TEMPLATE_ID !== 'YOUR_DEFAULT_TEMPLATE_ID';
 
-      if (!hasDLTConfig) {
-        // Fall back to standard OTP route if DLT not configured
+      if (!FAST2SMS_USE_DLT || !hasDLTConfig) {
+        console.log('🛡️ Hard-guard active: Forcing Standard OTP route');
         return await this.sendOTP(phone, otp);
       }
 
@@ -161,19 +164,22 @@ class Fast2SMSService {
    * @returns {Promise<{success: boolean, message: string, requestId?: string}>}
    */
   static async sendConfiguredOTP(phone, otp) {
-    // Check if DLT configuration is available
-    const useDLT = DLT_ENTITY_ID && DLT_ENTITY_ID !== 'YOUR_DEFAULT_ENTITY_ID' &&
-                   DLT_TEMPLATE_ID && DLT_TEMPLATE_ID !== 'YOUR_DEFAULT_TEMPLATE_ID';
+    // Evaluate DLT availability and guard flag
+    const hasDLTConfig = DLT_ENTITY_ID && DLT_ENTITY_ID !== 'YOUR_DEFAULT_ENTITY_ID' &&
+                         DLT_TEMPLATE_ID && DLT_TEMPLATE_ID !== 'YOUR_DEFAULT_TEMPLATE_ID';
+    const useDLT = FAST2SMS_USE_DLT && hasDLTConfig;
 
     console.log(`🔧 Fast2SMS Configuration Check:`, {
       DLT_ENTITY_ID: DLT_ENTITY_ID,
       DLT_TEMPLATE_ID: DLT_TEMPLATE_ID,
+      FAST2SMS_USE_DLT: FAST2SMS_USE_DLT,
+      hasDLTConfig: hasDLTConfig,
       useDLT: useDLT,
       routeSelected: useDLT ? 'DLT Manual' : 'Standard OTP'
     });
 
     if (useDLT) {
-      console.log('📤 Using DLT Manual route (Sender ID: FTWSMS)');
+      console.log(`📤 Using DLT Manual route (Sender ID: ${SENDER_ID || 'FTWSMS'})`);
       return await this.sendDLTManualOTP(phone, otp);
     } else {
       console.log('📤 Using Standard OTP route (Sender ID: OTP)');
