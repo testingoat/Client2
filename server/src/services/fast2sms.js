@@ -33,7 +33,10 @@ class Fast2SMSService {
     }
 
     try {
+      console.log(`📱 Sending OTP via Fast2SMS OTP route to ${phone}: ${otp}`);
+
       // Using the OTP route as specified in the FAST2SMS documentation
+      // Note: OTP route automatically uses "OTP" as sender ID, no sender_id parameter needed
       const response = await axios.post(
         FAST2SMS_BASE_URL,
         `variables_values=${otp}&route=otp&numbers=${phone}`,
@@ -45,10 +48,12 @@ class Fast2SMSService {
         }
       );
 
+      console.log('Fast2SMS OTP Response:', response.data);
+
       if (response.data.return) {
         return {
           success: true,
-          message: 'OTP sent successfully',
+          message: 'OTP sent successfully via OTP route (Sender ID: OTP)',
           requestId: response.data.request_id,
         };
       } else {
@@ -160,9 +165,18 @@ class Fast2SMSService {
     const useDLT = DLT_ENTITY_ID && DLT_ENTITY_ID !== 'YOUR_DEFAULT_ENTITY_ID' &&
                    DLT_TEMPLATE_ID && DLT_TEMPLATE_ID !== 'YOUR_DEFAULT_TEMPLATE_ID';
 
+    console.log(`🔧 Fast2SMS Configuration Check:`, {
+      DLT_ENTITY_ID: DLT_ENTITY_ID,
+      DLT_TEMPLATE_ID: DLT_TEMPLATE_ID,
+      useDLT: useDLT,
+      routeSelected: useDLT ? 'DLT Manual' : 'Standard OTP'
+    });
+
     if (useDLT) {
+      console.log('📤 Using DLT Manual route (Sender ID: FTWSMS)');
       return await this.sendDLTManualOTP(phone, otp);
     } else {
+      console.log('📤 Using Standard OTP route (Sender ID: OTP)');
       return await this.sendOTP(phone, otp);
     }
   }
