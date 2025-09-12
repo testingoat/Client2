@@ -158,6 +158,7 @@ Desktop.ini
 # Firebase
 firebase-service-account.json
 *firebase-adminsdk*.json
+Reference Files/*firebase-adminsdk*.json
 
 # Build outputs
 build/
