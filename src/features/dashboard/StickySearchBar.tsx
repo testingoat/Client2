@@ -1,53 +1,50 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { View, StyleSheet, Animated } from 'react-native'
 import React from 'react'
 import { Colors } from '@utils/Constants'
-import { StickyView, useCollapsibleContext } from '@r0b0t3d/react-native-collapsible'
-import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated'
-import SearchBar from '@components/dashboard/SearchBar'
+import FunctionalSearchBar from '@components/dashboard/FunctionalSearchBar'
+import { NoticeHeight } from '@utils/Scaling'
 
+interface StickySearchBarProps {
+  scrollY?: Animated.Value;
+  noticePosition?: Animated.Value;
+}
 
-const StickySearchBar = () => {
+const StickySearchBar: React.FC<StickySearchBarProps> = ({ scrollY, noticePosition }) => {
 
-  const {scrollY} = useCollapsibleContext()  
-
-  const animatedShadow = useAnimatedStyle(()=>{
-    const opacity = interpolate(
-      Math.max(0, Math.min(scrollY.value, 140)),
-      [0,140],
-      [0,1],
-      'clamp'
-    )
-    return {opacity: Math.max(0, Math.min(1, opacity))}
-  })
-
-  const backgroundColorChanges = useAnimatedStyle(()=>{
-    const opacity = interpolate(
-      Math.max(1, Math.min(scrollY.value, 80)),
-      [1,80],
-      [0,1],
-      'clamp'
-    )
-    const clampedOpacity = Math.max(0, Math.min(1, opacity))
-    return { backgroundColor: `rgba(255,255,255,${clampedOpacity})` }
-  })
-
-
+  // Calculate sticky position - stick below notice when visible
+  const NOTICE_HEIGHT = -(NoticeHeight + 12);
+  const stickyTop = noticePosition ? noticePosition.interpolate({
+    inputRange: [NOTICE_HEIGHT, 0],
+    outputRange: [0, NoticeHeight], // Stick below notice when it's visible
+    extrapolate: 'clamp',
+  }) : 0;
 
   return (
-    <StickyView style={backgroundColorChanges}>
-      <SearchBar />
-      <Animated.View style={[styles.shadow,animatedShadow]} />
-    </StickyView>
+    <Animated.View style={[
+      styles.stickyContainer,
+      {
+        // Keep transparent background always - no visual changes
+        backgroundColor: 'transparent',
+        // Position search bar to stick below notice
+        position: 'sticky',
+        top: stickyTop,
+        zIndex: 800, // Below header but above content
+      }
+    ]}>
+      <FunctionalSearchBar onSearch={(query, results) => {
+        console.log('Search query:', query);
+        console.log('Search results:', results);
+      }} />
+      {/* Removed shadow and any visual effects that appear on scroll */}
+    </Animated.View>
   )
 }
 
 const styles = StyleSheet.create({
-    shadow:{
-        height:15,
-        width:'100%',
-        borderBottomWidth:1,
-        borderBottomColor:Colors.border
-    }
+  stickyContainer: {
+    paddingBottom: 15,
+    // No additional styling that could create visual changes
+  },
 })
 
 export default StickySearchBar

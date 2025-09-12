@@ -42,19 +42,27 @@ const SplashScreen: FC = () => {
 
       if (decodedAccessToken?.exp < currentTime) {
         try {
-          refresh_tokens();
+          await refresh_tokens();
           await refetchUser(setUser);
         } catch (error) {
           console.log(error);
           Alert.alert('There was an error refreshing token!');
           return false;
         }
-      }
-
-      if (user?.role === 'Customer') {
-        resetAndNavigate('ProductDashboard');
       } else {
+        // If token is still valid, refetch user data
+        await refetchUser(setUser);
+      }
+      
+      // Get updated user state
+      const updatedUser = useAuthStore.getState().user;
+
+      if (updatedUser?.role === 'Customer') {
+        resetAndNavigate('ProductDashboard');
+      } else if (updatedUser?.role) {
         resetAndNavigate('DeliveryDashboard');
+      } else {
+        resetAndNavigate('CustomerLogin');
       }
 
       return true;
@@ -68,7 +76,7 @@ const SplashScreen: FC = () => {
     const intialStartup = async () => {
       try {
         GeoLocation.requestAuthorization();
-        tokenCheck();
+        await tokenCheck();
       } catch (error) {
         Alert.alert(
           'Sorry we need location service to give you better shopping experience',

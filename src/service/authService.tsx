@@ -31,7 +31,7 @@ type SetUserFunction = (user: any) => void;
 
 export const customerLogin = async (phone: string): Promise<AuthResult> => {
     try {
-        const response = await axios.post<LoginResponse>(`${BASE_URL}/customer/login`, { phone })
+        const response = await axios.post<LoginResponse>(`${BASE_URL}/auth/customer/login`, { phone })
         const { accessToken, refreshToken, customer } = response.data
 
         await tokenStorage.set("accessToken", accessToken)
@@ -52,7 +52,7 @@ export const customerLogin = async (phone: string): Promise<AuthResult> => {
 
 export const deliveryLogin = async (email: string, password: string): Promise<AuthResult> => {
     try {
-        const response = await axios.post<LoginResponse>(`${BASE_URL}/delivery/login`, { email, password })
+        const response = await axios.post<LoginResponse>(`${BASE_URL}/auth/delivery/login`, { email, password })
         const { accessToken, refreshToken, deliveryPartner } = response.data
 
         await tokenStorage.set("accessToken", accessToken)
@@ -79,7 +79,7 @@ export const refresh_tokens = async (): Promise<string | null> => {
             throw new Error('No refresh token available')
         }
 
-        const response = await axios.post<RefreshTokenResponse>(`${BASE_URL}/refresh-token`, {
+        const response = await axios.post<RefreshTokenResponse>(`${BASE_URL}/auth/refresh-token`, {
             refreshToken
         })
 
@@ -101,8 +101,13 @@ export const refresh_tokens = async (): Promise<string | null> => {
 export const refetchUser = async (setUser: SetUserFunction): Promise<boolean> => {
     try {
         const response = await appAxios.get<UserResponse>(`/user`)
-        setUser(response.data.user)
-        return true
+        
+        if (response && response.data && response.data.user) {
+            setUser(response.data.user)
+            return true
+        } else {
+            return false
+        }
     } catch (error) {
         console.log("Refetch User Error", error)
         return false

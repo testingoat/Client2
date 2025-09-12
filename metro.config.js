@@ -23,11 +23,14 @@ const config = {
   resolver: {
     assetExts: assetExts.filter((ext) => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg'],
+    alias: {
+      buffer: require.resolve('buffer'),
+    },
   },
   server: {
     // Enhanced server configuration for better connectivity
     port: 8081,
-    host: '0.0.0.0', // Allow connections from any IP
+    // Note: Metro config does not support `server.host`. Use CLI flag `--host` if needed.
     enhanceMiddleware: (middleware) => {
       return (req, res, next) => {
         // Add CORS headers for better compatibility

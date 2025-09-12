@@ -36,6 +36,14 @@ const ProductOrder = () => {
         return
     }
 
+    // Check if user location is available
+    console.log('ProductOrder: User data:', user);
+    console.log('ProductOrder: User liveLocation:', user?.liveLocation);
+
+    if (!user?.liveLocation?.latitude || !user?.liveLocation?.longitude) {
+        Alert.alert("Location Required", "Please enable location services to place an order")
+        return
+    }
 
     const formattedData = cart.map(item => ({
         id: item._id,
@@ -49,7 +57,12 @@ const ProductOrder = () => {
     }
 
     setLoading(true)
-    const data = await createOrder(formattedData, totalItemPrice)
+    const deliveryLocation = {
+        latitude: user.liveLocation.latitude,
+        longitude: user.liveLocation.longitude
+    }
+    console.log('ProductOrder: Delivery location being sent:', deliveryLocation);
+    const data = await createOrder(formattedData, totalItemPrice, deliveryLocation)
 
     if (data != null) {
         setCurrentOrder(data)

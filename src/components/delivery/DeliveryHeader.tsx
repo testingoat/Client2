@@ -33,11 +33,12 @@ const DeliveryHeader: FC<DeliveryHeaderProps> = ({name, email}) => {
       </View>
 
       <TouchableOpacity
-        onPress={() => {
+        onPress={async () => {
           resetAndNavigate('CustomerLogin');
           logout();
-          tokenStorage.clearAll();
-          storage.clearAll();
+          await tokenStorage.clearAll();
+          // Use AsyncStorage.clear() instead of storage.clearAll()
+          await storage.clear();
         }}>
         <Icon name="logout" size={30} color="black" />
       </TouchableOpacity>

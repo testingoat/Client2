@@ -1,73 +1,98 @@
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native'
-import React, { FC } from 'react'
-import { NoticeHeight } from '@utils/Scaling'
-import CustomText from '@components/ui/CustomText'
-import { Fonts } from '@utils/Constants'
-import { Defs, G, Path, Svg, Use } from 'react-native-svg'
-import { wavyData } from '@utils/dummyData'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import React, { memo } from 'react';
+import { View, StyleSheet } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
+import CustomText from '@components/ui/CustomText';
+import { Fonts } from '@utils/Constants';
+import { NoticeHeight } from '@utils/Scaling';
+import { wavyData } from '@utils/dummyData';
 
-const Notice: FC = () => {
-    const insets = useSafeAreaInsets()
-    return (
-        <View style={{ height: NoticeHeight }}>
-            <View style={styles.container}>
-                <View style={styles.noticeContainer}>
-                    <View style={{ padding: 10,paddingTop:insets?.top || 20 }}>
-                        <CustomText style={styles.heading} variant='h8' fontFamily={Fonts.SemiBold}>
-                            It's raining near this location
-                        </CustomText>
-                        <CustomText variant='h9' style={styles.textCenter}>
-                            Our delivery partners may take longer to reach you
-                        </CustomText>
-                    </View>
-                </View>
-            </View>
+// IMPORTANT: Ensure you have react-native-svg installed and linked
+// Clean, safe implementation that never renders strings directly in Views
 
-            <Svg
-                width='100%'
-                height='35'
-                fill='#CCD5E4'
-                viewBox='0 0 4000 1000'
-                preserveAspectRatio='none'
-                style={styles.wave}
-            >
-                <Defs>
-                    <Path id='wavepath' d={wavyData} />
-                </Defs>
-                <G>
-                    <Use href="#wavepath" y="321" />
-                </G>
-            </Svg>
+const Notice = () => {
+  // Guard log
+  if (__DEV__) {
+    console.log('🚨 Rendering Notice component');
+    console.log('🚨 wavyData type:', typeof wavyData, 'length:', wavyData?.length);
+    console.log('🚨 Notice props resolved');
+  }
 
+  return (
+    <View style={styles.wrapper} pointerEvents="none">
+      {/* Wave background (SVG) */}
+      <View style={styles.svgContainer}>
+        <Svg
+          width="100%"
+          height="100%"
+          viewBox="0 0 4000 1000"   // Use the original large viewBox for your path
+          preserveAspectRatio="none"
+        >
+          {/* ✅ Correct: Path uses the string as the "d" attribute, never as child */}
+          <Path d={wavyData} fill="#CCD5E4" />
+        </Svg>
+      </View>
 
-        </View>
-    )
-}
+      {/* Foreground content */}
+      <View style={styles.content} pointerEvents="none">
+        <CustomText
+          variant="h8"
+          fontFamily={Fonts.SemiBold}
+          style={styles.title}
+          numberOfLines={1}
+        >
+          It's raining near this location
+        </CustomText>
+
+        <CustomText
+          variant="h9"
+          fontFamily={Fonts.Medium}
+          style={styles.subtitle}
+          numberOfLines={2}
+        >
+          Our delivery partners may take longer to reach you
+        </CustomText>
+      </View>
+    </View>
+  );
+};
 
 
 const styles = StyleSheet.create({
-    container: {
-        backgroundColor: '#CCD5E4'
-    },
-    noticeContainer: {
-        justifyContent: "center",
-        alignItems: 'center',
-        backgroundColor: '#CCD5E4'
-    },
-    textCenter: {
-        textAlign: 'center',
-        marginBottom: 8,
+  wrapper: {
+    width: '100%',
+    backgroundColor: '#CCD5E4',
+    overflow: 'hidden',
+    height: NoticeHeight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  svgContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 35,
+    width: '100%',
+    transform: [{ rotateX: '180deg' }],
+  },
+  content: {
+    position: 'absolute',
+    top: 16,
+    left: 20,
+    right: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    color: '#2D3875',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    textAlign: 'center',
+    color: '#2D3875',
+    marginBottom: 8,
+  },
+});
 
-    },
-    heading: {
-        color: '#2D3875',
-        marginBottom: 8,
-        textAlign: 'center',
-    },
-    wave:{
-        width:'100%',
-        transform:[{rotateX:'180deg'}]
-    }
-})
-export default Notice
+export default memo(Notice);

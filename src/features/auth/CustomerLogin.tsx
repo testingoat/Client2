@@ -10,22 +10,18 @@ import {
   Platform,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
-import {
-  GestureHandlerRootView,
-  PanGestureHandler,
-  State,
-} from 'react-native-gesture-handler';
 import CustomSafeAreaView from '@components/global/CustomSafeAreaView';
 import ProductSlider from '@components/login/ProductSlider';
 import {Colors, Fonts, lightColors} from '@utils/Constants';
 import CustomText from '@components/ui/CustomText';
 import {RFValue} from 'react-native-responsive-fontsize';
-import {resetAndNavigate} from '@utils/NavigationUtils';
+import {resetAndNavigate, navigate} from '@utils/NavigationUtils';
 import useKeyboardOffsetHeight from '@utils/useKeyboardOffsetHeight';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomInput from '@components/ui/CustomInput';
 import CustomButton from '@components/ui/CustomButton';
 import { customerLogin } from '@service/authService';
+import { requestOTP } from '@service/otpService'; // Added OTP service import
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const bottomColors = [...lightColors].reverse();
@@ -33,69 +29,68 @@ const bottomColors = [...lightColors].reverse();
 const CustomerLogin = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
-  const [gestureSequence, setGestureSequence] = useState<string[]>([]);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const animatedValue = useRef(new Animated.Value(0)).current;
   const keyboardOffsetHeight = useKeyboardOffsetHeight();
 
   useEffect(() => {
-    if (keyboardOffsetHeight === 0) {
-      Animated.timing(animatedValue, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.timing(animatedValue, {
-        toValue: -keyboardOffsetHeight * 0.84,
-        duration: 1000,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [keyboardOffsetHeight]);
-
-  const handleGesture = ({nativeEvent}: any) => {
-    if (nativeEvent.state === State.END) {
-      const {translationX, translationY} = nativeEvent;
-      let direction = '';
-      if (Math.abs(translationX) > Math.abs(translationY)) {
-        direction = translationX > 0 ? 'right' : 'left';
-      } else {
-        direction = translationY > 0 ? 'down' : 'up';
-      }
-
-      const newSequence = [...gestureSequence, direction].slice(-5);
-      setGestureSequence(newSequence);
-
-      if (newSequence?.join(' ') === 'up up down left right') {
-        setGestureSequence([]);
-        resetAndNavigate('DeliveryLogin');
-      }
-    }
-  };
+    // Only shift when the input is focused and keyboard is visible
+    const shouldShift = isInputFocused && keyboardOffsetHeight > 0;
+    Animated.timing(animatedValue, {
+      toValue: shouldShift ? -keyboardOffsetHeight * 0.84 : 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [keyboardOffsetHeight, isInputFocused]);
 
   const handleAuth = async () => {
     Keyboard.dismiss()
     setLoading(true)
     try {
-        await customerLogin(phoneNumber)
-        resetAndNavigate('ProductDashboard')
+        // Format phone number with country code
+        const formattedPhoneNumber = `+91${phoneNumber}`;
+        console.log('CustomerLogin: Starting OTP request for phone number:', phoneNumber);
+        console.log('CustomerLogin: Formatted phone number:', formattedPhoneNumber);
+        
+        // Validate phone number format
+        if (!phoneNumber || phoneNumber.length !== 10) {
+          console.log('CustomerLogin: Invalid phone number length:', phoneNumber?.length);
+          Alert.alert("Error", "Please enter a valid 10-digit phone number.");
+          setLoading(false);
+          return;
+        }
+        
+        // Request OTP when user clicks Continue
+        console.log('CustomerLogin: Calling requestOTP function...');
+        const response = await requestOTP(formattedPhoneNumber);
+        console.log('CustomerLogin: OTP Request Response received:', response);
+        
+        if (response.success) {
+          console.log('CustomerLogin: OTP request successful, navigating to OTP screen');
+          // Navigate to OTP verification screen if OTP request is successful
+          navigate('OTPVerification', { phone: formattedPhoneNumber });
+        } else {
+          console.log('CustomerLogin: OTP request failed:', response.message);
+          Alert.alert("Error", response.message || "Failed to send OTP. Please try again.");
+        }
     } catch (error) {
-        Alert.alert("Login Failed")
-    }finally{
+        console.log('CustomerLogin: OTP request error caught:', error);
+        Alert.alert("Error", "Failed to send OTP. Please try again.");
+    } finally {
+        console.log('CustomerLogin: OTP request process completed');
         setLoading(false)
     }
   };
 
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.container}>
         <CustomSafeAreaView>
           <ProductSlider />
-
-          <PanGestureHandler onHandlerStateChange={handleGesture}>
+          <View style={{flex: 1}}>
             <Animated.ScrollView
               bounces={false}
-              style={{transform: [{translateY: animatedValue}]}}
+              style={[{transform: [{translateY: animatedValue}]}, styles.scroll]}
               keyboardDismissMode="on-drag"
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={styles.subContainer}>
@@ -124,14 +119,17 @@ const CustomerLogin = () => {
                   value={phoneNumber}
                   placeholder="Enter mobile number"
                   inputMode="numeric"
+                  onFocus={() => setIsInputFocused(true)}
+                  onBlur={() => setIsInputFocused(false)}
                   left={
                     <CustomText
                       style={styles.phoneText}
                       variant="h6"
                       fontFamily={Fonts.SemiBold}>
-                      + 91
+                      +91
                     </CustomText>
                   }
+                  right={true} // Ensure the clear button can show
                 />
 
                 <CustomButton
@@ -142,7 +140,7 @@ const CustomerLogin = () => {
                 />
               </View>
             </Animated.ScrollView>
-          </PanGestureHandler>
+          </View>
         </CustomSafeAreaView>
 
         <View style={styles.footer}>
@@ -157,7 +155,7 @@ const CustomerLogin = () => {
           <Icon name='bike-fast' color="#000" size={RFValue(18)}/>
         </TouchableOpacity>
       </View>
-    </GestureHandlerRootView>
+    </View>
   );
 };
 
@@ -167,6 +165,9 @@ const styles = StyleSheet.create({
   },
   phoneText: {
     marginLeft: 10,
+    color: Colors.text, // Ensure the country code text is visible
+    fontSize: RFValue(12),
+    fontFamily: Fonts.SemiBold,
   },
   absoluteSwitch:{
     position:'absolute',
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   subContainer: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
     marginBottom: 20,
@@ -219,6 +220,9 @@ const styles = StyleSheet.create({
   gradient: {
     paddingTop: 60,
     width: '100%',
+  },
+  scroll: {
+    zIndex: 1,
   },
   content: {
     justifyContent: 'center',

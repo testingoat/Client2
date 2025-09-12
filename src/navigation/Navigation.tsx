@@ -6,6 +6,7 @@ import {navigationRef} from '@utils/NavigationUtils';
 import SplashScreen from '@features/auth/SplashScreen';
 import DeliveryLogin from '@features/auth/DeliveryLogin';
 import CustomerLogin from '@features/auth/CustomerLogin';
+import OTPVerification from '@features/auth/OTPVerification';
 import ProductDashboard from '@features/dashboard/ProductDashboard';
 import DeliveryDashboard from '@features/delivery/DeliveryDashboard';
 import ProductCategories from '@features/category/ProductCategories';
@@ -47,6 +48,13 @@ const Navigation: FC = () => {
           }}
           name="CustomerLogin"
           component={CustomerLogin}
+        />
+        <Stack.Screen 
+          name="OTPVerification" 
+          component={OTPVerification} 
+          options={{
+            animation: 'slide_from_right',
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

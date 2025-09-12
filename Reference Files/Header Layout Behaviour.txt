@@ -1,0 +1,9 @@
+┌─────────────────┐
+│ Grey Notice Bar │ ← Slides down, pushes everything
+├─────────────────┤
+│ Header + Profile│ ← Gets pushed down, stays visible ✅
+├─────────────────┤
+│ Search Bar      │ ← Sticks below notice dynamically ✅
+├─────────────────┤
+│ Content Area    │ ← Gets pushed down
+└─────────────────┘

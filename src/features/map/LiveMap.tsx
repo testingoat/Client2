@@ -1,5 +1,5 @@
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import React, {FC, useEffect} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import {Colors} from '@utils/Constants';
 import {screenHeight} from '@utils/Scaling';
 import {useMapRefStore} from '@state/mapStore';
@@ -24,31 +24,43 @@ const LiveMap: FC<LiveMapProps> = ({
   pickupLocation,
 }) => {
   const {mapRef, setMapRef} = useMapRefStore();
+  const [camera, setCamera] = useState<any>(null);
+
+  // Reduce logging in production to prevent debugger issues
+  useEffect(() => {
+    if (__DEV__) {
+      console.log('📍 LiveMap mounted');
+    }
+  }, []);
 
   useEffect(() => {
-    if (mapRef) {
-      handleFitToPath(
-        mapRef,
-        deliveryLocation,
-        pickupLocation,
-        hasPickedUp,
-        hasAccepted,
-        deliveryPersonLocation,
-      );
+    // Update camera when delivery person location changes
+    if (deliveryPersonLocation) {
+      if (__DEV__) {
+        console.log('📍 Updating camera with delivery person location');
+      }
+      setCamera({
+        center: {
+          latitude: deliveryPersonLocation.latitude,
+          longitude: deliveryPersonLocation.longitude,
+        },
+        pitch: 0,
+        heading: 0,
+        altitude: 1000,
+        zoom: 15,
+      });
     }
-  }, [
-    mapRef,
-    deliveryPersonLocation,
-    hasAccepted,
-    hasPickedUp,
-    deliveryLocation,
-  ]);
+  }, [deliveryPersonLocation]);
+
+  // Remove the automatic call to handleFitToPath to prevent unintended debugger pauses
+  // The function will only be called when the user explicitly presses the fit button
 
   return (
     <View style={styles.container}>
       <MapViewComponent
         mapRef={mapRef}
         setMapRef={setMapRef}
+        camera={camera}
         hasAccepted={hasAccepted}
         deliveryLocation={deliveryLocation}
         pickupLocation={pickupLocation}
@@ -59,6 +71,9 @@ const LiveMap: FC<LiveMapProps> = ({
       <TouchableOpacity
         style={styles.fitButton}
         onPress={() => {
+          if (__DEV__) {
+            console.log('📍 Fit to path button pressed');
+          }
           handleFitToPath(
             mapRef,
             deliveryLocation,

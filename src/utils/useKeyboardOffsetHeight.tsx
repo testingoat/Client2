@@ -33,8 +33,8 @@ export default function useKeyboardOffsetHeight() {
 
         const keyboardWillHideListener = Keyboard.addListener(
             'keyboardWillHide',
-            e => {
-                setKeyboardOffsetHeight(e.endCoordinates.height)
+            () => {
+                setKeyboardOffsetHeight(0)
             }
         )
 

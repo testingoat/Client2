@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
@@ -33,7 +32,7 @@ const ArrowButton: FC<ArrowButtonProps> = ({
         styles.btn,
         {justifyContent: price !== 0 ? 'space-between' : 'center'},
       ]}>
-      {price != 0 && price && (
+      {price != 0 && price ? (
         <View>
           <CustomText
             variant="h7"
@@ -49,7 +48,7 @@ const ArrowButton: FC<ArrowButtonProps> = ({
             TOTAL
           </CustomText>
         </View>
-      )}
+      ) : null}
 
       <View style={styles.flexRow}>
         <CustomText

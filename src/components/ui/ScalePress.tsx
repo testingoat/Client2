@@ -1,40 +1,75 @@
 import { View, Text, ViewStyle, TouchableOpacity, Animated } from 'react-native'
-import React, { FC } from 'react'
+import React, { FC, useRef } from 'react'
 
 interface ScalePressProps {
     onPress?: () => void;
     children: React.ReactNode;
-    style?: ViewStyle
+    style?: ViewStyle;
+    scaleValue?: number;
+    disabled?: boolean;
+    hapticFeedback?: boolean;
 }
 
-const ScalePress: FC<ScalePressProps> = ({ onPress, children, style }) => {
-    const scaleValue = new Animated.Value(1)
+const ScalePress: FC<ScalePressProps> = ({
+    onPress,
+    children,
+    style,
+    scaleValue = 0.95,
+    disabled = false,
+    hapticFeedback = false
+}) => {
+    const animatedScale = useRef(new Animated.Value(1)).current;
 
     const onPressIn = () => {
-        Animated.spring(scaleValue, {
-            toValue: 0.92,
+        if (disabled) return;
+
+        Animated.spring(animatedScale, {
+            toValue: scaleValue,
+            speed: 50,
+            bounciness: 4,
             useNativeDriver: true
-        }).start()
-    }
+        }).start();
+    };
+
     const onPressOut = () => {
-        Animated.spring(scaleValue, {
+        if (disabled) return;
+
+        Animated.spring(animatedScale, {
             toValue: 1,
+            speed: 50,
+            bounciness: 4,
             useNativeDriver: true
-        }).start()
-    }
+        }).start();
+    };
+
+    const handlePress = () => {
+        if (disabled || !onPress) return;
+
+        // Add haptic feedback if enabled (would need react-native-haptic-feedback)
+        // if (hapticFeedback) {
+        //     HapticFeedback.trigger('impactLight');
+        // }
+
+        onPress();
+    };
+
     return (
         <TouchableOpacity
             onPressIn={onPressIn}
             onPressOut={onPressOut}
-            onPress={onPress}
-            activeOpacity={1}
-            style={{ ...style }}
+            onPress={handlePress}
+            disabled={disabled}
+            activeOpacity={disabled ? 1 : 0.9}
+            style={[style, disabled && { opacity: 0.6 }]}
         >
-            <Animated.View style={[{ transform: [{ scale: scaleValue }], width: '100%' }]}>
+            <Animated.View style={[{
+                transform: [{ scale: animatedScale }],
+                width: '100%'
+            }]}>
                 {children}
             </Animated.View>
         </TouchableOpacity>
-    )
-}
+    );
+};
 
 export default ScalePress

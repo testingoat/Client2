@@ -38,6 +38,10 @@
 	<string>Your location is used to show the delivery progress on the map</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Your location is used to show the delivery progress on the map</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to microphone to use voice search for products</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app needs access to speech recognition to convert your voice to text for searching products</string>
 
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

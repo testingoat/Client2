@@ -3,12 +3,16 @@ import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import GoogleMaps
+import Firebase
 
 @main
 class AppDelegate: RCTAppDelegate {
   override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     self.moduleName = "grocery_app"
     self.dependencyProvider = RCTAppDependencyProvider()
+
+    // Configure Firebase
+    FirebaseApp.configure()
 
     // Provide Google Maps API Key
     GMSServices.provideAPIKey("YOUR_GOOGLE_MAP_API_KEY")

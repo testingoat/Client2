@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const branchSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -10,11 +10,11 @@ const branchSchema = new mongoose.Schema({
   deliveryPartners: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "DeliveryPartner",
+      ref: 'DeliveryPartner',
     },
   ],
 });
 
-const Branch = mongoose.model("Branch", branchSchema);
+const Branch = mongoose.model('Branch', branchSchema);
 
 export default Branch;

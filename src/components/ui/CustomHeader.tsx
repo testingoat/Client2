@@ -24,9 +24,9 @@ const CustomHeader: FC<{title: string; search?: boolean}> = ({
         </CustomText>
 
         <View>
-          {search && (
+          {search ? (
             <Icon name="search" color={Colors.text} size={RFValue(16)} />
-          )}
+          ) : null}
         </View>
       </View>
     </SafeAreaView>

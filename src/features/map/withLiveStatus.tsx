@@ -9,6 +9,15 @@ import {navigate} from '@utils/NavigationUtils';
 import {FC, useEffect} from 'react';
 import {Image, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {io} from 'socket.io-client';
+import React from 'react';
+
+// Safe wrapper to prevent string children from causing crashes
+const safeWrap = (children: any) =>
+  React.Children.map(children, (child) =>
+    typeof child === "string" || typeof child === "number"
+      ? <CustomText>{child}</CustomText>
+      : child
+  );
 
 const withLiveStatus = <P extends object>(
   WrappedComponent: React.ComponentType<P>,
@@ -18,6 +27,13 @@ const withLiveStatus = <P extends object>(
     const routeName = useNavigationState(
       state => state.routes[state.index]?.name,
     );
+
+    if (__DEV__) {
+      console.log("🚨 withLiveStatus rendering, currentOrder:", currentOrder?.status);
+      console.log("🚨 withLiveStatus props:", typeof props, props);
+      console.log("🚨 withLiveStatus routeName:", routeName);
+      console.log("🚨 withLiveStatus WrappedComponent:", WrappedComponent);
+    }
 
     const fetchOrderDetails = async () => {
       const data = await getOrderById(currentOrder?._id as any);
@@ -34,12 +50,16 @@ const withLiveStatus = <P extends object>(
 
         socketInstance?.on('liveTrackingUpdates', updatedOrder => {
           fetchOrderDetails();
-          console.log('RECEIVING LIVE UPDATES 🔴');
+          if (__DEV__) {
+            console.log('RECEIVING LIVE UPDATES 🔴');
+          }
         });
 
         socketInstance.on('orderConfirmed', confirmOrder => {
           fetchOrderDetails();
-          console.log('ORDER CONFIRMATION LIVE UPDATES🔴');
+          if (__DEV__) {
+            console.log('ORDER CONFIRMATION LIVE UPDATES🔴');
+          }
         });
 
         return () => {
@@ -50,7 +70,7 @@ const withLiveStatus = <P extends object>(
 
     return (
       <View style={styles.container}>
-        <WrappedComponent {...props} />
+        {safeWrap(<WrappedComponent {...props} />)}
 
         {currentOrder && routeName === 'ProductDashboard' && (
           <View
@@ -71,10 +91,12 @@ const withLiveStatus = <P extends object>(
                   Order is {currentOrder?.status}
                 </CustomText>
                 <CustomText variant="h9" fontFamily={Fonts.Medium}>
-                  {currentOrder?.items![0]?.item.name +
-                    (currentOrder?.items?.length - 1 > 0
-                      ? ` and ${currentOrder?.items?.length - 1}+ items`
-                      : '')}
+                  {currentOrder?.items && currentOrder.items.length > 0
+                    ? (currentOrder.items[0]?.item?.name || 'Unknown Item') +
+                      (currentOrder.items.length - 1 > 0
+                        ? ` and ${currentOrder.items.length - 1}+ items`
+                        : '')
+                    : 'No items'}
                 </CustomText>
               </View>
             </View>

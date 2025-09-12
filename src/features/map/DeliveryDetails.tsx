@@ -44,17 +44,17 @@ const DeliveryDetails: FC<{ details: any }> = ({ details }) => {
       <View style={styles.flexRow2}>
         <View style={styles.iconContainer}>
           <Icon
-            name="phone-outline"
+            name="account-outline"
             color={Colors.disabled}
             size={RFValue(20)}
           />
         </View>
         <View style={{width: '80%'}}>
           <CustomText variant="h8" fontFamily={Fonts.Medium}>
-            {details?.name || 'Anonymous'} {details?.phone || 'XXXXXXXX'}
+            {details?.name || 'Anonymous'} {details?.phone ? `(${details?.phone})` : ''}
           </CustomText>
           <CustomText variant="h8" numberOfLines={2} fontFamily={Fonts.Regular}>
-            Receiver's contact no.
+            Receiver's contact information
           </CustomText>
         </View>
       </View>

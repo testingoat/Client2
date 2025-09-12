@@ -4,14 +4,9 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 import React, {FC, useEffect, useRef} from 'react';
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 import {Colors} from '@utils/Constants';
 import CustomText from '@components/ui/CustomText';
 import {RFValue} from 'react-native-responsive-fontsize';
@@ -28,34 +23,35 @@ const Sidebar: FC<SidebarProps> = ({
   onCategoryPress,
 }) => {
   const scrollViewRef = useRef<ScrollView>(null);
-  const indicatorPosition = useSharedValue(0);
-  const animatedValues = categories?.map(() => useSharedValue(0));
+  const indicatorPosition = useRef(new Animated.Value(0)).current;
+  const animatedValues = categories?.map(() => useRef(new Animated.Value(0)).current);
 
   useEffect(() => {
     let targetIndex = -1;
 
     categories?.forEach((category: any, index: number) => {
       const isSelected = selectedCategory?._id === category?._id;
-      animatedValues[index].value = withTiming(isSelected ? 2 : -15, {
+      Animated.timing(animatedValues[index], {
+        toValue: isSelected ? 2 : -15,
         duration: 500,
-      });
+        useNativeDriver: true,
+      }).start();
       if (isSelected) targetIndex = index;
     });
 
     if (targetIndex !== -1) {
-      indicatorPosition.value = withTiming(targetIndex * 100, {duration: 500});
-      runOnJS(() => {
-        scrollViewRef.current?.scrollTo({
-          y: targetIndex * 100,
-          animated: true,
-        });
+      Animated.timing(indicatorPosition, {
+        toValue: targetIndex * 100,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+
+      scrollViewRef.current?.scrollTo({
+        y: targetIndex * 100,
+        animated: true,
       });
     }
   }, [selectedCategory]);
-
-  const indicatorStyle = useAnimatedStyle(() => ({
-    transform: [{translateY: indicatorPosition.value}],
-  }));
 
   return (
     <View style={styles.sideBar}>
@@ -63,14 +59,17 @@ const Sidebar: FC<SidebarProps> = ({
         ref={scrollViewRef}
         contentContainerStyle={{paddingBottom: 50}}
         showsVerticalScrollIndicator={false}>
-        <Animated.View style={[styles.indicator, indicatorStyle]} />
+        <Animated.View
+          style={[
+            styles.indicator,
+            {
+              transform: [{translateY: indicatorPosition}],
+            }
+          ]}
+        />
 
         <View>
           {categories?.map((category: any, index: number) => {
-            const animatedStyle = useAnimatedStyle(() => ({
-              bottom: animatedValues[index].value,
-            }));
-
             return (
               <TouchableOpacity
                 key={index}
@@ -85,7 +84,12 @@ const Sidebar: FC<SidebarProps> = ({
                   ]}>
                   <Animated.Image
                     source={{uri: category?.image}}
-                    style={[styles.image, animatedStyle]}
+                    style={[
+                      styles.image,
+                      {
+                        transform: [{translateY: animatedValues[index]}],
+                      }
+                    ]}
                   />
                 </View>
 

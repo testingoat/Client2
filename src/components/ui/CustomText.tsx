@@ -36,7 +36,7 @@ const CustomText:FC<Props> = ({
     ...props
 }) => {
     let computedFontSize: number;
-  
+
     switch (variant) {
         case 'h1':
             computedFontSize = RFValue(fontSize || 22);

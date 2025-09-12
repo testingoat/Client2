@@ -1,4 +1,4 @@
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import {View, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import React, {FC} from 'react';
 import {screenHeight, screenWidth} from '@utils/Scaling';
 import {Colors, Fonts} from '@utils/Constants';

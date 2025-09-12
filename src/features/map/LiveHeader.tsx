@@ -10,11 +10,15 @@ import {Fonts} from '@utils/Constants';
 const LiveHeader: FC<{
   type: 'Customer' | 'Delivery';
   title: string;
-  secondTitle: string;
-}> = ({title, type, secondTitle}) => {
+  secondTitle?: string;
+  eta?: string;
+}> = ({title, type, secondTitle, eta}) => {
   const isCustomer = type === 'Customer';
 
   const {currentOrder, setCurrentOrder} = useAuthStore();
+
+  // Determine which text to display - dynamic ETA or fallback to secondTitle
+  const displayText = eta ? `Delivery in ${eta}` : (secondTitle || 'Delivery in 10 minutes');
 
   return (
     <SafeAreaView>
@@ -49,7 +53,7 @@ const LiveHeader: FC<{
           variant="h4"
           fontFamily={Fonts.SemiBold}
           style={isCustomer ? styles.titleTextWhite : styles.titleTextBlack}>
-          {secondTitle}
+          {displayText}
         </CustomText>
 
         

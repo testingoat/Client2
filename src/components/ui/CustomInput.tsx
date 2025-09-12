@@ -17,12 +17,12 @@ const CustomInput:FC<InputProps & React.ComponentProps<typeof TextInput>> = ({le
         <TextInput
         {...props}
         style={styles.inputContainer}
-        placeholderTextColor="#ccc"
+        placeholderTextColor="#666" // Increased contrast for better visibility
         />
         <View style={styles.icon}>
             {props?.value?.length !=0 && right && 
             <TouchableOpacity onPress={onClear}>
-                <Icon name='close-circle-sharp' size={RFValue(16)} color='#ccc' />
+                <Icon name='close-circle-sharp' size={RFValue(16)} color='#666' />
             </TouchableOpacity>
             }
         </View>
@@ -38,14 +38,14 @@ const styles = StyleSheet.create({
         marginRight: 10
     },
     inputContainer: {
-        width: '70%',
+        flex: 1, // Use flex instead of fixed width to utilize available space
         fontFamily: Fonts.SemiBold,
         fontSize: RFValue(12),
         paddingVertical: 14,
         paddingBottom: 15,
-        height: '100%',
         color: Colors.text,
-        bottom: -1
+        minWidth: 100, // Ensure minimum width for placeholder text
+        paddingHorizontal: 5, // Add horizontal padding for better text visibility
     },
     text: {
         width: '10%',
@@ -64,7 +64,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.6,
         shadowRadius: 2,
         shadowColor: Colors.border,
-        borderColor: Colors.border
+        borderColor: Colors.border,
+        paddingHorizontal: 5, // Add padding to ensure proper spacing
     },
 })
 

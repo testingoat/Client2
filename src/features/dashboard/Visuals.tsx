@@ -1,38 +1,35 @@
-import {View, Text, StyleSheet, Image} from 'react-native';
-import React from 'react';
+import {View, StyleSheet, Image, Animated} from 'react-native';
+import React, {useEffect, useRef} from 'react';
 import {screenHeight, screenWidth} from '@utils/Scaling';
-import {useCollapsibleContext} from '@r0b0t3d/react-native-collapsible';
-import Animated, {interpolate, useAnimatedStyle} from 'react-native-reanimated';
 import {darkWeatherColors} from '@utils/Constants';
 import LinearGradient from 'react-native-linear-gradient';
 import LottieView from 'lottie-react-native';
+import { useWeatherStore } from '@state/weatherStore';
+import { getWeatherAnimation, getAnimationKey } from '@service/animationService';
 
 const Visuals = () => {
-  const {scrollY} = useCollapsibleContext();
-  
-  const headerAniamtedStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      Math.max(0, Math.min(scrollY.value, 120)),
-      [0, 120],
-      [1, 0],
-      'clamp'
-    );
-    return {opacity: Math.max(0, Math.min(1, opacity))};
-  });
+  // Remove useCollapsibleContext since we're implementing our own solution
+  const opacity = useRef(new Animated.Value(1)).current;
+  const { current } = useWeatherStore();
+
+  // Get animation source based on weather condition
+  const animationSource = getWeatherAnimation(current?.condition);
+  const animationKey = getAnimationKey(current?.condition);
 
   return (
-    <Animated.View style={[styles.container, headerAniamtedStyle]}>
+    <Animated.View style={[styles.container, {opacity}]}>
       <LinearGradient colors={darkWeatherColors} style={styles.gradient} />
       <Image
         source={require('@assets/images/cloud.png')}
         style={styles.cloud}
       />
       <LottieView
+        key={animationKey} // Force re-render when weather condition changes
         autoPlay={true}
         enableMergePathsAndroidForKitKatAndAbove={true}
         loop={true}
         style={styles.lottie}
-        source={require('@assets/animations/raining.json')}
+        source={animationSource}
       />
     </Animated.View>
   );

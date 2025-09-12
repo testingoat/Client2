@@ -38,6 +38,9 @@ class MainApplication : Application(), ReactApplication {
   override fun onCreate() {
     super.onCreate()
 
+    // Firebase will auto-initialize from google-services.json
+    android.util.Log.d("MainApplication", "Firebase should auto-initialize from google-services.json")
+
     // Android 8 compatibility: Initialize SoLoader with error handling
     try {
       SoLoader.init(this, OpenSourceMergedSoMapping)

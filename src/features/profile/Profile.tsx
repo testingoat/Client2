@@ -1,4 +1,4 @@
-import {View, Text, StyleSheet, FlatList} from 'react-native';
+import {View, StyleSheet, FlatList} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {useAuthStore} from '@state/authStore';
 import {useCartStore} from '@state/cartStore';
@@ -47,11 +47,12 @@ const Profile = () => {
         <ActionButton
           icon="log-out-outline"
           label="Logout"
-          onPress={() => {
+          onPress={async () => {
             clearCart();
             logout();
-            tokenStorage.clearAll();
-            storage.clearAll();
+            await tokenStorage.clearAll();
+            // Use AsyncStorage.clear() instead of storage.clearAll()
+            await storage.clear();
             resetAndNavigate('CustomerLogin');
           }}
         />

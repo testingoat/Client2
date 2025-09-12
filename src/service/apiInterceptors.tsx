@@ -18,8 +18,8 @@ appAxios.interceptors.request.use(async config => {
 })
 
 appAxios.interceptors.response.use(
-    response=>response,
-    async error=>{
+    response => response,
+    async error => {
         if(error.response && error.response.status === 401){
             try {
                 const newAccessToken = await refresh_tokens()
@@ -33,7 +33,7 @@ appAxios.interceptors.response.use(
         }
 
         if (error.response && error.response.status != 401) {
-            const errorMessage = error.response.data.message || 'something went wrong'
+            const errorMessage = error.response?.data?.message || 'something went wrong'
             console.log(errorMessage)
         }
 

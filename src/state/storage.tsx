@@ -5,6 +5,8 @@ export const tokenStorage = {
     set: async (key: string, value: string) => {
         try {
             await AsyncStorage.setItem(`token_${key}`, value)
+            // Update cache immediately
+            tokenCache[key] = value;
         } catch (error) {
             console.error('Token storage set error:', error)
         }
@@ -12,7 +14,8 @@ export const tokenStorage = {
     getString: (key: string): string | undefined => {
         try {
             // For synchronous compatibility, we'll use a cached approach
-            return tokenCache[key]
+            const value = tokenCache[key];
+            return value;
         } catch (error) {
             console.error('Token storage get error:', error)
             return undefined

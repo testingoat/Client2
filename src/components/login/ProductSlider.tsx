@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image } from 'react-native'
+import { View, StyleSheet, Image } from 'react-native'
 import React, { FC, useMemo } from 'react'
 import { imageData } from '@utils/dummyData'
 import AutoScroll from '@homielab/react-native-auto-scroll'
@@ -32,14 +32,14 @@ const ProductSlider = () => {
 const Row:FC<{row:typeof imageData; rowIndex:number}>=({row,rowIndex})=>{
     return(
         <View style={styles.row}>
-            {row?.map((image,imageIndex)=>{
+            {row && row.length > 0 ? row.map((image,imageIndex)=>{
                 const horizontalShift = rowIndex % 2===0 ? -18:18
                 return(
                     <View key={imageIndex} style={[styles.itemContainer,{transform:[{translateX:horizontalShift}]}]}>
                         <Image source={image} style={styles.image}/>
                     </View>
                 )
-            })}
+            }) : null}
         </View>
     )
 }

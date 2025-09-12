@@ -20,10 +20,25 @@ const DeliveryLogin: FC = () => {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      await deliveryLogin(email, password);
-      resetAndNavigate('DeliveryDashboard');
+      const result = await deliveryLogin(email, password);
+      if (result.success) {
+        resetAndNavigate('DeliveryDashboard');
+      } else {
+        let errorMessage = 'Login failed. Please try again.';
+        
+        // Check if it's a specific error we can handle
+        if (result.error?.includes('404')) {
+          errorMessage = 'Login service not available. Please try again later.';
+        } else if (result.error?.includes('NOT_REGISTERED')) {
+          errorMessage = 'Delivery partner not found. Please contact admin.';
+        } else if (result.error?.includes('INVALID_CREDENTIALS')) {
+          errorMessage = 'Invalid email or password.';
+        }
+        
+        Alert.alert('Login Failed', errorMessage);
+      }
     } catch (error) {
-      Alert.alert('Login Failed');
+      Alert.alert('Login Failed', 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }

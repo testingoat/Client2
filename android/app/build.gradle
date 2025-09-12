@@ -1,6 +1,7 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+apply plugin: "com.google.gms.google-services"
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -110,6 +111,32 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
+    }
+    // Add packaging options to ensure native libraries are properly included
+    packagingOptions {
+        pickFirst '**/libc++_shared.so'
+        pickFirst '**/libfbjni.so'
+        pickFirst '**/libjsi.so'
+        pickFirst '**/libfolly_json.so'
+        pickFirst '**/libfolly_runtime.so'
+        pickFirst '**/libglog.so'
+        pickFirst '**/libhermes.so'
+        pickFirst '**/libhermes-executor-debug.so'
+        pickFirst '**/libreactnativejni.so'
+        pickFirst '**/libturbomodulejsijni.so'
+        pickFirst '**/libreactnative.so'
+        pickFirst '**/libreact_nativemodule_core.so'
+        pickFirst '**/librrc_view.so'
+
+        // Additional options for React Native
+        pickFirst '**/libreact_render_core.so'
+        pickFirst '**/libreact_render_debug.so'
+        pickFirst '**/libreact_render_graphics.so'
+        pickFirst '**/librrc_root.so'
+        pickFirst '**/libruntimeexecutor.so'
+        
+        // Reanimated-specific libraries - REMOVED to fix "Failed to create a worklet" error
+
     }
 }
 

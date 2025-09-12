@@ -1,4 +1,4 @@
-import {View, Text, Animated} from 'react-native';
+import {Animated} from 'react-native';
 import React, {FC, useEffect, useRef, useState} from 'react';
 import {hocStyles} from '@styles/GlobalStyles';
 

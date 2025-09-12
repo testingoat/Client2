@@ -1,5 +1,5 @@
-import React, {memo} from 'react';
-import MapView, {Polyline} from 'react-native-maps';
+import React, {memo, useEffect} from 'react';
+import MapView, {Polyline, Camera} from 'react-native-maps';
 import {customMapStyle} from '@utils/CustomMap';
 import Markers from './Markers';
 import {getPoints} from '@utils/getPoints';
@@ -16,7 +16,33 @@ const MapViewComponent = ({
   pickupLocation,
   deliveryPersonLocation,
   hasPickedUp,
-}: any) => {
+}: {
+  mapRef: any;
+  hasAccepted: boolean;
+  setMapRef: (ref: any) => void;
+  camera: Camera | null;
+  deliveryLocation: any;
+  pickupLocation: any;
+  deliveryPersonLocation: any;
+  hasPickedUp: boolean;
+}) => {
+  // Update camera when it changes - only log in development
+  useEffect(() => {
+    if (mapRef && camera) {
+      if (__DEV__) {
+        console.log('📍 Animating camera');
+      }
+      mapRef.animateCamera(camera, {duration: 1000});
+    }
+  }, [mapRef, camera]);
+
+  // Reduce logging in production to prevent debugger issues
+  useEffect(() => {
+    if (__DEV__) {
+      console.log('📍 MapViewComponent rendered');
+    }
+  }, []);
+
   return (
     <MapView
       ref={setMapRef}
@@ -35,7 +61,13 @@ const MapViewComponent = ({
       showsBuildings={false}
       showsIndoors={false}
       showsScale={false}
-      showsIndoorLevelPicker={false}>
+      showsIndoorLevelPicker={false}
+      initialRegion={{
+        latitude: deliveryPersonLocation?.latitude || 28.6139,
+        longitude: deliveryPersonLocation?.longitude || 77.2090,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      }}>
 
       {deliveryPersonLocation && (hasPickedUp || hasAccepted) && (
         <MapViewDirections
@@ -47,7 +79,14 @@ const MapViewComponent = ({
           strokeColors={["#2871F2"]}
           strokeWidth={5}
           onError={err => {
-            console.log(err);
+            if (__DEV__) {
+              console.log('📍 MapViewDirections error:', err);
+            }
+          }}
+          onReady={result => {
+            if (__DEV__) {
+              console.log('📍 MapViewDirections ready');
+            }
           }}
         />
       )}

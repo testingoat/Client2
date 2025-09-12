@@ -7,9 +7,18 @@ const Markers = ({
   pickupLocation,
   deliveryPersonLocation,
 }: any) => {
+  // Helper function to check if location is valid
+  const isValidLocation = (location: any) => {
+    return location && 
+           typeof location.latitude === 'number' && 
+           typeof location.longitude === 'number' &&
+           !isNaN(location.latitude) && 
+           !isNaN(location.longitude);
+  };
+
   return (
     <>
-      {deliveryLocation && (
+      {isValidLocation(deliveryLocation) && (
         <Marker
           zIndex={11}
           image={require('@assets/icons/my_pin.png')}
@@ -18,7 +27,7 @@ const Markers = ({
         />
       )}
 
-      {pickupLocation && (
+      {isValidLocation(pickupLocation) && (
         <Marker
           image={require('@assets/icons/store.png')}
           coordinate={pickupLocation}
@@ -27,7 +36,7 @@ const Markers = ({
         />
       )}
 
-      {deliveryPersonLocation && (
+      {isValidLocation(deliveryPersonLocation) && (
         <Marker
           image={require('@assets/icons/delivery.png')}
           coordinate={deliveryPersonLocation}
