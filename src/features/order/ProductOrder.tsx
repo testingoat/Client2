@@ -21,6 +21,7 @@ import {hocStyles} from '@styles/GlobalStyles';
 import ArrowButton from '@components/ui/ArrowButton';
 import { createOrder } from '@service/orderService';
 import { navigate } from '@utils/NavigationUtils';
+import { getValidatedDeliveryLocation } from '@service/locationService';
 
 const ProductOrder = () => {
   const {getTotalPrice, cart, clearCart} = useCartStore();
@@ -32,47 +33,64 @@ const ProductOrder = () => {
   const handlePlaceOrder = async () => {
 
     if (currentOrder !== null) {
-        Alert.alert("Let your first order to be delivered")
-        return
-    }
-
-    // Check if user location is available
-    console.log('ProductOrder: User data:', user);
-    console.log('ProductOrder: User liveLocation:', user?.liveLocation);
-
-    if (!user?.liveLocation?.latitude || !user?.liveLocation?.longitude) {
-        Alert.alert("Location Required", "Please enable location services to place an order")
-        return
+        Alert.alert('Let your first order to be delivered');
+        return;
     }
 
     const formattedData = cart.map(item => ({
         id: item._id,
         item: item._id,
-        count: item.count
-    }))
+        count: item.count,
+    }));
 
-    if (formattedData.length == 0) {
-        Alert.alert("Add any items to place order")
-        return
+    if (formattedData.length === 0) {
+        Alert.alert('Add any items to place order');
+        return;
     }
 
-    setLoading(true)
-    const deliveryLocation = {
-        latitude: user.liveLocation.latitude,
-        longitude: user.liveLocation.longitude
+    setLoading(true);
+
+    // Try to get location from user state first
+    let deliveryLocation = null;
+    if (user?.address?.latitude && user?.address?.longitude) {
+        deliveryLocation = {
+            latitude: user.address.latitude,
+            longitude: user.address.longitude,
+        };
+    } else {
+        // If no location in user state, try to get current location
+        try {
+            deliveryLocation = await getValidatedDeliveryLocation();
+        } catch (error) {
+            console.error('Error getting current location:', error);
+        }
     }
-    console.log('ProductOrder: Delivery location being sent:', deliveryLocation);
-    const data = await createOrder(formattedData, totalItemPrice, deliveryLocation)
+
+    if (!deliveryLocation) {
+        Alert.alert(
+            'Location Required',
+            'Please enable location services or update your address to place an order.',
+            [{ text: 'OK' }]
+        );
+        setLoading(false);
+        return;
+    }
+
+    const data = await createOrder(formattedData, totalItemPrice, deliveryLocation);
 
     if (data != null) {
-        setCurrentOrder(data)
-        clearCart()
-        navigate('OrderSuccess', { ...data })
+        setCurrentOrder(data);
+        clearCart();
+        navigate('OrderSuccess', { ...data });
     } else {
-        Alert.alert("There was an error")
+        Alert.alert(
+            'Order Failed',
+            'Unable to place your order. Please check your location and try again.',
+            [{ text: 'OK' }]
+        );
     }
 
-    setLoading(false)
+    setLoading(false);
   };
 
   return (
@@ -85,7 +103,7 @@ const ProductOrder = () => {
           <View style={styles.flexRow}>
             <Image
               source={require('@assets/icons/coupon.png')}
-              style={{width: 25, height: 25}}
+              style={styles.couponIcon}
             />
             <CustomText variant="h6" fontFamily={Fonts.SemiBold}>
               Use Coupons
@@ -118,18 +136,18 @@ const ProductOrder = () => {
             <View style={styles.flexRow}>
               <Image
                 source={require('@assets/icons/home.png')}
-                style={{width: 20, height: 20}}
+                style={styles.homeIcon}
               />
-              <View style={{width: '75%'}}>
+              <View style={styles.addressTextContainer}>
                 <CustomText variant="h8" fontFamily={Fonts.Medium}>
                   Delivering to Home
                 </CustomText>
                 <CustomText
-                  variant="h9"
-                  numberOfLines={2}
-                  style={{opacity: 0.6}}>
-                  {user?.address}
-                </CustomText>
+                variant="h9"
+                numberOfLines={2}
+                style={styles.addressText}>
+                {user?.address?.address}
+              </CustomText>
               </View>
             </View>
 
@@ -144,19 +162,19 @@ const ProductOrder = () => {
           </View>
 
           <View style={styles.paymentGateway}>
-            <View style={{width: '30%'}}>
+            <View style={styles.paymentInfo}>
               <CustomText fontSize={RFValue(6)} fontFamily={Fonts.Regular}>
                 💵 PAY USING
               </CustomText>
               <CustomText
                 fontFamily={Fonts.Regular}
                 variant="h9"
-                style={{marginTop: 2}}>
+                style={styles.paymentMethod}>
                 Cash on Delivery
               </CustomText>
             </View>
 
-            <View style={{width: '70%'}}>
+            <View style={styles.orderButtonContainer}>
               <ArrowButton
                 loading={loading}
                 price={totalItemPrice}
@@ -216,7 +234,30 @@ const styles = StyleSheet.create({
   },
   absoluteContainer: {
     marginVertical: 15,
-    marginBottom: Platform.OS == 'ios' ? 30 : 10,
+    marginBottom: Platform.OS === 'ios' ? 30 : 10,
+  },
+  couponIcon: {
+    width: 25,
+    height: 25,
+  },
+  homeIcon: {
+    width: 20,
+    height: 20,
+  },
+  addressTextContainer: {
+    width: '75%',
+  },
+  addressText: {
+    opacity: 0.6,
+  },
+  paymentInfo: {
+    width: '30%',
+  },
+  paymentMethod: {
+    marginTop: 2,
+  },
+  orderButtonContainer: {
+    width: '70%',
   },
 });
 
