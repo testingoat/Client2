@@ -194,3 +194,4 @@ android/app/build/
 # Exclude specific problematic paths
 **/.transforms/
 **/bundleLibRuntimeToDirDebug/
+Bug-fixed.md
