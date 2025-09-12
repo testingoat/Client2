@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "module": "node16",
-    "lib": ["es2020"],
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020"],
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -13,12 +13,12 @@
     "resolveJsonModule": true,
     "allowJs": true,
     "typeRoots": ["./node_modules/@types", "./src/types"],
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
     "baseUrl": "./src",
-    "preserveSymlinks": false,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": false,
+    "noEmitOnError": false
   },
-  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.d.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*.ts", "src/**/*.js"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }

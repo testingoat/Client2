@@ -14,5 +14,6 @@ export {
   Admin,
   Product,
   Category,
-  IAdmin,
 };
+
+export type { IAdmin };

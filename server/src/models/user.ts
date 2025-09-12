@@ -78,6 +78,6 @@ export const DeliveryPartner = mongoose.model(
 );
 export const Admin = mongoose.model<IAdmin>('Admin', adminSchema);
 
-export { IAdmin };
+export type { IAdmin };
 
 
