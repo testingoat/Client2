@@ -2,6 +2,7 @@ import AdminJS from 'adminjs';
 import AdminJSFastify from '@adminjs/fastify';
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import * as Models from '../models/index.js';
+import { Monitoring } from '../models/monitoring.js';
 import { dark, light, noSidebar } from '@adminjs/themes';
 AdminJS.registerAdapter(AdminJSMongoose);
 export const admin = new AdminJS({
@@ -32,6 +33,51 @@ export const admin = new AdminJS({
         { resource: Models.Category },
         { resource: Models.Order },
         { resource: Models.Counter },
+        {
+            resource: Monitoring,
+            options: {
+                navigation: {
+                    name: 'System',
+                    icon: 'Activity'
+                },
+                actions: {
+                    // Hide all default actions to prevent errors
+                    new: { isVisible: false },
+                    edit: { isVisible: false },
+                    delete: { isVisible: false },
+                    bulkDelete: { isVisible: false },
+                    list: { isVisible: false },
+                    // Custom show action that redirects to monitoring dashboard
+                    show: {
+                        isVisible: true,
+                        handler: async (request, response, context) => {
+                            // Redirect to our working monitoring dashboard
+                            return {
+                                redirectUrl: '/admin/monitoring-dashboard'
+                            };
+                        }
+                    },
+                    // Add a custom action for easy access
+                    'openDashboard': {
+                        actionType: 'resource',
+                        isVisible: true,
+                        icon: 'Activity',
+                        label: 'Open Monitoring Dashboard',
+                        handler: async (request, response, context) => {
+                            return {
+                                redirectUrl: '/admin/monitoring-dashboard'
+                            };
+                        },
+                        component: false
+                    }
+                },
+                properties: {
+                    name: { isVisible: true },
+                    description: { isVisible: true },
+                    status: { isVisible: true }
+                }
+            }
+        },
     ],
     branding: {
         companyName: 'GoatGoat Admin',
