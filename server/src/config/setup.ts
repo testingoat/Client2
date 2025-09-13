@@ -38,14 +38,16 @@ export const admin = new AdminJS({
     ],
     pages: {
         'notification-center': {
+            component: '../adminjs/components/notification-center-component',
             handler: async (_request, _reply, _context) => {
                 return { message: 'Welcome to Notification Center' };
             },
         },
         'monitoring': {
+            component: '../adminjs/components/monitoring-component', 
             handler: async (_request, _reply, _context) => {
                 return { 
-                    message: 'Server Monitoring Dashboard Test',
+                    message: 'Server Monitoring Dashboard',
                     timestamp: new Date().toISOString(),
                     serverHealth: {
                         status: 'healthy',
