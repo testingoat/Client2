@@ -6,7 +6,7 @@ import { PORT } from './config/config.js';
 import websocket from '@fastify/websocket';
 import { registerRoutes } from './routes/index.js';
 import { Server as SocketIOServer } from 'socket.io';
-import { admin, buildAdminRouter } from './config/setup.js';
+import { admin } from './config/setup.js';
 import mongoose from 'mongoose';
 const start = async () => {
     console.log('DEBUG: process.env.NODE_ENV in app.ts:', process.env.NODE_ENV);
@@ -48,6 +48,10 @@ const start = async () => {
         console.log('✅ Firebase service account loaded from:', serviceAccountSource);
         console.log('📋 Project ID:', serviceAccount.project_id);
         console.log('📧 Client Email:', serviceAccount.client_email);
+        // Normalize PEM newlines if provided via env to avoid Invalid PEM formatted message
+        if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string') {
+            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
         // Dynamically import firebase-admin
         let adminModule;
         try {
@@ -216,7 +220,9 @@ const start = async () => {
     // Attach Socket.IO to the app instance for access in routes BEFORE starting
     app.decorate('io', io);
     // Build AdminJS router AFTER registering socket but BEFORE starting the server
-    await buildAdminRouter(app);
+    // TEMPORARILY DISABLED: AdminJS has Fastify v5 dependency conflict
+    // await buildAdminRouter(app);
+    console.log('⚠️ AdminJS temporarily disabled due to Fastify version conflict');
     // Start the Fastify server and get the server instance
     try {
         await app.listen({ port: Number(PORT), host: '0.0.0.0' });

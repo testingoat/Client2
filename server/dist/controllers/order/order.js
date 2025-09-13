@@ -5,23 +5,18 @@ export const createOrder = async (req, reply) => {
     try {
         const { userId } = req.user;
         const { items, branch, totalPrice, deliveryLocation } = req.body;
-
         // Validate required fields
         if (!deliveryLocation || deliveryLocation.latitude === undefined || deliveryLocation.longitude === undefined) {
             return reply.status(400).send({ message: 'Delivery location with latitude and longitude is required' });
         }
-
         const customerData = await Customer.findById(userId);
         const branchData = await Branch.findById(branch);
-
         if (!customerData) {
             return reply.status(404).send({ message: 'Customer not found' });
         }
-
         if (!branchData) {
             return reply.status(404).send({ message: 'Branch not found' });
         }
-
         const newOrder = new Order({
             customer: userId,
             items: items.map((item) => ({
@@ -42,7 +37,6 @@ export const createOrder = async (req, reply) => {
                 address: branchData.address || 'No address available',
             },
         });
-
         let savedOrder = await newOrder.save();
         savedOrder = await savedOrder.populate([
             { path: 'items.item' },

@@ -91,7 +91,10 @@ class OTPService {
                 ? { window: 300, maxRequests: 5 }
                 : { window: 300, maxRequests: 3 };
             const windowSec = Number(parsed.window) > 0 ? Number(parsed.window) : defaults.window;
-            const maxReq = Number(parsed.maxRequests) > 0 ? Number(parsed.maxRequests) : defaults.maxRequests;
+            // Enforce minimum thresholds to avoid over-restrictive envs
+            const minMax = defaults.maxRequests;
+            const candidate = Number(parsed.maxRequests);
+            const maxReq = Number.isFinite(candidate) && candidate > 0 ? Math.max(candidate, minMax) : minMax;
             return { window: windowSec, maxRequests: maxReq };
         }
         catch (e) {
