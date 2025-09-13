@@ -39,6 +39,7 @@ export const admin = new AdminJS({
     ],
     pages: {
         'notification-center': {
+            component: false,
             handler: async (_request, _reply, _context) => {
                 return { 
                     message: 'Welcome to Notification Center',
@@ -54,6 +55,7 @@ export const admin = new AdminJS({
             },
         },
         'monitoring': {
+            component: false,
             handler: async (_request, _reply, _context) => {
                 try {
                     // Get database connection status
@@ -92,12 +94,12 @@ export const admin = new AdminJS({
                             healthCheck: '/health'
                         }
                     };
-                } catch (error) {
+                } catch (error: any) {
                     return {
                         title: '🚀 GoatGoat Server Monitoring Dashboard',
                         message: 'Error fetching server metrics',
                         timestamp: new Date().toISOString(),
-                        error: error.message,
+                        error: error?.message || 'Unknown error',
                         serverHealth: {
                             status: 'error',
                             uptime: Math.floor(process.uptime()),
