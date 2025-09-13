@@ -43,6 +43,15 @@ export const admin = new AdminJS({
                 return { message: 'Welcome to Notification Center' };
             },
         },
+        'monitoring': {
+            component: './pages/MonitoringPage.jsx',
+            handler: async (_request, _reply, _context) => {
+                return { 
+                    message: 'Server Monitoring Dashboard',
+                    timestamp: new Date().toISOString()
+                };
+            },
+        },
         // You can uncomment and add other pages here if needed
         // 'ops-tools': {
         //     handler: async (_request, _reply, _context) => {

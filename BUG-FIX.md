@@ -89,6 +89,7 @@ env: {
 | 1 | 2025-09-13 | AdminJS Fastify Conflict | ✅ Resolved | High - Admin panel accessible |
 | 2 | 2025-09-13 | Missing FAST2SMS_API_KEY | ✅ Resolved | Medium - SMS functionality |
 | 3 | 2025-09-13 | Firebase Admin SDK Warnings | ✅ Resolved | Low - Clean logs |
+| 4 | 2025-09-13 | AdminJS Monitoring Dashboard | ✅ Completed | High - Real-time monitoring |
 
 ---
 
@@ -151,10 +152,75 @@ Firebase Admin SDK was attempting to initialize without proper service account c
 
 ---
 
+---
+
+## 🔧 **Enhancement #4: AdminJS Server Monitoring Dashboard**
+**Date**: September 13, 2025 06:15 UTC  
+**Status**: ✅ **COMPLETED**
+
+### **Feature Added**:
+Added comprehensive server monitoring dashboard to AdminJS panel
+
+### **What Was Implemented**:
+1. **Created MonitoringPage React component** (`/src/adminjs/pages/MonitoringPage.jsx`):
+   - Real-time server health status display
+   - Memory usage monitoring (RSS, Heap Used, Heap Total, External)
+   - Database connection status
+   - System uptime tracking
+   - Performance metrics table
+   - Quick action buttons for health checks and debug info
+   - Environment information display
+   - Auto-refresh every 30 seconds
+
+2. **Added monitoring API endpoints** (`/src/api/routes/admin/monitoring.js`):
+   - `/admin/monitoring/metrics` - Comprehensive system metrics
+   - `/admin/monitoring/health` - Detailed health status
+   - `/admin/monitoring/system` - System information
+   - In-memory performance tracking
+
+3. **Registered monitoring page** in AdminJS configuration (`/src/config/setup.ts`):
+   - Added 'monitoring' page to pages configuration
+   - Configured proper handler for page data
+
+4. **Registered monitoring routes** in main app (`/src/app.ts`):
+   - Auto-registers all monitoring endpoints on server startup
+   - Graceful error handling if routes fail to register
+
+### **Files Created/Modified**:
+- `server/src/adminjs/pages/MonitoringPage.jsx` (new)
+- `server/src/api/routes/admin/monitoring.js` (new) 
+- `server/src/api/routes/admin/monitoring.ts` (new)
+- `server/src/config/setup.ts` (modified)
+- `server/src/app.ts` (modified)
+
+### **Features Available**:
+- ✅ Real-time server health monitoring
+- ✅ Memory usage tracking and visualization
+- ✅ Database connection status
+- ✅ Performance metrics (response time, requests/sec, error rate)
+- ✅ System information (CPU count, load average, platform)
+- ✅ Environment status display
+- ✅ Quick access buttons to health endpoints
+- ✅ Auto-refresh functionality
+- ✅ Professional dashboard UI with cards and tables
+
+### **Access**:
+Monitoring dashboard accessible at: `/admin` → "Monitoring" page
+- Production: https://goatgoat.tech/admin
+- Staging: https://staging.goatgoat.tech/admin
+
+### **API Endpoints Created**:
+- `GET /admin/monitoring/metrics` - Full system metrics
+- `GET /admin/monitoring/health` - Health status
+- `GET /admin/monitoring/system` - System information
+
+---
+
 ### **🔄 Pending Tasks**:
-- Deploy Firebase warning fix to VPS
-- Monitor clean server logs
-- Optional: Configure actual Firebase credentials when needed
+- Deploy monitoring dashboard to production and staging VPS
+- Test monitoring dashboard functionality in both environments
+- Optional: Add database-specific metrics (document counts, etc.)
+- Optional: Add alerting thresholds for critical metrics
 
 ---
 
