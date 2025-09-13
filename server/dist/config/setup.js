@@ -6,6 +6,9 @@ import { Monitoring } from '../models/monitoring.js';
 import { dark, light, noSidebar } from '@adminjs/themes';
 AdminJS.registerAdapter(AdminJSMongoose);
 export const admin = new AdminJS({
+    componentLoader: undefined, // Completely disable component loading
+    pages: {}, // ensure no custom pages mapping exists
+    dashboard: {}, // ensure no dashboard components
     resources: [
         {
             resource: Models.Customer,
@@ -67,8 +70,7 @@ export const admin = new AdminJS({
                             return {
                                 redirectUrl: '/admin/monitoring-dashboard'
                             };
-                        },
-                        component: false
+                        }
                     }
                 },
                 properties: {
@@ -117,6 +119,8 @@ export const admin = new AdminJS({
     defaultTheme: dark.id,
     availableThemes: [dark, light, noSidebar],
     rootPath: '/admin',
+    // Prevent AdminJS from attempting to bundle user components
+    assetsCDN: false,
 });
 export const buildAdminRouter = async (app) => {
     console.log('🔧 Building AdminJS router...');

@@ -2,6 +2,20 @@ import {Customer,DeliveryPartner} from '../../models/user.js';
 import jwt from 'jsonwebtoken';
 
 const generateTokens = (user)=>{
+    // 🐛 DEBUG: Check if JWT secrets are loaded
+    console.log('🔍 DEBUG - JWT Environment Variables:');
+    console.log('ACCESS_TOKEN_SECRET exists:', !!process.env.ACCESS_TOKEN_SECRET);
+    console.log('ACCESS_TOKEN_SECRET length:', process.env.ACCESS_TOKEN_SECRET?.length);
+    console.log('REFRESH_TOKEN_SECRET exists:', !!process.env.REFRESH_TOKEN_SECRET);
+    console.log('REFRESH_TOKEN_SECRET length:', process.env.REFRESH_TOKEN_SECRET?.length);
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('All env keys containing TOKEN:', Object.keys(process.env).filter(key => key.includes('TOKEN')));
+    
+    if (!process.env.ACCESS_TOKEN_SECRET) {
+        console.error('❌ CRITICAL: ACCESS_TOKEN_SECRET is undefined!');
+        throw new Error('ACCESS_TOKEN_SECRET environment variable is missing');
+    }
+    
     const accessToken = jwt.sign(
         {userId : user._id,role:user.role},
         process.env.ACCESS_TOKEN_SECRET,

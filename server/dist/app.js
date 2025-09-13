@@ -1,5 +1,4 @@
 import 'dotenv/config';
-console.log(process.env);
 import { connectDB } from './config/connect.js';
 import fastify from 'fastify';
 import { PORT } from './config/config.js';
@@ -10,6 +9,19 @@ import { admin, buildAdminRouter } from './config/setup.js';
 import mongoose from 'mongoose';
 const start = async () => {
     console.log('DEBUG: process.env.NODE_ENV in app.ts:', process.env.NODE_ENV);
+    // 🐛 DEBUG: Check JWT secrets on app startup
+    console.log('🔍 STARTUP DEBUG - JWT Environment Variables:');
+    console.log('ACCESS_TOKEN_SECRET exists:', !!process.env.ACCESS_TOKEN_SECRET);
+    console.log('REFRESH_TOKEN_SECRET exists:', !!process.env.REFRESH_TOKEN_SECRET);
+    console.log('All env keys containing TOKEN:', Object.keys(process.env).filter(key => key.includes('TOKEN')));
+    console.log('Current working directory:', process.cwd());
+    // Check if .env files exist
+    const fs = await import('fs');
+    const path = await import('path');
+    const envProductionPath = path.resolve('.env.production');
+    const envPath = path.resolve('.env');
+    console.log('Checking .env.production at:', envProductionPath, 'exists:', fs.existsSync(envProductionPath));
+    console.log('Checking .env at:', envPath, 'exists:', fs.existsSync(envPath));
     // Initialize Firebase Admin SDK (optional - won't crash if missing)
     if (process.env.DISABLE_FIREBASE === 'true') {
         console.log('🚫 Firebase Admin SDK initialization skipped (DISABLE_FIREBASE=true)');
@@ -85,6 +97,10 @@ const start = async () => {
     }
     await connectDB(process.env.MONGO_URI);
     const app = fastify();
+    // Serve empty favicon to silence 404s in AdminJS and browser
+    app.get('/favicon.ico', async (_req, reply) => {
+        reply.code(204).send();
+    });
     // Register WebSocket support
     await app.register(websocket);
     // Health check endpoint for cloud deployment

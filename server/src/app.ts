@@ -15,6 +15,21 @@ import mongoose from 'mongoose';
 
 const start = async()=>{
     console.log('DEBUG: process.env.NODE_ENV in app.ts:', process.env.NODE_ENV);
+    
+    // 🐛 DEBUG: Check JWT secrets on app startup
+    console.log('🔍 STARTUP DEBUG - JWT Environment Variables:');
+    console.log('ACCESS_TOKEN_SECRET exists:', !!process.env.ACCESS_TOKEN_SECRET);
+    console.log('REFRESH_TOKEN_SECRET exists:', !!process.env.REFRESH_TOKEN_SECRET);
+    console.log('All env keys containing TOKEN:', Object.keys(process.env).filter(key => key.includes('TOKEN')));
+    console.log('Current working directory:', process.cwd());
+    
+    // Check if .env files exist
+    const fs = await import('fs');
+    const path = await import('path');
+    const envProductionPath = path.resolve('.env.production');
+    const envPath = path.resolve('.env');
+    console.log('Checking .env.production at:', envProductionPath, 'exists:', fs.existsSync(envProductionPath));
+    console.log('Checking .env at:', envPath, 'exists:', fs.existsSync(envPath));
 
     // Initialize Firebase Admin SDK (optional - won't crash if missing)
     if (process.env.DISABLE_FIREBASE === 'true') {
