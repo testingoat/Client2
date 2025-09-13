@@ -18,9 +18,12 @@ const start = async()=>{
     console.log('DEBUG: process.env.NODE_ENV in app.ts:', process.env.NODE_ENV);
 
     // Initialize Firebase Admin SDK (optional - won't crash if missing)
-    const firebaseServiceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './firebase-service-account.json';
+    if (process.env.DISABLE_FIREBASE === 'true') {
+        console.log('🚫 Firebase Admin SDK initialization skipped (DISABLE_FIREBASE=true)');
+    } else {
+        const firebaseServiceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './firebase-service-account.json';
 
-    try {
+        try {
         console.log('🔍 Attempting to initialize Firebase Admin SDK...');
         console.log('🔍 Looking for Firebase service account at:', firebaseServiceAccountPath);
 
@@ -82,10 +85,11 @@ const start = async()=>{
         console.log('✅ Firebase Admin SDK initialized successfully.');
 
     } catch (error: any) {
-        console.error('⚠️ Failed to initialize Firebase Admin SDK (continuing without it):', error);
-        console.error('Error type:', error?.constructor?.name || 'Unknown');
-        console.error('Error message:', error?.message || 'No message');
-        console.log('💡 Tip: Place firebase-service-account.json in server directory or set FIREBASE_SERVICE_ACCOUNT_JSON env var');
+            console.error('⚠️ Failed to initialize Firebase Admin SDK (continuing without it):', error);
+            console.error('Error type:', error?.constructor?.name || 'Unknown');
+            console.error('Error message:', error?.message || 'No message');
+            console.log('💡 Tip: Place firebase-service-account.json in server directory or set FIREBASE_SERVICE_ACCOUNT_JSON env var');
+        }
     }
 
     // Connect to MongoDB

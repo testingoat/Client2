@@ -11,67 +11,72 @@ import mongoose from 'mongoose';
 const start = async () => {
     console.log('DEBUG: process.env.NODE_ENV in app.ts:', process.env.NODE_ENV);
     // Initialize Firebase Admin SDK (optional - won't crash if missing)
-    const firebaseServiceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './firebase-service-account.json';
-    try {
-        console.log('🔍 Attempting to initialize Firebase Admin SDK...');
-        console.log('🔍 Looking for Firebase service account at:', firebaseServiceAccountPath);
-        // Check if file exists
-        const fs = await import('fs');
-        const path = await import('path');
-        let serviceAccount;
-        let serviceAccountSource = 'unknown';
-        // Method 1: Try to read from file path
-        const absolutePath = path.resolve(firebaseServiceAccountPath);
-        if (fs.existsSync(absolutePath)) {
-            console.log('📄 Reading Firebase service account from file:', absolutePath);
-            const fileContent = fs.readFileSync(absolutePath, 'utf8');
-            serviceAccount = JSON.parse(fileContent);
-            serviceAccountSource = 'file';
-        }
-        // Method 2: Try environment variable with JSON string (not base64)
-        else if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-            console.log('📄 Reading Firebase service account from environment variable');
-            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-            serviceAccountSource = 'env_json';
-        }
-        // Method 3: Try base64 environment variable (fallback)
-        else if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY_JSON) {
-            console.log('📄 Reading Firebase service account from base64 environment variable');
-            const buffer = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY_JSON, 'base64');
-            const jsonString = buffer.toString('utf8');
-            serviceAccount = JSON.parse(jsonString);
-            serviceAccountSource = 'env_base64';
-        }
-        else {
-            throw new Error('No Firebase service account found. Tried file path, JSON env var, and base64 env var.');
-        }
-        console.log('✅ Firebase service account loaded from:', serviceAccountSource);
-        console.log('📋 Project ID:', serviceAccount.project_id);
-        console.log('📧 Client Email:', serviceAccount.client_email);
-        // Normalize PEM newlines if provided via env to avoid Invalid PEM formatted message
-        if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string') {
-            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-        }
-        // Dynamically import firebase-admin
-        let adminModule;
-        try {
-            adminModule = await import('firebase-admin');
-        }
-        catch (importError) {
-            console.error('❌ Failed to import firebase-admin. Is it installed?', importError);
-            throw importError;
-        }
-        // Initialize Firebase Admin SDK
-        adminModule.default.initializeApp({
-            credential: adminModule.default.credential.cert(serviceAccount),
-        });
-        console.log('✅ Firebase Admin SDK initialized successfully.');
+    if (process.env.DISABLE_FIREBASE === 'true') {
+        console.log('🚫 Firebase Admin SDK initialization skipped (DISABLE_FIREBASE=true)');
     }
-    catch (error) {
-        console.error('⚠️ Failed to initialize Firebase Admin SDK (continuing without it):', error);
-        console.error('Error type:', error?.constructor?.name || 'Unknown');
-        console.error('Error message:', error?.message || 'No message');
-        console.log('💡 Tip: Place firebase-service-account.json in server directory or set FIREBASE_SERVICE_ACCOUNT_JSON env var');
+    else {
+        const firebaseServiceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './firebase-service-account.json';
+        try {
+            console.log('🔍 Attempting to initialize Firebase Admin SDK...');
+            console.log('🔍 Looking for Firebase service account at:', firebaseServiceAccountPath);
+            // Check if file exists
+            const fs = await import('fs');
+            const path = await import('path');
+            let serviceAccount;
+            let serviceAccountSource = 'unknown';
+            // Method 1: Try to read from file path
+            const absolutePath = path.resolve(firebaseServiceAccountPath);
+            if (fs.existsSync(absolutePath)) {
+                console.log('📄 Reading Firebase service account from file:', absolutePath);
+                const fileContent = fs.readFileSync(absolutePath, 'utf8');
+                serviceAccount = JSON.parse(fileContent);
+                serviceAccountSource = 'file';
+            }
+            // Method 2: Try environment variable with JSON string (not base64)
+            else if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+                console.log('📄 Reading Firebase service account from environment variable');
+                serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+                serviceAccountSource = 'env_json';
+            }
+            // Method 3: Try base64 environment variable (fallback)
+            else if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY_JSON) {
+                console.log('📄 Reading Firebase service account from base64 environment variable');
+                const buffer = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY_JSON, 'base64');
+                const jsonString = buffer.toString('utf8');
+                serviceAccount = JSON.parse(jsonString);
+                serviceAccountSource = 'env_base64';
+            }
+            else {
+                throw new Error('No Firebase service account found. Tried file path, JSON env var, and base64 env var.');
+            }
+            console.log('✅ Firebase service account loaded from:', serviceAccountSource);
+            console.log('📋 Project ID:', serviceAccount.project_id);
+            console.log('📧 Client Email:', serviceAccount.client_email);
+            // Normalize PEM newlines if provided via env to avoid Invalid PEM formatted message
+            if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string') {
+                serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            }
+            // Dynamically import firebase-admin
+            let adminModule;
+            try {
+                adminModule = await import('firebase-admin');
+            }
+            catch (importError) {
+                console.error('❌ Failed to import firebase-admin. Is it installed?', importError);
+                throw importError;
+            }
+            // Initialize Firebase Admin SDK
+            adminModule.default.initializeApp({
+                credential: adminModule.default.credential.cert(serviceAccount),
+            });
+            console.log('✅ Firebase Admin SDK initialized successfully.');
+        }
+        catch (error) {
+            console.error('⚠️ Failed to initialize Firebase Admin SDK (continuing without it):', error);
+            console.error('Error type:', error?.constructor?.name || 'Unknown');
+            console.error('Error message:', error?.message || 'No message');
+            console.log('💡 Tip: Place firebase-service-account.json in server directory or set FIREBASE_SERVICE_ACCOUNT_JSON env var');
+        }
     }
     // Connect to MongoDB
     console.log('🔗 Connecting to MongoDB...');
