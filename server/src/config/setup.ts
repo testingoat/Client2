@@ -38,17 +38,21 @@ export const admin = new AdminJS({
     ],
     pages: {
         'notification-center': {
-            component: AdminJS.bundle('../adminjs/pages/NotificationPage.jsx'),
             handler: async (_request, _reply, _context) => {
                 return { message: 'Welcome to Notification Center' };
             },
         },
         'monitoring': {
-            component: AdminJS.bundle('../adminjs/pages/MonitoringPageSimple.jsx'),
             handler: async (_request, _reply, _context) => {
                 return { 
                     message: 'Server Monitoring Dashboard Test',
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    serverHealth: {
+                        status: 'healthy',
+                        uptime: Math.floor(process.uptime()),
+                        memory: process.memoryUsage(),
+                        database: 'connected'
+                    }
                 };
             },
         },
