@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoatGoat - Grocery Delivery App</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 600px;
+        }
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        h1 { 
+            font-size: 3rem; 
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        .status {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        .status-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 0.5rem;
+            flex: 1;
+            min-width: 200px;
+        }
+        .status-item h3 {
+            color: #4CAF50;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+        }
+        .footer {
+            margin-top: 2rem;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        .health-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4CAF50;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🐐</div>
+        <h1>GoatGoat</h1>
+        <p class="subtitle">Grocery Delivery App - Server & Admin Panel</p>
+        
+        <div class="status">
+            <div class="status-item">
+                <h3><span class="health-indicator"></span>Production Server</h3>
+                <p>Running on Port 3000</p>
+                <small>https://goatgoat.tech</small>
+            </div>
+            <div class="status-item">
+                <h3><span class="health-indicator"></span>Staging Server</h3>
+                <p>Running on Port 4000</p>
+                <small>https://staging.goatgoat.tech</small>
+            </div>
+        </div>
+
+        <div class="links">
+            <a href="/admin" class="btn btn-primary">📊 Admin Panel</a>
+            <a href="/admin/monitoring" class="btn">📈 Server Monitoring</a>
+            <a href="/admin/notifications" class="btn">📱 Notifications</a>
+            <a href="/health" class="btn">🏥 Health Check</a>
+        </div>
+
+        <div class="footer">
+            <p>🚀 GoatGoat Grocery Delivery Platform</p>
+            <p>React Native Mobile App | Node.js Backend | AdminJS Panel</p>
+            <p>Environment: <strong id="environment">Production</strong></p>
+        </div>
+    </div>
+
+    <script>
+        // Detect environment based on hostname
+        const hostname = window.location.hostname;
+        const envElement = document.getElementById('environment');
+        
+        if (hostname.includes('staging')) {
+            envElement.textContent = 'Staging';
+            envElement.style.color = '#FFC107';
+        } else if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+            envElement.textContent = 'Development';
+            envElement.style.color = '#2196F3';
+        } else {
+            envElement.textContent = 'Production';
+            envElement.style.color = '#4CAF50';
+        }
+
+        // Add click handlers for API testing
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 GoatGoat Landing Page Loaded');
+            console.log('🌍 Environment:', envElement.textContent);
+            console.log('📡 Available Endpoints:');
+            console.log('  - Admin Panel: /admin');
+            console.log('  - Monitoring: /admin/monitoring');
+            console.log('  - Notifications: /admin/notifications'); 
+            console.log('  - Health Check: /health');
+        });
+    </script>
+</body>
+</html>

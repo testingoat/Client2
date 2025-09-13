@@ -4,7 +4,6 @@ import AdminJSFastify from '@adminjs/fastify';
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import * as Models from '../models/index.js';
 import { dark, light, noSidebar } from '@adminjs/themes';
-// import { componentLoader, Components } from '../adminjs/components.js';
 
 AdminJS.registerAdapter(AdminJSMongoose);
 
