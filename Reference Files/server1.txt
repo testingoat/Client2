@@ -1,0 +1,694 @@
+root@srv1007003:/var/www/goatgoat-app/server# cd /var/www/goatgoat-app/server
+pm2 start ecosystem.config.cjs --only goatgoat-production
+pm2 start ecosystem.config.cjs --only goatgoat-staging
+[PM2][WARN] Applications goatgoat-production not running, starting...
+[PM2] App [goatgoat-production] launched (1 instances)
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ goatgoat-producti… │ cluster  │ 0    │ online    │ 0%       │ 40.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2][WARN] Applications goatgoat-staging not running, starting...
+[PM2] App [goatgoat-staging] launched (1 instances)
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ goatgoat-producti… │ cluster  │ 0    │ online    │ 50%      │ 62.9mb   │
+│ 1  │ goatgoat-staging   │ cluster  │ 0    │ online    │ 0%       │ 38.7mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv1007003:/var/www/goatgoat-app/server# pm2 save          # write current PM2 list to disk
+pm2 startup       # print the systemd command you must run once
+[PM2] Saving current process list...
+[PM2] Successfully saved in /root/.pm2/dump.pm2
+[PM2] Init System found: systemd
+Platform systemd
+Template
+[Unit]
+Description=PM2 process manager
+Documentation=https://pm2.keymetrics.io/
+After=network.target
+
+[Service]
+Type=forking
+User=root
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+Environment=PM2_HOME=/root/.pm2
+PIDFile=/root/.pm2/pm2.pid
+Restart=on-failure
+
+ExecStart=/usr/lib/node_modules/pm2/bin/pm2 resurrect
+ExecReload=/usr/lib/node_modules/pm2/bin/pm2 reload all
+ExecStop=/usr/lib/node_modules/pm2/bin/pm2 kill
+
+[Install]
+WantedBy=multi-user.target
+
+Target path
+/etc/systemd/system/pm2-root.service
+Command list
+[ 'systemctl enable pm2-root' ]
+[PM2] Writing init configuration in /etc/systemd/system/pm2-root.service
+[PM2] Making script booting at startup...
+[PM2] [-] Executing: systemctl enable pm2-root...
+[PM2] [v] Command successfully executed.
++---------------------------------------+
+[PM2] Freeze a process list on reboot via:
+$ pm2 save
+
+[PM2] Remove init script via:
+$ pm2 unstartup systemd
+root@srv1007003:/var/www/goatgoat-app/server# pm2 ls            # shows running apps
+pm2 logs --lines 50
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ goatgoat-producti… │ cluster  │ 0    │ online    │ 0%       │ 146.7mb  │
+│ 1  │ goatgoat-staging   │ cluster  │ 0    │ online    │ 0%       │ 139.5mb  │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[TAILING] Tailing last 50 lines for [all] processes (change the value with --lines option)
+/root/.pm2/pm2.log last 50 lines:
+PM2        | 2025-09-13T14:11:55: PM2 log: App [goatgoat-staging:1] starting in -cluster mode-
+PM2        | 2025-09-13T14:11:55: PM2 log: App [goatgoat-staging:1] online
+PM2        | 2025-09-13T14:24:59: PM2 log: Stopping app:goatgoat-production id:0
+PM2        | 2025-09-13T14:24:59: PM2 log: App name:goatgoat-production id:0 disconnected
+PM2        | 2025-09-13T14:24:59: PM2 log: App [goatgoat-production:0] exited with code [0] via signal [SIGINT]
+PM2        | 2025-09-13T14:24:59: PM2 log: pid=109647 msg=process killed
+PM2        | 2025-09-13T14:24:59: PM2 log: App [goatgoat-production:0] starting in -cluster mode-
+PM2        | 2025-09-13T14:24:59: PM2 log: App [goatgoat-production:0] online
+PM2        | 2025-09-13T14:24:59: PM2 log: Stopping app:goatgoat-staging id:1
+PM2        | 2025-09-13T14:25:00: PM2 log: App name:goatgoat-staging id:1 disconnected
+PM2        | 2025-09-13T14:25:00: PM2 log: App [goatgoat-staging:1] exited with code [0] via signal [SIGINT]
+PM2        | 2025-09-13T14:25:00: PM2 log: pid=109659 msg=process killed
+PM2        | 2025-09-13T14:25:00: PM2 log: App [goatgoat-staging:1] starting in -cluster mode-
+PM2        | 2025-09-13T14:25:00: PM2 log: App [goatgoat-staging:1] online
+PM2        | 2025-09-13T16:45:56: PM2 log: Stopping app:goatgoat-production id:0
+PM2        | 2025-09-13T16:45:56: PM2 log: App name:goatgoat-production id:0 disconnected
+PM2        | 2025-09-13T16:45:56: PM2 log: App [goatgoat-production:0] exited with code [0] via signal [SIGINT]
+PM2        | 2025-09-13T16:45:56: PM2 log: pid=109761 msg=process killed
+PM2        | 2025-09-13T16:45:56: PM2 log: App [goatgoat-production:0] starting in -cluster mode-
+PM2        | 2025-09-13T16:45:56: PM2 log: App [goatgoat-production:0] online
+PM2        | 2025-09-13T16:45:56: PM2 log: Stopping app:goatgoat-staging id:1
+PM2        | 2025-09-13T16:45:56: PM2 log: App name:goatgoat-staging id:1 disconnected
+PM2        | 2025-09-13T16:45:56: PM2 log: App [goatgoat-staging:1] exited with code [0] via signal [SIGINT]
+PM2        | 2025-09-13T16:45:56: PM2 log: pid=109773 msg=process killed
+PM2        | 2025-09-13T16:45:56: PM2 log: App [goatgoat-staging:1] starting in -cluster mode-
+PM2        | 2025-09-13T16:45:56: PM2 log: App [goatgoat-staging:1] online
+PM2        | 2025-09-13T17:05:27: PM2 log: Stopping app:goatgoat-production id:0
+PM2        | 2025-09-13T17:05:27: PM2 log: App name:goatgoat-production id:0 disconnected
+PM2        | 2025-09-13T17:05:27: PM2 log: App [goatgoat-production:0] exited with code [0] via signal [SIGINT]
+PM2        | 2025-09-13T17:05:27: PM2 log: pid=110077 msg=process killed
+PM2        | 2025-09-13T17:05:27: PM2 log: App [goatgoat-production:0] starting in -cluster mode-
+PM2        | 2025-09-13T17:05:27: PM2 log: App [goatgoat-production:0] online
+PM2        | 2025-09-13T17:05:27: PM2 log: Stopping app:goatgoat-staging id:1
+PM2        | 2025-09-13T17:05:27: PM2 log: App name:goatgoat-staging id:1 disconnected
+PM2        | 2025-09-13T17:05:27: PM2 log: App [goatgoat-staging:1] exited with code [0] via signal [SIGINT]
+PM2        | 2025-09-13T17:05:27: PM2 log: pid=110089 msg=process killed
+PM2        | 2025-09-13T17:05:27: PM2 log: App [goatgoat-staging:1] starting in -cluster mode-
+PM2        | 2025-09-13T17:05:27: PM2 log: App [goatgoat-staging:1] online
+PM2        | 2025-09-13T17:44:50: PM2 log: Stopping app:goatgoat-production id:0
+PM2        | 2025-09-13T17:44:50: PM2 log: App name:goatgoat-production id:0 disconnected
+PM2        | 2025-09-13T17:44:50: PM2 log: App [goatgoat-production:0] exited with code [0] via signal [SIGINT]
+PM2        | 2025-09-13T17:44:50: PM2 log: pid=110236 msg=process killed
+PM2        | 2025-09-13T17:44:50: PM2 log: Stopping app:goatgoat-staging id:1
+PM2        | 2025-09-13T17:44:50: PM2 log: App name:goatgoat-staging id:1 disconnected
+PM2        | 2025-09-13T17:44:50: PM2 log: App [goatgoat-staging:1] exited with code [0] via signal [SIGINT]
+PM2        | 2025-09-13T17:44:51: PM2 log: pid=110248 msg=process killed
+PM2        | 2025-09-13T17:47:21: PM2 log: App [goatgoat-production:0] starting in -cluster mode-
+PM2        | 2025-09-13T17:47:22: PM2 log: App [goatgoat-production:0] online
+PM2        | 2025-09-13T17:47:22: PM2 log: App [goatgoat-staging:1] starting in -cluster mode-
+PM2        | 2025-09-13T17:47:22: PM2 log: App [goatgoat-staging:1] online
+
+/var/www/goatgoat-app/server/logs/🚨-production-error.log last 50 lines:
+0|goatgoat | 2025-09-12T22:40:32: ❌ Invalid or missing MONGO_URI in config.js
+0|goatgoat | 2025-09-12T22:40:32: 📝 MONGO_URI should start with mongodb:// or mongodb+srv://
+0|goatgoat | 2025-09-12T22:40:33: WARNING: FAST2SMS_API_KEY is not set in environment variables
+0|goatgoat | 2025-09-12T22:40:34: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:46:19)
+0|goatgoat | 2025-09-12T22:40:34: Error type: Error
+0|goatgoat | 2025-09-12T22:40:34: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|goatgoat | Error: MONGO_URI environment variable is required
+0|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:79:15)
+0|goatgoat | 2025-09-12T22:51:00: ❌ Invalid or missing MONGO_URI in config.js
+0|goatgoat | 2025-09-12T22:51:00: 📝 MONGO_URI should start with mongodb:// or mongodb+srv://
+0|goatgoat | 2025-09-12T22:51:01: WARNING: FAST2SMS_API_KEY is not set in environment variables
+0|goatgoat | 2025-09-12T22:51:02: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:46:19)
+0|goatgoat | 2025-09-12T22:51:02: Error type: Error
+0|goatgoat | 2025-09-12T22:51:02: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|goatgoat | Error: MONGO_URI environment variable is required
+0|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:79:15)
+0|goatgoat | 2025-09-13T04:52:39: WARNING: FAST2SMS_API_KEY is not set in environment variables
+0|goatgoat | 2025-09-13T04:52:40: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:46:19)
+0|goatgoat | 2025-09-13T04:52:40: Error type: Error
+0|goatgoat | 2025-09-13T04:52:40: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-13T05:38:45: WARNING: FAST2SMS_API_KEY is not set in environment variables
+0|goatgoat | 2025-09-13T05:38:46: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:46:19)
+0|goatgoat | 2025-09-13T05:38:46: Error type: Error
+0|goatgoat | 2025-09-13T05:38:46: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-13T05:53:06: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:46:19)
+0|goatgoat | 2025-09-13T05:53:06: Error type: Error
+0|goatgoat | 2025-09-13T05:53:06: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|goatgoat | ConfigurationError:
+0|goatgoat |     Trying to bundle file '/var/www/goatgoat-app/server/dist/adminjs/monitoring-component' but it doesn't exist
+0|goatgoat |     More information can be found at: https://docs.adminjs.co/AdminJS.html
+0|goatgoat |
+0|goatgoat |     at ComponentLoader.resolveFilePath (file:///var/www/goatgoat-app/server/node_modules/adminjs/lib/backend/utils/component-loader.js:80:11)
+0|goatgoat |     at ComponentLoader.add (file:///var/www/goatgoat-app/server/node_modules/adminjs/lib/backend/utils/component-loader.js:8:46)
+0|goatgoat |     at file:///var/www/goatgoat-app/server/dist/adminjs/components.js:4:42
+0|goatgoat |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|goatgoat |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+
+/var/www/goatgoat-app/server/logs/🚨-staging-error.log last 50 lines:
+1|goatgoat | 2025-09-12T22:40:32: ❌ Invalid or missing MONGO_URI in config.js
+1|goatgoat | 2025-09-12T22:40:32: 📝 MONGO_URI should start with mongodb:// or mongodb+srv://
+1|goatgoat | 2025-09-12T22:40:33: WARNING: FAST2SMS_API_KEY is not set in environment variables
+1|goatgoat | 2025-09-12T22:40:34: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:46:19)
+1|goatgoat | 2025-09-12T22:40:34: Error type: Error
+1|goatgoat | 2025-09-12T22:40:34: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+1|goatgoat | Error: MONGO_URI environment variable is required
+1|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:79:15)
+1|goatgoat | 2025-09-12T22:51:00: ❌ Invalid or missing MONGO_URI in config.js
+1|goatgoat | 2025-09-12T22:51:00: 📝 MONGO_URI should start with mongodb:// or mongodb+srv://
+1|goatgoat | 2025-09-12T22:51:01: WARNING: FAST2SMS_API_KEY is not set in environment variables
+1|goatgoat | 2025-09-12T22:51:02: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:46:19)
+1|goatgoat | 2025-09-12T22:51:02: Error type: Error
+1|goatgoat | 2025-09-12T22:51:02: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+1|goatgoat | Error: MONGO_URI environment variable is required
+1|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:79:15)
+1|goatgoat | 2025-09-13T04:52:39: WARNING: FAST2SMS_API_KEY is not set in environment variables
+1|goatgoat | 2025-09-13T04:52:40: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:46:19)
+1|goatgoat | 2025-09-13T04:52:40: Error type: Error
+1|goatgoat | 2025-09-13T04:52:40: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-13T05:38:45: WARNING: FAST2SMS_API_KEY is not set in environment variables
+1|goatgoat | 2025-09-13T05:38:46: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:46:19)
+1|goatgoat | 2025-09-13T05:38:46: Error type: Error
+1|goatgoat | 2025-09-13T05:38:46: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-13T05:53:06: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat |     at start (file:///var/www/goatgoat-app/server/dist/app.js:46:19)
+1|goatgoat | 2025-09-13T05:53:06: Error type: Error
+1|goatgoat | 2025-09-13T05:53:06: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+1|goatgoat | ConfigurationError:
+1|goatgoat |     Trying to bundle file '/var/www/goatgoat-app/server/dist/adminjs/monitoring-component' but it doesn't exist
+1|goatgoat |     More information can be found at: https://docs.adminjs.co/AdminJS.html
+1|goatgoat |
+1|goatgoat |     at ComponentLoader.resolveFilePath (file:///var/www/goatgoat-app/server/node_modules/adminjs/lib/backend/utils/component-loader.js:80:11)
+1|goatgoat |     at ComponentLoader.add (file:///var/www/goatgoat-app/server/node_modules/adminjs/lib/backend/utils/component-loader.js:8:46)
+1|goatgoat |     at file:///var/www/goatgoat-app/server/dist/adminjs/components.js:4:42
+1|goatgoat |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+1|goatgoat |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+
+/var/www/goatgoat-app/server/logs/📄-production-output.log last 50 lines:
+0|goatgoat | 2025-09-13T17:47:27: Registering category routes...
+0|goatgoat | 2025-09-13T17:47:27: Category routes registered
+0|goatgoat | 2025-09-13T17:47:27: Registering order routes...
+0|goatgoat | 2025-09-13T17:47:27: Order routes registered
+0|goatgoat | 2025-09-13T17:47:27: Registering users routes...
+0|goatgoat | 2025-09-13T17:47:27: Users routes registered
+0|goatgoat | 2025-09-13T17:47:27: Registering admin routes...
+0|goatgoat | 2025-09-13T17:47:27: Admin routes registered
+0|goatgoat | 2025-09-13T17:47:27: All routes registered successfully
+0|goatgoat | 2025-09-13T17:47:27: Routes registered successfully
+0|goatgoat | 2025-09-13T17:47:27: 📊 Monitoring routes registered: /admin/monitoring/metrics, /admin/monitoring/health, /admin/monitoring/system
+0|goatgoat | 2025-09-13T17:47:27: ✅ Monitoring routes registered successfully
+0|goatgoat | 2025-09-13T17:47:27: DEBUG: COOKIE_PASSWORD in app.ts before buildAdminRouter: undefined
+0|goatgoat | 2025-09-13T17:47:27: Routes before starting server:
+0|goatgoat | 2025-09-13T17:47:27: Registered routes: ├── /favicon.ico (GET, HEAD)
+0|goatgoat | ├── /health (GET, HEAD)
+0|goatgoat | ├── /api/auth/customer/login (POST)
+0|goatgoat | ├── /api/auth/delivery/login (POST)
+0|goatgoat | ├── /api/auth/refresh-token (POST)
+0|goatgoat | ├── /api/auth/otp/request (POST)
+0|goatgoat | ├── /api/auth/otp/verify (POST)
+0|goatgoat | ├── /api/auth/otp/test (POST)
+0|goatgoat | ├── /api/user (GET, HEAD, PATCH)
+0|goatgoat | │   └── s/fcm-token (POST)
+0|goatgoat | ├── /api/products/:categoryId (GET, HEAD)
+0|goatgoat | ├── /api/categories (GET, HEAD)
+0|goatgoat | ├── /api/order (POST, GET, HEAD)
+0|goatgoat | │   └── /:orderId (GET, HEAD)
+0|goatgoat | │       ├── /status (PATCH)
+0|goatgoat | │       └── /confirm (POST)
+0|goatgoat | ├── /admin/ops/test-otp (POST)
+0|goatgoat | ├── /admin/ops/tools (GET, HEAD)
+0|goatgoat | ├── /admin/monitoring (GET, HEAD)
+0|goatgoat | │   ├── /metrics (GET, HEAD)
+0|goatgoat | │   ├── /health (GET, HEAD)
+0|goatgoat | │   └── /system (GET, HEAD)
+0|goatgoat | ├── /admin/debug (GET, HEAD)
+0|goatgoat | ├── /admin/test-auth (POST)
+0|goatgoat | ├── /admin/test-routes (GET, HEAD)
+0|goatgoat | ├── /admin/test-session (GET, HEAD)
+0|goatgoat | └── /admin/notifications (GET, HEAD)
+0|goatgoat |
+0|goatgoat | 2025-09-13T17:47:27: 🔧 Building AdminJS router...
+0|goatgoat | 2025-09-13T17:47:27: 🔍 Environment: production
+0|goatgoat | 2025-09-13T17:47:27: 🚀 ULTIMATE FIX: Using minimal AdminJS router without any authentication or session management...
+0|goatgoat | 2025-09-13T17:47:27: AdminJS: bundling user components...
+0|goatgoat | 2025-09-13T17:47:27: ✅ AdminJS minimal router built successfully - admin panel accessible at /admin
+0|goatgoat | 2025-09-13T17:47:27: 🔧 Registering monitoring dashboard route...
+0|goatgoat | 2025-09-13T17:47:27: ✅ Monitoring dashboard route registered successfully
+0|goatgoat | 2025-09-13T17:47:27: Grocery App running on http://localhost:3000/admin
+
+/var/www/goatgoat-app/server/logs/📄-staging-output.log last 50 lines:
+1|goatgoat | 2025-09-13T17:47:27: Product routes registered
+1|goatgoat | 2025-09-13T17:47:27: Registering category routes...
+1|goatgoat | 2025-09-13T17:47:27: Category routes registered
+1|goatgoat | 2025-09-13T17:47:27: Registering order routes...
+1|goatgoat | 2025-09-13T17:47:27: Order routes registered
+1|goatgoat | 2025-09-13T17:47:27: Registering users routes...
+1|goatgoat | 2025-09-13T17:47:27: Users routes registered
+1|goatgoat | 2025-09-13T17:47:27: Registering admin routes...
+1|goatgoat | 2025-09-13T17:47:27: Admin routes registered
+1|goatgoat | 2025-09-13T17:47:27: All routes registered successfully
+1|goatgoat | 2025-09-13T17:47:27: Routes registered successfully
+1|goatgoat | 2025-09-13T17:47:27: 📊 Monitoring routes registered: /admin/monitoring/metrics, /admin/monitoring/health, /admin/monitoring/system
+1|goatgoat | 2025-09-13T17:47:27: ✅ Monitoring routes registered successfully
+1|goatgoat | 2025-09-13T17:47:27: DEBUG: COOKIE_PASSWORD in app.ts before buildAdminRouter: undefined
+1|goatgoat | 2025-09-13T17:47:27: Routes before starting server:
+1|goatgoat | 2025-09-13T17:47:27: Registered routes: ├── /favicon.ico (GET, HEAD)
+1|goatgoat | ├── /health (GET, HEAD)
+1|goatgoat | ├── /api/auth/customer/login (POST)
+1|goatgoat | ├── /api/auth/delivery/login (POST)
+1|goatgoat | ├── /api/auth/refresh-token (POST)
+1|goatgoat | ├── /api/auth/otp/request (POST)
+1|goatgoat | ├── /api/auth/otp/verify (POST)
+1|goatgoat | ├── /api/auth/otp/test (POST)
+1|goatgoat | ├── /api/user (GET, HEAD, PATCH)
+1|goatgoat | │   └── s/fcm-token (POST)
+1|goatgoat | ├── /api/products/:categoryId (GET, HEAD)
+1|goatgoat | ├── /api/categories (GET, HEAD)
+1|goatgoat | ├── /api/order (POST, GET, HEAD)
+1|goatgoat | │   └── /:orderId (GET, HEAD)
+1|goatgoat | │       ├── /status (PATCH)
+1|goatgoat | │       └── /confirm (POST)
+1|goatgoat | ├── /admin/ops/test-otp (POST)
+1|goatgoat | ├── /admin/ops/tools (GET, HEAD)
+1|goatgoat | ├── /admin/monitoring (GET, HEAD)
+1|goatgoat | │   ├── /metrics (GET, HEAD)
+1|goatgoat | │   ├── /health (GET, HEAD)
+1|goatgoat | │   └── /system (GET, HEAD)
+1|goatgoat | ├── /admin/debug (GET, HEAD)
+1|goatgoat | ├── /admin/test-auth (POST)
+1|goatgoat | ├── /admin/test-routes (GET, HEAD)
+1|goatgoat | ├── /admin/test-session (GET, HEAD)
+1|goatgoat | └── /admin/notifications (GET, HEAD)
+1|goatgoat |
+1|goatgoat | 2025-09-13T17:47:27: 🔧 Building AdminJS router...
+1|goatgoat | 2025-09-13T17:47:27: 🔍 Environment: staging
+1|goatgoat | 2025-09-13T17:47:27: 🚀 ULTIMATE FIX: Using minimal AdminJS router without any authentication or session management...
+1|goatgoat | 2025-09-13T17:47:27: ✅ AdminJS minimal router built successfully - admin panel accessible at /admin
+1|goatgoat | 2025-09-13T17:47:27: 🔧 Registering monitoring dashboard route...
+1|goatgoat | 2025-09-13T17:47:27: ✅ Monitoring dashboard route registered successfully
+1|goatgoat | 2025-09-13T17:47:27: Grocery App running on http://localhost:4000/admin
+
+^C
+root@srv1007003:/var/www/goatgoat-app/server# cd /var/www/goatgoat-app/server
+rm -rf dist/
+npm run build
+pm2 restart goatgoat-production
+pm2 restart goatgoat-staging
+
+> server@1.0.0 prebuild
+> npm run clean
+
+
+> server@1.0.0 clean
+> rimraf dist
+
+
+> server@1.0.0 build
+> tsc --skipLibCheck --noEmitOnError false
+
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [goatgoat-production](ids: [ 0 ])
+[PM2] [goatgoat-production](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ goatgoat-producti… │ cluster  │ 1    │ online    │ 0%       │ 38.9mb   │
+│ 1  │ goatgoat-staging   │ cluster  │ 0    │ online    │ 0%       │ 139.5mb  │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [goatgoat-staging](ids: [ 1 ])
+[PM2] [goatgoat-staging](1) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ goatgoat-producti… │ cluster  │ 1    │ online    │ 70%      │ 66.3mb   │
+│ 1  │ goatgoat-staging   │ cluster  │ 1    │ online    │ 0%       │ 38.8mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv1007003:/var/www/goatgoat-app/server# pm2 logs --lines 50 | grep -i "componentloader\|bundle"
+# Expect: no output
+0|goatgoat |     Trying to bundle file '/var/www/goatgoat-app/server/dist/adminjs/monitoring-component' but it doesn't exist
+0|goatgoat |     at ComponentLoader.resolveFilePath (file:///var/www/goatgoat-app/server/node_modules/adminjs/lib/backend/utils/component-loader.js:80:11)
+0|goatgoat |     at ComponentLoader.add (file:///var/www/goatgoat-app/server/node_modules/adminjs/lib/backend/utils/component-loader.js:8:46)
+1|goatgoat |     Trying to bundle file '/var/www/goatgoat-app/server/dist/adminjs/monitoring-component' but it doesn't exist
+1|goatgoat |     at ComponentLoader.resolveFilePath (file:///var/www/goatgoat-app/server/node_modules/adminjs/lib/backend/utils/component-loader.js:80:11)
+1|goatgoat |     at ComponentLoader.add (file:///var/www/goatgoat-app/server/node_modules/adminjs/lib/backend/utils/component-loader.js:8:46)
+^C
+root@srv1007003:/var/www/goatgoat-app/server# pm2 describe goatgoat-production | sed -n '/env/,/PM2/p'
+pm2 describe goatgoat-staging | sed -n '/env/,/PM2/p'
+# Ensure you see MONGO_URI, FAST2SMS_API_KEY, DISABLE_FIREBASE, FIREBASE_SERVICE_ACCOUNT_PATH etc.
+│ node env          │ production                                                   │
+│ watch & reload    │ ✘                                                            │
+│ unstable restarts │ 0                                                            │
+│ created at        │ 2025-09-13T17:48:49.745Z                                     │
+└───────────────────┴──────────────────────────────────────────────────────────────┘
+ Actions available
+┌────────────────────────┐
+│ km:heapdump            │
+│ km:cpu:profiling:start │
+│ km:cpu:profiling:stop  │
+│ km:heap:sampling:start │
+│ km:heap:sampling:stop  │
+└────────────────────────┘
+ Trigger via: pm2 trigger goatgoat-production <action_name>
+
+ Code metrics value
+┌────────────────────────┬──────────────┐
+│ Used Heap Size         │ 73.02 MiB    │
+│ Heap Usage             │ 92.18 %      │
+│ Heap Size              │ 79.22 MiB    │
+│ Event Loop Latency p95 │ 11.85 ms     │
+│ Event Loop Latency     │ 0.31 ms      │
+│ Active handles         │ 21           │
+│ Active requests        │ 0            │
+│ HTTP                   │ 0.28 req/min │
+│ HTTP P95 Latency       │ 34.65 ms     │
+│ HTTP Mean Latency      │ 5.5 ms       │
+└────────────────────────┴──────────────┘
+ Divergent env variables from local env
+┌───────┬───┐
+│ SHLVL │ 1 │
+└───────┴───┘
+
+ Add your own code metrics: http://bit.ly/code-metrics
+ Use `pm2 logs goatgoat-production [--lines 1000]` to display logs
+ Use `pm2 env 0` to display environment variables
+ Use `pm2 monit` to monitor CPU and Memory usage goatgoat-production
+│ node env          │ staging                                                   │
+│ watch & reload    │ ✘                                                         │
+│ unstable restarts │ 0                                                         │
+│ created at        │ 2025-09-13T17:48:50.217Z                                  │
+└───────────────────┴───────────────────────────────────────────────────────────┘
+ Actions available
+┌────────────────────────┐
+│ km:heapdump            │
+│ km:cpu:profiling:start │
+│ km:cpu:profiling:stop  │
+│ km:heap:sampling:start │
+│ km:heap:sampling:stop  │
+└────────────────────────┘
+ Trigger via: pm2 trigger goatgoat-staging <action_name>
+
+ Code metrics value
+┌────────────────────────┬───────────┐
+│ Used Heap Size         │ 71.01 MiB │
+│ Heap Usage             │ 92.71 %   │
+│ Heap Size              │ 76.59 MiB │
+│ Event Loop Latency p95 │ 27.49 ms  │
+│ Event Loop Latency     │ 0.20 ms   │
+│ Active handles         │ 21        │
+│ Active requests        │ 0         │
+└────────────────────────┴───────────┘
+ Divergent env variables from local env
+┌───────┬───┐
+│ SHLVL │ 1 │
+└───────┴───┘
+
+ Add your own code metrics: http://bit.ly/code-metrics
+ Use `pm2 logs goatgoat-staging [--lines 1000]` to display logs
+ Use `pm2 env 1` to display environment variables
+ Use `pm2 monit` to monitor CPU and Memory usage goatgoat-staging
+root@srv1007003:/var/www/goatgoat-app/server# pm2 env 1
+namespace: default
+max_restarts: 15
+min_uptime: 10000
+kill_timeout: 5000
+max_memory_restart: 536870912
+time: true
+log_date_format: YYYY-MM-DDTHH:mm:ss
+cwd: /var/www/goatgoat-app/server
+pm_log_path: /var/www/goatgoat-app/server/logs/📋-staging-combined.log
+km_link: false
+vizion_running: false
+NODE_APP_INSTANCE: 0
+goatgoat-staging: {}
+PM2_HOME: /root/.pm2
+NODE_ENV: staging
+PORT: 4000
+MONGO_URI: mongodb+srv://testingoat24:Qwe_2897@cluster6.l5jkmi9.mongodb.net/GoatgoatStaging?retryWrites=true&w=majority&appName=Cluster6
+FAST2SMS_API_KEY: TBXtyM2OVn0ra5SPdRCH48pghNkzm3w1xFoKIsYJGDEeb7Lvl6wShBusoREfqr0kO3M5jJdexvGQctbn
+FIREBASE_SERVICE_ACCOUNT_PATH: /var/www/goatgoat-app/server/secure/firebase-service-account.json
+DISABLE_FIREBASE: false
+PM2_JSON_PROCESSING: true
+PM2_USAGE: CLI
+OLDPWD: /var/www/goatgoat-app/server
+_: /usr/bin/pm2
+SSH_TTY: /dev/pts/1
+DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/0/bus
+PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+XDG_DATA_DIRS: /usr/local/share:/usr/share:/var/lib/snapd/desktop
+SSH_CLIENT: 122.171.239.223 59420 22
+XDG_RUNTIME_DIR: /run/user/0
+XDG_SESSION_ID: 33
+SHLVL: 1
+USER: root
+LESSOPEN: | /usr/bin/lesspipe %s
+TERM: xterm-256color
+XDG_SESSION_CLASS: user
+LESSCLOSE: /usr/bin/lesspipe %s %s
+SSH_CONNECTION: 122.171.239.223 59420 147.93.108.121 22
+LS_COLORS: rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+LANG: C.UTF-8
+HOME: /root
+MOTD_SHOWN: pam
+XDG_SESSION_TYPE: tty
+LOGNAME: root
+PWD: /var/www/goatgoat-app/server
+SHELL: /bin/bash
+unique_id: cb7b38a4-ef2f-414d-8706-c13007b60a95
+_pm2_version: 6.0.10
+version: 1.0.0
+node_version: 20.19.5
+root@srv1007003:/var/www/goatgoat-app/server# pm2 logs --lines 80 | grep -i "firebase"
+# Expect either:
+#  ✅ Firebase Admin SDK initialized successfully.
+# or (if intentionally disabled):
+#  🚫 Firebase Admin SDK initialization skipped.
+0|goatgoat | 2025-09-12T22:40:34: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-12T22:40:34: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-12T22:51:02: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-12T22:51:02: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-13T04:52:40: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-13T04:52:40: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-13T05:38:46: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-13T05:38:46: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-13T05:53:06: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-13T05:53:06: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-12T22:40:34: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-12T22:40:34: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-12T22:51:02: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-12T22:51:02: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-13T04:52:40: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-13T04:52:40: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-13T05:38:46: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-13T05:38:46: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-13T05:53:06: ⚠️ Failed to initialize Firebase Admin SDK (continuing without it): Error: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+1|goatgoat | 2025-09-13T05:53:06: Error message: No Firebase service account found. Tried file path, JSON env var, and base64 env var.
+0|goatgoat | 2025-09-13T17:48:54: 🔍 Attempting to initialize Firebase Admin SDK...
+0|goatgoat | 2025-09-13T17:48:54: 🔍 Looking for Firebase service account at: /var/www/goatgoat-app/server/securefirebase-service-account.json
+0|goatgoat | 2025-09-13T17:48:54: 📄 Reading Firebase service account from file: /var/www/goatgoat-app/server/secure/firebase-service-account.json
+0|goatgoat | 2025-09-13T17:48:54: ✅ Firebase service account loaded from: file
+0|goatgoat | 2025-09-13T17:48:54: 📧 Client Email: firebase-adminsdk-fbsvc@grocery-app-caff9.iam.gserviceaccount.com
+0|goatgoat | 2025-09-13T17:48:54: ✅ Firebase Admin SDK initialized successfully.
+1|goatgoat | 2025-09-13T17:48:54: 🔍 Attempting to initialize Firebase Admin SDK...
+1|goatgoat | 2025-09-13T17:48:54: 🔍 Looking for Firebase service account at: /var/www/goatgoat-app/server/securefirebase-service-account.json
+1|goatgoat | 2025-09-13T17:48:54: 📄 Reading Firebase service account from file: /var/www/goatgoat-app/server/secure/firebase-service-account.json
+1|goatgoat | 2025-09-13T17:48:54: ✅ Firebase service account loaded from: file
+1|goatgoat | 2025-09-13T17:48:54: 📧 Client Email: firebase-adminsdk-fbsvc@grocery-app-caff9.iam.gserviceaccount.com
+1|goatgoat | 2025-09-13T17:48:54: ✅ Firebase Admin SDK initialized successfully.
+^C
+root@srv1007003:/var/www/goatgoat-app/server# curl -I https://goatgoat.tech/health
+curl -I https://staging.goatgoat.tech/health
+curl -I https://goatgoat.tech/admin/monitoring-dashboard
+curl -I https://staging.goatgoat.tech/admin/monitoring-dashboard
+HTTP/1.1 200 OK
+Server: nginx/1.18.0 (Ubuntu)
+Date: Sat, 13 Sep 2025 17:51:44 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 256
+Connection: keep-alive
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' ws: wss:; frame-src 'self';
+
+HTTP/1.1 200 OK
+Server: nginx/1.18.0 (Ubuntu)
+Date: Sat, 13 Sep 2025 17:51:44 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 256
+Connection: keep-alive
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' ws: wss:; frame-src 'self';
+
+HTTP/1.1 200 OK
+Server: nginx/1.18.0 (Ubuntu)
+Date: Sat, 13 Sep 2025 17:51:44 GMT
+Content-Type: text/html
+Content-Length: 7216
+Connection: keep-alive
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' ws: wss:; frame-src 'self';
+
+HTTP/1.1 200 OK
+Server: nginx/1.18.0 (Ubuntu)
+Date: Sat, 13 Sep 2025 17:51:44 GMT
+Content-Type: text/html
+Content-Length: 7213
+Connection: keep-alive
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' ws: wss:; frame-src 'self';
+
+root@srv1007003:/var/www/goatgoat-app/server# cd /var/www/goatgoat-app/server
+grep -Rni "ComponentLoader.add" dist || true
+grep -Rni "monitoring-component" dist || true
+# Expect: no matches
+root@srv1007003:/var/www/goatgoat-app/server# pm2 status
+pm2 list
+pm2 show goatgoat-production
+pm2 show goatgoat-staging
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ goatgoat-producti… │ cluster  │ 1    │ online    │ 0%       │ 152.6mb  │
+│ 1  │ goatgoat-staging   │ cluster  │ 1    │ online    │ 0%       │ 143.0mb  │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ goatgoat-producti… │ cluster  │ 1    │ online    │ 0%       │ 152.6mb  │
+│ 1  │ goatgoat-staging   │ cluster  │ 1    │ online    │ 0%       │ 143.3mb  │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+ Describing process with id 0 - name goatgoat-production
+┌───────────────────┬──────────────────────────────────────────────────────────────┐
+│ status            │ online                                                       │
+│ name              │ goatgoat-production                                          │
+│ namespace         │ default                                                      │
+│ version           │ 1.0.0                                                        │
+│ restarts          │ 1                                                            │
+│ uptime            │ 4m                                                           │
+│ entire log path   │ /var/www/goatgoat-app/server/logs/📋-production-combined.log │
+│ script path       │ /var/www/goatgoat-app/server/dist/app.js                     │
+│ script args       │ N/A                                                          │
+│ error log path    │ /var/www/goatgoat-app/server/logs/🚨-production-error.log    │
+│ out log path      │ /var/www/goatgoat-app/server/logs/📄-production-output.log   │
+│ pid path          │ /root/.pm2/pids/goatgoat-production-0.pid                    │
+│ interpreter       │ node                                                         │
+│ interpreter args  │ N/A                                                          │
+│ script id         │ 0                                                            │
+│ exec cwd          │ /var/www/goatgoat-app/server                                 │
+│ exec mode         │ cluster_mode                                                 │
+│ node.js version   │ 20.19.5                                                      │
+│ node env          │ production                                                   │
+│ watch & reload    │ ✘                                                            │
+│ unstable restarts │ 0                                                            │
+│ created at        │ 2025-09-13T17:48:49.745Z                                     │
+└───────────────────┴──────────────────────────────────────────────────────────────┘
+ Actions available
+┌────────────────────────┐
+│ km:heapdump            │
+│ km:cpu:profiling:start │
+│ km:cpu:profiling:stop  │
+│ km:heap:sampling:start │
+│ km:heap:sampling:stop  │
+└────────────────────────┘
+ Trigger via: pm2 trigger goatgoat-production <action_name>
+
+ Code metrics value
+┌────────────────────────┬───────────────────────┐
+│ Used Heap Size         │ 76.23 MiB             │
+│ Heap Usage             │ 94.15 %               │
+│ Heap Size              │ 80.97 MiB             │
+│ Event Loop Latency p95 │ 0.83 ms               │
+│ Event Loop Latency     │ 0.24 ms               │
+│ Active handles         │ 22                    │
+│ Active requests        │ 0                     │
+│ HTTP                   │ 0.32 req/min          │
+│ HTTP P95 Latency       │ 55.699999999999804 ms │
+│ HTTP Mean Latency      │ 7.5 ms                │
+└────────────────────────┴───────────────────────┘
+ Divergent env variables from local env
+
+
+ Add your own code metrics: http://bit.ly/code-metrics
+ Use `pm2 logs goatgoat-production [--lines 1000]` to display logs
+ Use `pm2 env 0` to display environment variables
+ Use `pm2 monit` to monitor CPU and Memory usage goatgoat-production
+ Describing process with id 1 - name goatgoat-staging
+┌───────────────────┬───────────────────────────────────────────────────────────┐
+│ status            │ online                                                    │
+│ name              │ goatgoat-staging                                          │
+│ namespace         │ default                                                   │
+│ version           │ 1.0.0                                                     │
+│ restarts          │ 1                                                         │
+│ uptime            │ 4m                                                        │
+│ entire log path   │ /var/www/goatgoat-app/server/logs/📋-staging-combined.log │
+│ script path       │ /var/www/goatgoat-app/server/dist/app.js                  │
+│ script args       │ N/A                                                       │
+│ error log path    │ /var/www/goatgoat-app/server/logs/🚨-staging-error.log    │
+│ out log path      │ /var/www/goatgoat-app/server/logs/📄-staging-output.log   │
+│ pid path          │ /root/.pm2/pids/goatgoat-staging-1.pid                    │
+│ interpreter       │ node                                                      │
+│ interpreter args  │ N/A                                                       │
+│ script id         │ 1                                                         │
+│ exec cwd          │ /var/www/goatgoat-app/server                              │
+│ exec mode         │ cluster_mode                                              │
+│ node.js version   │ 20.19.5                                                   │
+│ node env          │ staging                                                   │
+│ watch & reload    │ ✘                                                         │
+│ unstable restarts │ 0                                                         │
+│ created at        │ 2025-09-13T17:48:50.217Z                                  │
+└───────────────────┴───────────────────────────────────────────────────────────┘
+ Actions available
+┌────────────────────────┐
+│ km:heapdump            │
+│ km:cpu:profiling:start │
+│ km:cpu:profiling:stop  │
+│ km:heap:sampling:start │
+│ km:heap:sampling:stop  │
+└────────────────────────┘
+ Trigger via: pm2 trigger goatgoat-staging <action_name>
+
+ Code metrics value
+┌────────────────────────┬──────────────┐
+│ Used Heap Size         │ 73.73 MiB    │
+│ Heap Usage             │ 94.12 %      │
+│ Heap Size              │ 78.34 MiB    │
+│ Event Loop Latency p95 │ 0.88 ms      │
+│ Event Loop Latency     │ 0.17 ms      │
+│ Active handles         │ 21           │
+│ Active requests        │ 0            │
+│ HTTP                   │ 0.01 req/min │
+│ HTTP P95 Latency       │ 16 ms        │
+│ HTTP Mean Latency      │ 15.5 ms      │
+└────────────────────────┴──────────────┘
+ Divergent env variables from local env
+
+
+ Add your own code metrics: http://bit.ly/code-metrics
+ Use `pm2 logs goatgoat-staging [--lines 1000]` to display logs
+ Use `pm2 env 1` to display environment variables
+ Use `pm2 monit` to monitor CPU and Memory usage goatgoat-staging
+root@srv1007003:/var/www/goatgoat-app/server#
