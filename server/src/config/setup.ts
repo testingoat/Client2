@@ -3,7 +3,6 @@ import AdminJS from 'adminjs';
 import AdminJSFastify from '@adminjs/fastify';
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import * as Models from '../models/index.js';
-import { Monitoring } from '../models/monitoring.js';
 import { dark, light, noSidebar } from '@adminjs/themes';
 
 AdminJS.registerAdapter(AdminJSMongoose);
@@ -36,60 +35,7 @@ export const admin = new AdminJS({
         { resource: Models.Category },
         { resource: Models.Order },
         { resource: Models.Counter },
-        {
-            resource: Monitoring,
-            options: {
-                listProperties: ['name', 'description', 'status', 'lastUpdated'],
-                showProperties: ['name', 'description', 'status', 'lastUpdated'],
-                actions: {
-                    new: { isVisible: false },
-                    edit: { isVisible: false },
-                    delete: { isVisible: false },
-                    show: {
-                        isVisible: true,
-                        handler: async (request: any, response: any, context: any) => {
-                            // Redirect to monitoring dashboard
-                            return {
-                                redirectUrl: '/admin/monitoring-dashboard'
-                            };
-                        }
-                    },
-                    list: {
-                        isVisible: true,
-                        handler: async (request: any, response: any, context: any) => {
-                            // Return a single monitoring entry
-                            const monitoringData = {
-                                _id: '507f1f77bcf86cd799439011',
-                                name: 'Server Monitoring Dashboard',
-                                description: 'Click "Show" to access real-time monitoring',
-                                lastUpdated: new Date(),
-                                status: 'active'
-                            };
-                            return {
-                                records: [monitoringData],
-                                meta: {
-                                    total: 1,
-                                    perPage: 10,
-                                    page: 1,
-                                    direction: 'asc',
-                                    sortBy: 'name'
-                                }
-                            };
-                        }
-                    },
-                    'viewDashboard': {
-                        actionType: 'record',
-                        isVisible: true,
-                        handler: async (request: any, response: any, context: any) => {
-                            return {
-                                redirectUrl: '/admin/monitoring-dashboard'
-                            };
-                        },
-                        component: false
-                    }
-                }
-            }
-        },
+
     ],
     branding: {
         companyName: 'GoatGoat Admin',
@@ -112,6 +58,16 @@ export const admin = new AdminJS({
                     Order: 'Order',
                     Counter: 'Counter',
                     GoatgoatStaging: 'GoatGoat',
+                    Monitoring: 'Monitoring'
+                },
+                properties: {
+                    name: 'Name',
+                    _id: 'ID',
+                    description: 'Description',
+                    lastUpdated: 'Last Updated',
+                    status: 'Status',
+                    createdAt: 'Created At',
+                    updatedAt: 'Updated At'
                 }
             }
         }
