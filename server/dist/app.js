@@ -6,7 +6,7 @@ import { PORT } from './config/config.js';
 import websocket from '@fastify/websocket';
 import { registerRoutes } from './routes/index.js';
 import { Server as SocketIOServer } from 'socket.io';
-import { admin } from './config/setup.js';
+import { admin, buildAdminRouter } from './config/setup.js';
 import mongoose from 'mongoose';
 const start = async () => {
     console.log('DEBUG: process.env.NODE_ENV in app.ts:', process.env.NODE_ENV);
@@ -220,9 +220,7 @@ const start = async () => {
     // Attach Socket.IO to the app instance for access in routes BEFORE starting
     app.decorate('io', io);
     // Build AdminJS router AFTER registering socket but BEFORE starting the server
-    // TEMPORARILY DISABLED: AdminJS has Fastify v5 dependency conflict
-    // await buildAdminRouter(app);
-    console.log('⚠️ AdminJS temporarily disabled due to Fastify version conflict');
+    await buildAdminRouter(app);
     // Start the Fastify server and get the server instance
     try {
         await app.listen({ port: Number(PORT), host: '0.0.0.0' });

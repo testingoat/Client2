@@ -242,9 +242,7 @@ const start = async()=>{
     app.decorate('io', io);
 
     // Build AdminJS router AFTER registering socket but BEFORE starting the server
-    // TEMPORARILY DISABLED: AdminJS has Fastify v5 dependency conflict
-    // await buildAdminRouter(app);
-    console.log('⚠️ AdminJS temporarily disabled due to Fastify version conflict');
+    await buildAdminRouter(app);
 
     // Start the Fastify server and get the server instance
     try {
