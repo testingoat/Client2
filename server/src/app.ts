@@ -288,15 +288,274 @@ const start = async()=>{
         }
     });
 
-    // Add notification center endpoint  
+    // Add HTML monitoring dashboard that integrates with AdminJS
+    app.get('/admin/monitoring-dashboard', async (request, reply) => {
+        try {
+            // Check database connection
+            let dbStatus = 'connected';
+            try {
+                if (mongoose.connection.db) {
+                    await mongoose.connection.db.admin().ping();
+                } else {
+                    dbStatus = 'disconnected';
+                }
+            } catch (dbError) {
+                dbStatus = 'disconnected';
+            }
+
+            // Get delivery partner count
+            const { DeliveryPartner } = await import('./models/user.js');
+            const deliveryPartnerCount = await DeliveryPartner.countDocuments();
+
+            const uptime = Math.floor(process.uptime());
+            const memory = process.memoryUsage();
+            const environment = process.env.NODE_ENV || 'unknown';
+
+            const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoatGoat Server Monitoring</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: #2d2d2d;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #404040;
+        }
+        .card h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #404040;
+        }
+        .metric:last-child {
+            border-bottom: none;
+        }
+        .metric-label {
+            color: #cccccc;
+        }
+        .metric-value {
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .status-healthy {
+            color: #4CAF50;
+        }
+        .status-error {
+            color: #f44336;
+        }
+        .refresh-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 10px 5px;
+        }
+        .refresh-btn:hover {
+            background: #45a049;
+        }
+        .back-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .back-btn:hover {
+            background: #1976D2;
+        }
+        .timestamp {
+            text-align: center;
+            color: #888;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 GoatGoat Server Monitoring</h1>
+            <p>Real-time server health and performance metrics</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>🖥️ Server Status</h3>
+                <div class="metric">
+                    <span class="metric-label">Status:</span>
+                    <span class="metric-value status-healthy">Healthy</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Uptime:</span>
+                    <span class="metric-value">${Math.floor(uptime / 86400)}d ${Math.floor((uptime % 86400) / 3600)}h ${Math.floor((uptime % 3600) / 60)}m</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Environment:</span>
+                    <span class="metric-value">${environment}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Platform:</span>
+                    <span class="metric-value">${process.platform}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Node Version:</span>
+                    <span class="metric-value">${process.version}</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>💾 Memory Usage</h3>
+                <div class="metric">
+                    <span class="metric-label">RSS:</span>
+                    <span class="metric-value">${(memory.rss / 1024 / 1024).toFixed(1)} MB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Heap Used:</span>
+                    <span class="metric-value">${(memory.heapUsed / 1024 / 1024).toFixed(1)} MB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Heap Total:</span>
+                    <span class="metric-value">${(memory.heapTotal / 1024 / 1024).toFixed(1)} MB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">External:</span>
+                    <span class="metric-value">${(memory.external / 1024 / 1024).toFixed(1)} MB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Heap Usage:</span>
+                    <span class="metric-value">${((memory.heapUsed / memory.heapTotal) * 100).toFixed(1)}%</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🗄️ Database</h3>
+                <div class="metric">
+                    <span class="metric-label">Connection:</span>
+                    <span class="metric-value ${dbStatus === 'connected' ? 'status-healthy' : 'status-error'}">${dbStatus === 'connected' ? '🟢 Connected' : '🔴 Disconnected'}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Delivery Partners:</span>
+                    <span class="metric-value">${deliveryPartnerCount}</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🔗 Quick Links</h3>
+                <div class="metric">
+                    <span class="metric-label">Admin Panel:</span>
+                    <span class="metric-value"><a href="/admin" style="color: #4CAF50;">/admin</a></span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Health Check:</span>
+                    <span class="metric-value"><a href="/health" style="color: #4CAF50;">/health</a></span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">API Monitoring:</span>
+                    <span class="metric-value"><a href="/admin/monitoring" style="color: #4CAF50;">/admin/monitoring</a></span>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <button class="refresh-btn" onclick="window.location.reload()">🔄 Refresh Data</button>
+            <a href="/admin" class="back-btn">← Back to Admin Panel</a>
+        </div>
+
+        <div class="timestamp">
+            Last updated: ${new Date().toISOString()}
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh every 30 seconds
+        setTimeout(() => {
+            window.location.reload();
+        }, 30000);
+
+        console.log('🚀 GoatGoat Monitoring Dashboard Loaded');
+        console.log('📊 Server Status: Healthy');
+        console.log('⏱️ Auto-refresh in 30 seconds');
+    </script>
+</body>
+</html>`;
+
+            reply.type('text/html');
+            return html;
+
+        } catch (error: any) {
+            reply.type('text/html');
+            return `
+<!DOCTYPE html>
+<html>
+<head><title>Monitoring Error</title></head>
+<body style="font-family: Arial; padding: 20px; background: #1a1a1a; color: white;">
+    <h1>🚨 Monitoring Error</h1>
+    <p>Error: ${error?.message || 'Unknown error'}</p>
+    <a href="/admin" style="color: #4CAF50;">← Back to Admin Panel</a>
+</body>
+</html>`;
+        }
+    });
+
+    // Add notification center endpoint
     app.get('/admin/notifications', async (_request: FastifyRequest, _reply: FastifyReply) => {
-        return { 
+        return {
             title: '📱 Notification Center',
             message: 'Welcome to Notification Center',
             description: 'Send push notifications and SMS to your users',
             features: [
                 'Push Notifications via Firebase Cloud Messaging',
-                'SMS Notifications via Fast2SMS API', 
+                'SMS Notifications via Fast2SMS API',
                 'Target specific users or groups',
                 'Template management',
                 'Notification history and analytics'

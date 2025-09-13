@@ -2,6 +2,7 @@ import AdminJS from 'adminjs';
 import AdminJSFastify from '@adminjs/fastify';
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import * as Models from '../models/index.js';
+import { Monitoring } from '../models/monitoring.js';
 import { dark, light, noSidebar } from '@adminjs/themes';
 AdminJS.registerAdapter(AdminJSMongoose);
 export const admin = new AdminJS({
@@ -32,36 +33,85 @@ export const admin = new AdminJS({
         { resource: Models.Category },
         { resource: Models.Order },
         { resource: Models.Counter },
+        {
+            resource: Monitoring,
+            options: {
+                listProperties: ['name', 'description', 'status', 'lastUpdated'],
+                showProperties: ['name', 'description', 'status', 'lastUpdated'],
+                actions: {
+                    new: { isVisible: false },
+                    edit: { isVisible: false },
+                    delete: { isVisible: false },
+                    show: {
+                        isVisible: true,
+                        handler: async (request, response, context) => {
+                            // Redirect to monitoring dashboard
+                            return {
+                                redirectUrl: '/admin/monitoring-dashboard'
+                            };
+                        }
+                    },
+                    list: {
+                        isVisible: true,
+                        handler: async (request, response, context) => {
+                            // Return a single monitoring entry
+                            const monitoringData = {
+                                _id: '507f1f77bcf86cd799439011',
+                                name: 'Server Monitoring Dashboard',
+                                description: 'Click "Show" to access real-time monitoring',
+                                lastUpdated: new Date(),
+                                status: 'active'
+                            };
+                            return {
+                                records: [monitoringData],
+                                meta: {
+                                    total: 1,
+                                    perPage: 10,
+                                    page: 1,
+                                    direction: 'asc',
+                                    sortBy: 'name'
+                                }
+                            };
+                        }
+                    },
+                    'viewDashboard': {
+                        actionType: 'record',
+                        isVisible: true,
+                        handler: async (request, response, context) => {
+                            return {
+                                redirectUrl: '/admin/monitoring-dashboard'
+                            };
+                        },
+                        component: false
+                    }
+                }
+            }
+        },
     ],
-    pages: {
-        'notification-center': {
-            component: './pages/NotificationPage.jsx', // Explicitly include the extension
-            handler: async (_request, _reply, _context) => {
-                return { message: 'Welcome to Notification Center' };
-            },
-        },
-        'monitoring': {
-            component: './pages/MonitoringPage.jsx',
-            handler: async (_request, _reply, _context) => {
-                return {
-                    message: 'Server Monitoring Dashboard',
-                    timestamp: new Date().toISOString()
-                };
-            },
-        },
-        // You can uncomment and add other pages here if needed
-        // 'ops-tools': {
-        //     handler: async (_request, _reply, _context) => {
-        //         return {
-        //             text: 'OPS Tools - Use /admin/ops/test-otp endpoint directly',
-        //         };
-        //     },
-        //     component: './components/OpsToolsPage',
-        // },
-    },
     branding: {
-        companyName: 'Grocery Delivery App',
+        companyName: 'GoatGoat Admin',
         withMadeWithLove: false,
+        logo: false,
+        favicon: '/favicon.ico',
+    },
+    locale: {
+        language: 'en',
+        availableLanguages: ['en'],
+        translations: {
+            en: {
+                labels: {
+                    Customer: 'Customer',
+                    DeliveryPartner: 'Delivery Partner',
+                    Admin: 'Admin',
+                    Branch: 'Branch',
+                    Product: 'Product',
+                    Category: 'Category',
+                    Order: 'Order',
+                    Counter: 'Counter',
+                    GoatgoatStaging: 'GoatGoat',
+                }
+            }
+        }
     },
     defaultTheme: dark.id,
     availableThemes: [dark, light, noSidebar],
