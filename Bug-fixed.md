@@ -5,6 +5,67 @@ This document tracks all bug fixes and issues resolved in the GoatGoat Grocery D
 
 ---
 
+## ✅ Update: Systematic Fix for AdminJS, Firebase, and Env Config (2025-09-13 00:00 UTC)
+
+### Problems
+- AdminJS ComponentLoader error still appearing on VPS:
+  - `ConfigurationError: Trying to bundle file '/var/www/goatgoat-app/server/dist/adminjs/monitoring-component' but it doesn't exist`
+- Monitoring not visible in AdminJS sidebar
+- Firebase Admin SDK not initialized (no service account configured)
+- Env mismatch: warnings about FAST2SMS_API_KEY; earlier MONGO_URI missing
+- Favicon 404s in AdminJS
+
+### Root Cause
+- Server was running old compiled files in `server/dist/` and processes likely not restarted with latest build
+- PM2 processes at times started outside ecosystem, so env variables not applied
+- Firebase service account not present on VPS nor referenced by env; `DISABLE_FIREBASE` not set earlier
+
+### Changes in Repo
+- `server/src/adminjs/components.js`: kept empty Components map (no custom bundling)
+- `server/src/config/setup.ts`: Monitoring resource present with redirect-only actions
+- `server/src/app.ts`: added minimal route to silence favicon 404
+  - `app.get('/favicon.ico', (_req, reply) => reply.code(204).send())`
+- `server/ecosystem.config.cjs`: added
+  - `FIREBASE_SERVICE_ACCOUNT_PATH=/var/www/goatgoat-app/server/secure/firebase-service-account.json`
+  - `DISABLE_FIREBASE=false` for both prod and staging (enable Firebase)
+
+### VPS Deployment Steps
+1) Pull and rebuild
+```
+cd /var/www/goatgoat-app
+git pull origin main
+cd server
+npm ci
+npm run build
+```
+2) Install Firebase service account
+```
+sudo mkdir -p /var/www/goatgoat-app/server/secure
+# From your PC (PowerShell):
+# scp "C:\client\Reference Files\grocery-app-caff9-firebase-adminsdk-fbsvc-801726de4d.json" \
+#     root@srv1007003:/var/www/goatgoat-app/server/secure/firebase-service-account.json
+sudo chmod 600 /var/www/goatgoat-app/server/secure/firebase-service-account.json
+```
+3) Restart via PM2 ecosystem (ensures correct envs)
+```
+pm2 delete goatgoat-production goatgoat-staging || true
+pm2 start ecosystem.config.cjs --only goatgoat-production
+pm2 start ecosystem.config.cjs --only goatgoat-staging
+pm2 save && pm2 flush
+```
+
+### Verification
+- ComponentLoader/bundle errors: `pm2 logs --lines 50 | grep -i "componentloader\|bundle"` (should show nothing)
+- Monitoring visible under System in AdminJS sidebar; `/admin/monitoring-dashboard` loads
+- Firebase init: look for `✅ Firebase Admin SDK initialized successfully.` in logs
+- Env applied: `pm2 describe goatgoat-production` and `goatgoat-staging` show `MONGO_URI`, `FAST2SMS_API_KEY`, `FIREBASE_SERVICE_ACCOUNT_PATH`
+- Favicon: No more 404 for `/favicon.ico`
+
+### Status
+- Repo prepared; follow steps above to apply on VPS
+- Outcome after restart should be: no ComponentLoader errors, Monitoring visible, Firebase ready, envs correct
+
+
 ## 🚨 **CRITICAL AdminJS ComponentLoader Error - FIXED!** *(2025-01-13 Latest)*
 
 ### **Critical Problems Solved:**

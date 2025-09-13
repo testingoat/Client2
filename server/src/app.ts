@@ -100,6 +100,12 @@ const start = async()=>{
     await connectDB(process.env.MONGO_URI);
     const app = fastify();
 
+    // Serve empty favicon to silence 404s in AdminJS and browser
+    app.get('/favicon.ico', async (_req: FastifyRequest, reply: FastifyReply) => {
+        reply.code(204).send();
+    });
+
+
     // Register WebSocket support
     await app.register(websocket);
 
@@ -141,7 +147,7 @@ const start = async()=>{
       console.error('Error registering routes:', error);
       process.exit(1);
     }
-    
+
     // Register monitoring routes
     try {
       const { monitoringRoutes } = await import('./api/routes/admin/monitoring.js');
@@ -236,12 +242,12 @@ const start = async()=>{
         try {
             // Get database connection status
             const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-            
+
             // Get delivery partner count
             const { DeliveryPartner } = await import('./models/user.js');
             const deliveryPartnerCount = await DeliveryPartner.countDocuments();
-            
-            const monitoring = { 
+
+            const monitoring = {
                 title: '🚀 GoatGoat Server Monitoring Dashboard',
                 message: 'Real-time server health and performance metrics',
                 timestamp: new Date().toISOString(),
@@ -270,7 +276,7 @@ const start = async()=>{
                     monitoring: '/admin/monitoring'
                 }
             };
-            
+
             return monitoring;
         } catch (error: any) {
             return {
