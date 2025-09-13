@@ -231,6 +231,83 @@ const start = async()=>{
         }
     });
 
+    // Add monitoring dashboard endpoint
+    app.get('/admin/monitoring', async (_request: FastifyRequest, _reply: FastifyReply) => {
+        try {
+            // Get database connection status
+            const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+            
+            // Get delivery partner count
+            const { DeliveryPartner } = await import('./models/user.js');
+            const deliveryPartnerCount = await DeliveryPartner.countDocuments();
+            
+            const monitoring = { 
+                title: '🚀 GoatGoat Server Monitoring Dashboard',
+                message: 'Real-time server health and performance metrics',
+                timestamp: new Date().toISOString(),
+                serverHealth: {
+                    status: 'healthy',
+                    uptime: Math.floor(process.uptime()),
+                    uptimeFormatted: `${Math.floor(process.uptime() / 86400)}d ${Math.floor((process.uptime() % 86400) / 3600)}h ${Math.floor((process.uptime() % 3600) / 60)}m`,
+                    memory: {
+                        rss: `${(process.memoryUsage().rss / 1024 / 1024).toFixed(1)} MB`,
+                        heapUsed: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1)} MB`,
+                        heapTotal: `${(process.memoryUsage().heapTotal / 1024 / 1024).toFixed(1)} MB`,
+                        external: `${(process.memoryUsage().external / 1024 / 1024).toFixed(1)} MB`,
+                        heapUsedPercent: `${((process.memoryUsage().heapUsed / process.memoryUsage().heapTotal) * 100).toFixed(1)}%`
+                    },
+                    database: dbStatus,
+                    deliveryPartners: deliveryPartnerCount,
+                    environment: process.env.NODE_ENV || 'unknown',
+                    platform: process.platform,
+                    nodeVersion: process.version
+                },
+                endpoints: {
+                    production: 'https://goatgoat.tech',
+                    staging: 'https://staging.goatgoat.tech',
+                    adminPanel: '/admin',
+                    healthCheck: '/health',
+                    monitoring: '/admin/monitoring'
+                }
+            };
+            
+            return monitoring;
+        } catch (error: any) {
+            return {
+                title: '🚀 GoatGoat Server Monitoring Dashboard',
+                message: 'Error fetching server metrics',
+                timestamp: new Date().toISOString(),
+                error: error?.message || 'Unknown error',
+                serverHealth: {
+                    status: 'error',
+                    uptime: Math.floor(process.uptime()),
+                    memory: process.memoryUsage(),
+                    database: 'unknown'
+                }
+            };
+        }
+    });
+
+    // Add notification center endpoint  
+    app.get('/admin/notifications', async (_request: FastifyRequest, _reply: FastifyReply) => {
+        return { 
+            title: '📱 Notification Center',
+            message: 'Welcome to Notification Center',
+            description: 'Send push notifications and SMS to your users',
+            features: [
+                'Push Notifications via Firebase Cloud Messaging',
+                'SMS Notifications via Fast2SMS API', 
+                'Target specific users or groups',
+                'Template management',
+                'Notification history and analytics'
+            ],
+            endpoints: {
+                sendNotification: '/api/notifications/send',
+                testSms: '/admin/ops/test-otp'
+            }
+        };
+    });
+
     console.log('DEBUG: COOKIE_PASSWORD in app.ts before buildAdminRouter:', process.env.COOKIE_PASSWORD);
 
     // Log registered routes before starting
