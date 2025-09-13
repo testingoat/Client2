@@ -267,7 +267,50 @@ const start = async () => {
             };
         }
     });
-    // Add HTML monitoring dashboard that integrates with AdminJS
+    // Add notification center endpoint
+    app.get('/admin/notifications', async (_request, _reply) => {
+        return {
+            title: '📱 Notification Center',
+            message: 'Welcome to Notification Center',
+            description: 'Send push notifications and SMS to your users',
+            features: [
+                'Push Notifications via Firebase Cloud Messaging',
+                'SMS Notifications via Fast2SMS API',
+                'Target specific users or groups',
+                'Template management',
+                'Notification history and analytics'
+            ],
+            endpoints: {
+                sendNotification: '/api/notifications/send',
+                testSms: '/admin/ops/test-otp'
+            }
+        };
+    });
+    console.log('DEBUG: COOKIE_PASSWORD in app.ts before buildAdminRouter:', process.env.COOKIE_PASSWORD);
+    // Log registered routes before starting
+    console.log('Routes before starting server:');
+    try {
+        const routes = app.printRoutes({ commonPrefix: false });
+        console.log('Registered routes:', routes);
+    }
+    catch (error) {
+        console.log('Error getting routes:', error);
+    }
+    // Create Socket.IO server using Fastify's HTTP server BEFORE starting
+    const io = new SocketIOServer(app.server, {
+        cors: {
+            origin: '*',
+        },
+        pingInterval: 10000,
+        pingTimeout: 5000,
+        transports: ['websocket', 'polling'],
+    });
+    // Attach Socket.IO to the app instance for access in routes BEFORE starting
+    app.decorate('io', io);
+    // Build AdminJS router AFTER registering socket but BEFORE starting the server
+    await buildAdminRouter(app);
+    // Register monitoring dashboard AFTER AdminJS to prevent conflicts
+    console.log('🔧 Registering monitoring dashboard route...');
     app.get('/admin/monitoring-dashboard', async (request, reply) => {
         try {
             // Check database connection
@@ -523,48 +566,7 @@ const start = async () => {
 </html>`;
         }
     });
-    // Add notification center endpoint
-    app.get('/admin/notifications', async (_request, _reply) => {
-        return {
-            title: '📱 Notification Center',
-            message: 'Welcome to Notification Center',
-            description: 'Send push notifications and SMS to your users',
-            features: [
-                'Push Notifications via Firebase Cloud Messaging',
-                'SMS Notifications via Fast2SMS API',
-                'Target specific users or groups',
-                'Template management',
-                'Notification history and analytics'
-            ],
-            endpoints: {
-                sendNotification: '/api/notifications/send',
-                testSms: '/admin/ops/test-otp'
-            }
-        };
-    });
-    console.log('DEBUG: COOKIE_PASSWORD in app.ts before buildAdminRouter:', process.env.COOKIE_PASSWORD);
-    // Log registered routes before starting
-    console.log('Routes before starting server:');
-    try {
-        const routes = app.printRoutes({ commonPrefix: false });
-        console.log('Registered routes:', routes);
-    }
-    catch (error) {
-        console.log('Error getting routes:', error);
-    }
-    // Create Socket.IO server using Fastify's HTTP server BEFORE starting
-    const io = new SocketIOServer(app.server, {
-        cors: {
-            origin: '*',
-        },
-        pingInterval: 10000,
-        pingTimeout: 5000,
-        transports: ['websocket', 'polling'],
-    });
-    // Attach Socket.IO to the app instance for access in routes BEFORE starting
-    app.decorate('io', io);
-    // Build AdminJS router AFTER registering socket but BEFORE starting the server
-    await buildAdminRouter(app);
+    console.log('✅ Monitoring dashboard route registered successfully');
     // Start the Fastify server and get the server instance
     try {
         await app.listen({ port: Number(PORT), host: '0.0.0.0' });
