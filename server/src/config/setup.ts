@@ -4,6 +4,7 @@ import AdminJSFastify from '@adminjs/fastify';
 import * as AdminJSMongoose from '@adminjs/mongoose';
 import * as Models from '../models/index.js';
 import { dark, light, noSidebar } from '@adminjs/themes';
+import { componentLoader, Components } from '../adminjs/components.js';
 
 AdminJS.registerAdapter(AdminJSMongoose);
 
@@ -38,13 +39,13 @@ export const admin = new AdminJS({
     ],
     pages: {
         'notification-center': {
-            component: '../adminjs/components/notification-center-component',
+            component: Components.NotificationCenterComponent,
             handler: async (_request, _reply, _context) => {
                 return { message: 'Welcome to Notification Center' };
             },
         },
         'monitoring': {
-            component: '../adminjs/components/monitoring-component', 
+            component: Components.MonitoringComponent, 
             handler: async (_request, _reply, _context) => {
                 return { 
                     message: 'Server Monitoring Dashboard',
@@ -68,6 +69,7 @@ export const admin = new AdminJS({
         //     component: './components/OpsToolsPage',
         // },
     },
+    componentLoader,
     branding: {
         companyName: 'Grocery Delivery App',
         withMadeWithLove: false,
@@ -80,6 +82,12 @@ export const admin = new AdminJS({
 export const buildAdminRouter = async(app: FastifyInstance)=>{
     console.log('🔧 Building AdminJS router...');
     console.log('🔍 Environment:', process.env.NODE_ENV);
+
+    // Build frontend components in development
+    if (process.env.NODE_ENV !== 'production') {
+        console.log('🔨 Building AdminJS components for development...');
+        admin.watch();
+    }
 
     console.log('🚀 ULTIMATE FIX: Using minimal AdminJS router without any authentication or session management...');
 
