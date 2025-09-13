@@ -36,18 +36,18 @@ export const admin = new AdminJS({
         { resource: Models.Order },
         { resource: Models.Counter },
     ],
-        pages: {
+    pages: {
         'notification-center': {
-            component: './pages/NotificationPage.jsx', // Explicitly include the extension
+            component: AdminJS.bundle('../adminjs/pages/NotificationPage.jsx'),
             handler: async (_request, _reply, _context) => {
                 return { message: 'Welcome to Notification Center' };
             },
         },
         'monitoring': {
-            component: './pages/MonitoringPage.jsx',
+            component: AdminJS.bundle('../adminjs/pages/MonitoringPageSimple.jsx'),
             handler: async (_request, _reply, _context) => {
                 return { 
-                    message: 'Server Monitoring Dashboard',
+                    message: 'Server Monitoring Dashboard Test',
                     timestamp: new Date().toISOString()
                 };
             },

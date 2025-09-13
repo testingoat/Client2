@@ -124,6 +124,16 @@ const start = async () => {
         console.error('Error registering routes:', error);
         process.exit(1);
     }
+    // Register monitoring routes
+    try {
+        const { monitoringRoutes } = await import('./api/routes/admin/monitoring.js');
+        await app.register(monitoringRoutes);
+        console.log('✅ Monitoring routes registered successfully');
+    }
+    catch (error) {
+        console.error('⚠️ Error registering monitoring routes:', error);
+        // Don't exit - continue without monitoring routes
+    }
     // Add admin debug route
     app.get('/admin/debug', async (_request, _reply) => {
         try {
