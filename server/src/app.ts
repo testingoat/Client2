@@ -1,7 +1,6 @@
 
 
 import 'dotenv/config';
-console.log(process.env);
 
 import { connectDB } from './config/connect.js';
 import fastify from 'fastify';

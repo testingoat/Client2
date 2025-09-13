@@ -10,6 +10,8 @@ AdminJS.registerAdapter(AdminJSMongoose);
 
 export const admin = new AdminJS({
     componentLoader: undefined, // Completely disable component loading
+    pages: {}, // ensure no custom pages mapping exists
+    dashboard: {}, // ensure no dashboard components
     resources:[
         {
             resource: Models.Customer,
@@ -121,6 +123,8 @@ export const admin = new AdminJS({
     defaultTheme: dark.id,
     availableThemes: [dark, light, noSidebar],
     rootPath: '/admin',
+    // Prevent AdminJS from attempting to bundle user components
+    assetsCDN: false as any,
 });
 
 export const buildAdminRouter = async(app: FastifyInstance)=>{

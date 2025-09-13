@@ -1,2 +1,2 @@
-// Empty components file - no ComponentLoader usage to prevent bundling errors
-export default {};
+// Explicitly export nothing to avoid AdminJS component bundling
+export default undefined;

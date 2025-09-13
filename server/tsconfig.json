@@ -20,5 +20,11 @@
     "noEmitOnError": false
   },
   "include": ["src/**/*.ts", "src/**/*.js"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "src/adminjs/**",
+    "src/config/setup.js"
+  ]
 }
