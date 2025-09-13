@@ -9,11 +9,10 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: '1G',
-      env_file: '.env.production',
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
-        // Intentionally DO NOT set other env vars to avoid overriding .env files
+        MONGO_URI: 'mongodb+srv://testingoat24:Qwe_2897@cluster6.l5jkmi9.mongodb.net/GoatgoatProduction?retryWrites=true&w=majority&appName=Cluster6',
       },
       // 📝 ENHANCED LOGGING CONFIGURATION
       error_file: './logs/🚨-production-error.log',
@@ -36,11 +35,10 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: '512M',
-      env_file: '.env.staging',
       env: {
         NODE_ENV: 'staging',
         PORT: 4000,
-        // Intentionally DO NOT set other env vars to avoid overriding .env files
+        MONGO_URI: 'mongodb+srv://testingoat24:Qwe_2897@cluster6.l5jkmi9.mongodb.net/GoatgoatStaging?retryWrites=true&w=majority&appName=Cluster6',
       },
       // 📝 ENHANCED LOGGING CONFIGURATION
       error_file: './logs/🚨-staging-error.log',
