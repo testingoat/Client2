@@ -1,6 +1,38 @@
 
 
-import 'dotenv/config';
+// Load environment-specific dotenv file
+import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
+
+// Get NODE_ENV from PM2 or default
+const NODE_ENV = process.env.NODE_ENV || 'development';
+console.log(`🌍 Environment detected: ${NODE_ENV}`);
+
+// Try loading environment-specific files in order of priority
+const envFiles = [
+    `.env.${NODE_ENV}`,        // .env.production, .env.staging, etc.
+    '.env.local',               // Local overrides (not in git)
+    '.env'                      // Default fallback
+];
+
+// Load environment files
+let loaded = false;
+for (const envFile of envFiles) {
+    const envPath = path.resolve(envFile);
+    if (fs.existsSync(envPath)) {
+        console.log(`🔧 Loading environment file: ${envPath}`);
+        dotenv.config({ path: envPath });
+        loaded = true;
+        // Don't break - allow multiple files to load (later ones override earlier ones)
+    } else {
+        console.log(`🔍 Environment file not found: ${envPath}`);
+    }
+}
+
+if (!loaded) {
+    console.warn(`⚠️ No .env files found! Using system environment variables only.`);
+}
 
 import { connectDB } from './config/connect.js';
 import fastify from 'fastify';
