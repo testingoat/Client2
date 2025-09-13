@@ -31,6 +31,12 @@ rm -rf dist/
 rm -rf node_modules/.cache/
 rm -rf .adminjs/
 
+# 3.1. Remove any potential AdminJS component files
+echo "🧹 Cleaning AdminJS component artifacts..."
+find . -name "*monitoring-component*" -type f -delete 2>/dev/null || true
+find . -name "*.bundle.js" -type f -delete 2>/dev/null || true
+rm -rf .adminjs-* 2>/dev/null || true
+
 # 4. Verify our fix files are in place
 echo ""
 echo "3️⃣ VERIFYING FIX FILES..."
@@ -40,6 +46,19 @@ sed -n '11,13p' src/config/setup.ts
 
 echo "📋 Contents of src/adminjs/components.js:"
 cat src/adminjs/components.js
+
+# 4.1. Verify Firebase service account file exists
+echo ""
+echo "📋 Checking Firebase service account file:"
+if [ -f "secure/firebase-service-account.json" ]; then
+    echo "✅ Firebase service account file exists"
+    echo "📋 File size: $(stat -f%z secure/firebase-service-account.json 2>/dev/null || stat -c%s secure/firebase-service-account.json 2>/dev/null) bytes"
+else
+    echo "❌ Firebase service account file missing at secure/firebase-service-account.json"
+    echo "🔧 Creating secure directory if needed..."
+    mkdir -p secure
+    echo "⚠️ You need to upload your Firebase service account JSON file to secure/firebase-service-account.json"
+fi
 
 # 5. Clean reinstall of dependencies (if needed)
 echo ""

@@ -9,6 +9,7 @@ import { dark, light, noSidebar } from '@adminjs/themes';
 AdminJS.registerAdapter(AdminJSMongoose);
 
 export const admin = new AdminJS({
+    componentLoader: undefined, // Completely disable component loading
     resources:[
         {
             resource: Models.Customer,
@@ -70,8 +71,7 @@ export const admin = new AdminJS({
                             return {
                                 redirectUrl: '/admin/monitoring-dashboard'
                             };
-                        },
-                        component: false
+                        }
                     }
                 },
                 properties: {
