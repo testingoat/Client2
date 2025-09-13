@@ -37,12 +37,33 @@ export const admin = new AdminJS({
         { resource: Models.Counter },
     ],
     branding: {
-        companyName: 'Grocery Delivery App',
+        companyName: 'GoatGoat Admin',
         withMadeWithLove: false,
+        logo: false,
+        favicon: '/favicon.ico',
     },
-    defaultTheme:dark.id,
-    availableThemes: [dark,light,noSidebar],
-    rootPath:'/admin',
+    locale: {
+        language: 'en',
+        availableLanguages: ['en'],
+        translations: {
+            en: {
+                labels: {
+                    Customer: 'Customer',
+                    DeliveryPartner: 'Delivery Partner', 
+                    Admin: 'Admin',
+                    Branch: 'Branch',
+                    Product: 'Product',
+                    Category: 'Category',
+                    Order: 'Order',
+                    Counter: 'Counter',
+                    GoatgoatStaging: 'GoatGoat',
+                }
+            }
+        }
+    },
+    defaultTheme: dark.id,
+    availableThemes: [dark, light, noSidebar],
+    rootPath: '/admin',
 });
 
 export const buildAdminRouter = async(app: FastifyInstance)=>{
