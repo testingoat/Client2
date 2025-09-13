@@ -1,8 +1,7 @@
-import { ComponentLoader } from 'adminjs';
+// Completely empty components file to prevent AdminJS from loading any components
+// No ComponentLoader usage to avoid bundling errors
 
-const componentLoader = new ComponentLoader();
-
-// Empty components object - no custom components loaded to prevent errors
 const Components = {};
 
-export { componentLoader, Components };
+export { Components };
+export default Components;

@@ -9,6 +9,7 @@ import { dark, light, noSidebar } from '@adminjs/themes';
 AdminJS.registerAdapter(AdminJSMongoose);
 
 export const admin = new AdminJS({
+    componentLoader: false, // Disable component loading entirely
     resources:[
         {
             resource: Models.Customer,
