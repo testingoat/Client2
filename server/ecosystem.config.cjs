@@ -4,7 +4,7 @@ module.exports = {
       // 🐐 PRODUCTION GOATGOAT APP
       name: 'goatgoat-production',
       script: './dist/app.js',
-      cwd: '/var/www/goatgoat-app/server',
+      cwd: '/var/www/goatgoat-production/server',
       instances: 1,
       autorestart: true,
       watch: false,
@@ -14,7 +14,7 @@ module.exports = {
         PORT: 3000,
         MONGO_URI: 'mongodb+srv://testingoat24:Qwe_2897@cluster6.l5jkmi9.mongodb.net/GoatgoatProduction?retryWrites=true&w=majority&appName=Cluster6',
         FAST2SMS_API_KEY: 'TBXtyM2OVn0ra5SPdRCH48pghNkzm3w1xFoKIsYJGDEeb7Lvl6wShBusoREfqr0kO3M5jJdexvGQctbn',
-        FIREBASE_SERVICE_ACCOUNT_PATH: '/var/www/goatgoat-app/server/secure/firebase-service-account.json',
+        FIREBASE_SERVICE_ACCOUNT_PATH: '/var/www/goatgoat-production/server/secure/firebase-service-account.json',
         DISABLE_FIREBASE: 'false',
         // 🔐 JWT SECRETS FOR TOKEN GENERATION
         ACCESS_TOKEN_SECRET: 'goatgoat_super_secret_access_key_production_2024',
@@ -36,7 +36,7 @@ module.exports = {
       // 🧪 STAGING GOATGOAT APP 🟢
       name: 'goatgoat-staging',
       script: './dist/app.js',
-      cwd: '/var/www/goatgoat-app/server',
+      cwd: '/var/www/goatgoat-staging/server',
       instances: 1,
       autorestart: true,
       watch: false,
@@ -46,7 +46,7 @@ module.exports = {
         PORT: 4000,
         MONGO_URI: 'mongodb+srv://testingoat24:Qwe_2897@cluster6.l5jkmi9.mongodb.net/GoatgoatStaging?retryWrites=true&w=majority&appName=Cluster6',
         FAST2SMS_API_KEY: 'TBXtyM2OVn0ra5SPdRCH48pghNkzm3w1xFoKIsYJGDEeb7Lvl6wShBusoREfqr0kO3M5jJdexvGQctbn',
-        FIREBASE_SERVICE_ACCOUNT_PATH: '/var/www/goatgoat-app/server/secure/firebase-service-account.json',
+        FIREBASE_SERVICE_ACCOUNT_PATH: '/var/www/goatgoat-staging/server/secure/firebase-service-account.json',
         DISABLE_FIREBASE: 'false',
         // 🔐 JWT SECRETS FOR TOKEN GENERATION
         ACCESS_TOKEN_SECRET: 'goatgoat_super_secret_access_key_staging_2024',
@@ -66,4 +66,3 @@ module.exports = {
     },
   ],
 };
-
