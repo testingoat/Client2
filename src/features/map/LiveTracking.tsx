@@ -1,21 +1,21 @@
-import {View, Text, StyleSheet, ScrollView, Linking, Alert} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {useAuthStore} from '@state/authStore';
-import {getOrderById} from '@service/orderService';
-import {Colors, Fonts} from '@utils/Constants';
+import { View, Text, StyleSheet, ScrollView, Linking, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useAuthStore } from '@state/authStore';
+import { getOrderById } from '@service/orderService';
+import { Colors, Fonts } from '@utils/Constants';
 import LiveHeader from './LiveHeader';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {RFValue} from 'react-native-responsive-fontsize';
+import { RFValue } from 'react-native-responsive-fontsize';
 import CustomText from '@components/ui/CustomText';
 import OrderSummary from './OrderSummary';
 import DeliveryDetails from './DeliveryDetails';
 import LiveMap from './LiveMap';
 import OrderProgressTimeline from './OrderProgressTimeline';
 import CustomButton from '@components/ui/CustomButton';
-import {calculateDistance, calculateETA, formatETATime} from '@utils/etaCalculator';
+import { calculateDistance, calculateETA, formatETATime } from '@utils/etaCalculator';
 
 const LiveTracking = () => {
-  const {currentOrder, setCurrentOrder, user} = useAuthStore();
+  const { currentOrder, setCurrentOrder, user } = useAuthStore();
   const [dynamicETA, setDynamicETA] = useState<string>('');
 
   const fetchOrderDetails = async () => {
@@ -108,6 +108,7 @@ const LiveTracking = () => {
         title={msg}
         secondTitle={time}
         eta={dynamicETA}
+        hideBack
       />
 
       <ScrollView
@@ -134,7 +135,7 @@ const LiveTracking = () => {
               size={RFValue(20)}
             />
           </View>
-          <View style={{width: '82%'}}>
+          <View style={{ width: '82%' }}>
             <CustomText
               numberOfLines={1}
               variant="h7"
@@ -184,7 +185,7 @@ const LiveTracking = () => {
               size={RFValue(20)}
             />
           </View>
-          <View style={{width: '82%'}}>
+          <View style={{ width: '82%' }}>
             <CustomText variant="h7" fontFamily={Fonts.SemiBold}>
               Order Total: ₹{currentOrder?.totalPrice || 0}
             </CustomText>
@@ -210,7 +211,7 @@ const LiveTracking = () => {
             />
           </View>
 
-          <View style={{width: '82%'}}>
+          <View style={{ width: '82%' }}>
             <CustomText variant="h7" fontFamily={Fonts.SemiBold}>
               Delivery Instructions
             </CustomText>
@@ -231,7 +232,7 @@ const LiveTracking = () => {
             />
           </View>
 
-          <View style={{width: '82%'}}>
+          <View style={{ width: '82%' }}>
             <CustomText variant="h7" fontFamily={Fonts.SemiBold}>
               Enjoying our service?
             </CustomText>
@@ -244,7 +245,7 @@ const LiveTracking = () => {
         <CustomText
           fontFamily={Fonts.SemiBold}
           variant="h6"
-          style={{opacity: 0.6, marginTop: 20}}>
+          style={{ opacity: 0.6, marginTop: 20 }}>
           Goat Grocery - Fast & Fresh Delivery
         </CustomText>
       </ScrollView>

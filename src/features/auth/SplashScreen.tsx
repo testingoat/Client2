@@ -1,14 +1,14 @@
-import {View, Text, StyleSheet, Image, Alert} from 'react-native';
-import React, {FC, useEffect} from 'react';
-import {Colors} from '@utils/Constants';
+import { View, Text, StyleSheet, Image, Alert } from 'react-native';
+import React, { FC, useEffect } from 'react';
+import { Colors } from '@utils/Constants';
 import Logo from '@assets/images/logo.jpeg';
-import {screenHeight, screenWidth} from '@utils/Scaling';
-import { resetAndNavigate} from '@utils/NavigationUtils';
+import { screenHeight, screenWidth } from '@utils/Scaling';
+import { resetAndNavigate } from '@utils/NavigationUtils';
 import GeoLocation from '@react-native-community/geolocation';
-import {useAuthStore} from '@state/authStore';
-import {tokenStorage} from '@state/storage';
-import {jwtDecode} from 'jwt-decode';
-import {refetchUser, refresh_tokens} from '@service/authService';
+import { useAuthStore } from '@state/authStore';
+import { tokenStorage } from '@state/storage';
+import { jwtDecode } from 'jwt-decode';
+import { refetchUser, refresh_tokens } from '@service/authService';
 
 GeoLocation.setRNConfiguration({
   skipPermissionRequests: false,
@@ -22,7 +22,7 @@ interface DecodedToken {
 }
 
 const SplashScreen: FC = () => {
-  const {user, setUser} = useAuthStore();
+  const { user, setUser } = useAuthStore();
 
   const tokenCheck = async () => {
     const accessToken = tokenStorage.getString('accessToken') as string;
@@ -53,12 +53,12 @@ const SplashScreen: FC = () => {
         // If token is still valid, refetch user data
         await refetchUser(setUser);
       }
-      
+
       // Get updated user state
       const updatedUser = useAuthStore.getState().user;
 
       if (updatedUser?.role === 'Customer') {
-        resetAndNavigate('ProductDashboard');
+        resetAndNavigate('MainStack');
       } else if (updatedUser?.role) {
         resetAndNavigate('DeliveryDashboard');
       } else {

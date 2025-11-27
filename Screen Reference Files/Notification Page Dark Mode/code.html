@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notifications</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#fac638", "background-light": "#f8f8f5", "background-dark": "#121212", "card-light": "#FFFFFF", "card-dark": "#1E1E1E", "text-light": "#1F2937", "text-dark": "#E5E7EB", "text-secondary-light": "#6B7280", "text-secondary-dark": "#9CA3AF"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="max-w-sm mx-auto">
+<div class="sticky top-0 bg-background-light dark:bg-background-dark z-10 p-4">
+<div class="flex justify-between items-center mb-4">
+<h1 class="text-2xl font-bold text-text-light dark:text-text-dark">Notifications</h1>
+<div class="flex items-center space-x-4">
+<button class="text-primary font-semibold text-sm">Clear All</button>
+<button class="text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons">filter_list</span>
+</button>
+</div>
+</div>
+</div>
+<div class="px-4 pb-4 space-y-3">
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg shadow-sm">
+<div class="flex items-start space-x-4">
+<div class="bg-primary/20 p-2 rounded-full">
+<span class="material-icons text-primary">sell</span>
+</div>
+<div class="flex-1">
+<h2 class="font-semibold text-text-light dark:text-text-dark">Special Offer</h2>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Get 20% off on your next order! Use code SAVE20</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">3m ago</p>
+</div>
+<div class="flex flex-col space-y-2 -mt-1 -mr-1">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons text-xl">done</span>
+</button>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 text-red-500">
+<span class="material-icons text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg shadow-sm">
+<div class="flex items-start space-x-4">
+<div class="bg-primary/20 p-2 rounded-full">
+<span class="material-icons text-primary">delivery_dining</span>
+</div>
+<div class="flex-1">
+<h2 class="font-semibold text-text-light dark:text-text-dark">Delivery Update</h2>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Your order is out for delivery and will arrive soon.</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">3m ago</p>
+</div>
+<div class="flex flex-col space-y-2 -mt-1 -mr-1">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons text-xl">done</span>
+</button>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 text-red-500">
+<span class="material-icons text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg shadow-sm">
+<div class="flex items-start space-x-4">
+<div class="bg-primary/20 p-2 rounded-full">
+<span class="material-icons text-primary">shopping_bag</span>
+</div>
+<div class="flex-1">
+<h2 class="font-semibold text-text-light dark:text-text-dark">Order Confirmed</h2>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Your order #12345 has been confirmed.</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">3m ago</p>
+</div>
+<div class="flex flex-col space-y-2 -mt-1 -mr-1">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons text-xl">done</span>
+</button>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 text-red-500">
+<span class="material-icons text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg shadow-sm">
+<div class="flex items-start space-x-4">
+<div class="bg-primary/20 p-2 rounded-full">
+<span class="material-icons text-primary">sell</span>
+</div>
+<div class="flex-1">
+<h2 class="font-semibold text-text-light dark:text-text-dark">Special Offer</h2>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Get 20% off on your next order! Use code SAVE20</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">3m ago</p>
+</div>
+<div class="flex flex-col space-y-2 -mt-1 -mr-1">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons text-xl">done</span>
+</button>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 text-red-500">
+<span class="material-icons text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg shadow-sm">
+<div class="flex items-start space-x-4">
+<div class="bg-primary/20 p-2 rounded-full">
+<span class="material-icons text-primary">delivery_dining</span>
+</div>
+<div class="flex-1">
+<h2 class="font-semibold text-text-light dark:text-text-dark">Delivery Update</h2>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Your order is out for delivery and will arrive soon.</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">3m ago</p>
+</div>
+<div class="flex flex-col space-y-2 -mt-1 -mr-1">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons text-xl">done</span>
+</button>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 text-red-500">
+<span class="material-icons text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg shadow-sm">
+<div class="flex items-start space-x-4">
+<div class="bg-primary/20 p-2 rounded-full">
+<span class="material-icons text-primary">shopping_bag</span>
+</div>
+<div class="flex-1">
+<h2 class="font-semibold text-text-light dark:text-text-dark">Order Confirmed</h2>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Your order #12345 has been confirmed.</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">3m ago</p>
+</div>
+<div class="flex flex-col space-y-2 -mt-1 -mr-1">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons text-xl">done</span>
+</button>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 text-red-500">
+<span class="material-icons text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-lg shadow-sm">
+<div class="flex items-start space-x-4">
+<div class="bg-primary/20 p-2 rounded-full">
+<span class="material-icons text-primary">sell</span>
+</div>
+<div class="flex-1">
+<h2 class="font-semibold text-text-light dark:text-text-dark">Special Offer</h2>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Get 20% off on your next order! Use code SAVE20</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">20m ago</p>
+</div>
+<div class="flex flex-col space-y-2 -mt-1 -mr-1">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons text-xl">done</span>
+</button>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 text-red-500">
+<span class="material-icons text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

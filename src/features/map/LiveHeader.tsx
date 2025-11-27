@@ -1,21 +1,22 @@
-import {View, Text, StyleSheet, SafeAreaView, Pressable} from 'react-native';
-import React, {FC} from 'react';
-import {useAuthStore} from '@state/authStore';
-import {navigate} from '@utils/NavigationUtils';
+import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
+import React, { FC } from 'react';
+import { useAuthStore } from '@state/authStore';
+import { navigate } from '@utils/NavigationUtils';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {RFValue} from 'react-native-responsive-fontsize';
+import { RFValue } from 'react-native-responsive-fontsize';
 import CustomText from '@components/ui/CustomText';
-import {Fonts} from '@utils/Constants';
+import { Fonts } from '@utils/Constants';
 
 const LiveHeader: FC<{
   type: 'Customer' | 'Delivery';
   title: string;
   secondTitle?: string;
   eta?: string;
-}> = ({title, type, secondTitle, eta}) => {
+  hideBack?: boolean;
+}> = ({ title, type, secondTitle, eta, hideBack }) => {
   const isCustomer = type === 'Customer';
 
-  const {currentOrder, setCurrentOrder} = useAuthStore();
+  const { currentOrder, setCurrentOrder } = useAuthStore();
 
   // Determine which text to display - dynamic ETA or fallback to secondTitle
   const displayText = eta ? `Delivery in ${eta}` : (secondTitle || 'Delivery in 10 minutes');
@@ -23,24 +24,26 @@ const LiveHeader: FC<{
   return (
     <SafeAreaView>
       <View style={styles.headerContainer}>
-        <Pressable
-          style={styles.backButton}
-          onPress={() => {
-            if (isCustomer) {
-              navigate('ProductDashboard');
-              if (currentOrder?.status == 'delivered') {
-                setCurrentOrder(null);
+        {!hideBack && (
+          <Pressable
+            style={styles.backButton}
+            onPress={() => {
+              if (isCustomer) {
+                navigate('ProductDashboard');
+                if (currentOrder?.status == 'delivered') {
+                  setCurrentOrder(null);
+                }
+                return;
               }
-              return;
-            }
-            navigate('DeliveryDashboard');
-          }}>
-          <Icon
-            name="chevron-back"
-            size={RFValue(16)}
-            color={isCustomer ? '#fff' : '#000'}
-          />
-        </Pressable>
+              navigate('DeliveryDashboard');
+            }}>
+            <Icon
+              name="chevron-back"
+              size={RFValue(16)}
+              color={isCustomer ? '#fff' : '#000'}
+            />
+          </Pressable>
+        )}
 
         <CustomText
           variant="h8"
@@ -56,7 +59,7 @@ const LiveHeader: FC<{
           {displayText}
         </CustomText>
 
-        
+
       </View>
     </SafeAreaView>
   );

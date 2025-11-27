@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCM Integration Lifecycle Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Light Slate Background */
+            color: #1e293b;
+        }
+        .section-card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 4, 0, 0.03);
+            transition: all 0.3s ease;
+        }
+        .phase-item {
+            position: relative;
+            padding-left: 2rem;
+        }
+        .phase-item::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0.25rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #06b6d4; /* Teal 500 */
+            border: 2px solid #ffffff;
+            z-index: 10;
+        }
+        .phase-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 0.8rem;
+            top: 1rem;
+            height: calc(100% - 1.25rem);
+            width: 2px;
+            background-color: #cbd5e1; /* Slate 300 */
+            z-index: 5;
+        }
+        .phase-item-title {
+            color: #0f172a; /* Slate 900 */
+        }
+        .tab-btn.active {
+            background-color: #06b6d4; /* Teal 500 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(6, 182, 212, 0.3), 0 2px 4px -2px rgba(6, 182, 212, 0.2);
+        }
+        .card-link:hover {
+            background-color: #f1f5f9; /* Slate 100 on hover */
+        }
+        .code-container {
+            position: relative;
+            background-color: #1e293b; /* Slate 800 for console look */
+            color: #e2e8f0;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            margin-top: 1rem;
+        }
+        .code-container pre {
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background-color: #334155; /* Slate 700 */
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            transition: background-color 0.2s;
+        }
+        .copy-btn:hover {
+            background-color: #475569; /* Slate 600 */
+        }
+        /* Custom Accordion Styling for Details */
+        details summary {
+            cursor: pointer;
+            list-style: none; /* Hide default marker */
+            position: relative;
+        }
+        details summary::-webkit-details-marker {
+            display: none; /* Hide marker in Webkit browsers */
+        }
+        details summary::after {
+            content: '▼';
+            position: absolute;
+            right: 0;
+            font-size: 0.75rem;
+            transition: transform 0.2s ease;
+        }
+        details[open] summary::after {
+            content: '▲';
+        }
+        .custom-table th, .custom-table td {
+            padding: 0.75rem;
+            text-align: left;
+        }
+        .custom-table th {
+            background-color: #f1f5f9; /* Slate 100 */
+            font-weight: 600;
+        }
+        .custom-table tr:nth-child(even) {
+            background-color: #f8fafc; /* Light Slate */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-10 max-w-6xl">
+
+        <header class="text-center mb-12">
+            <span class="text-sm font-semibold uppercase text-teal-600 tracking-widest">GoatGoat Seller App</span>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800 mt-1">FCM Complete Integration Summary</h1>
+            <p class="text-lg text-slate-500 mt-2">End-to-end lifecycle documentation: from Discovery to Production Readiness.</p>
+            <div class="mt-4 inline-flex items-center space-x-2 p-2 bg-green-100 text-green-800 rounded-full font-bold">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span>Status: Complete & Production Ready</span>
+            </div>
+        </header>
+
+        <!-- PROJECT TIMELINE / PHASES -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-slate-700 mb-6 text-center">FCM Implementation Phases (P1.0 - P5.2)</h2>
+            <div class="section-card p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+                <!-- Phase Group 1 -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-extrabold text-slate-800 border-b pb-2 mb-4">Foundation</h3>
+                    <div class="phase-item">
+                        <p class="phase-item-title font-bold text-sm">Phase 1: Discovery & Mapping</p>
+                        <p class="text-slate-500 text-xs">Defined requirements, mapped tech stack, and planned architecture.</p>
+                    </div>
+                    <div class="phase-item">
+                        <p class="phase-item-title font-bold text-sm">Phase 2: Minimal Scaffold</p>
+                        <p class="text-slate-500 text-xs">Server setup, dependency installation, and basic environment configuration.</p>
+                    </div>
+                    <div class="phase-item">
+                        <p class="phase-item-title font-bold text-sm">Phase 3: API Endpoints</p>
+                        <p class="text-slate-500 text-xs">Created and verified all core APIs: GET tokens/history, POST send (dry-run ready).</p>
+                    </div>
+                </div>
+
+                <!-- Phase Group 2 (FIXED) -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-extrabold text-slate-800 border-b pb-2 mb-4">Dashboard Build</h3>
+                    <div class="phase-item bg-teal-50 p-2 rounded-lg">
+                        <p class="phase-item-title font-bold text-sm text-teal-800">Phase 4: Frontend Integration</p>
+                        <p class="text-teal-700 text-xs">Complete Notification Form UI with styling and dry-run submission logic.</p>
+                    </div>
+                    <div class="phase-item bg-teal-50 p-2 rounded-lg">
+                        <p class="phase-item-title font-bold text-sm text-teal-800">Phase 5.1: Target Selection</p>
+                        <p class="text-teal-700 text-xs">Implemented dynamic Seller and Token multi-select controls.</p>
+                    </div>
+                    <div class="phase-item bg-teal-50 p-2 rounded-lg">
+                        <p class="phase-item-title font-bold text-sm text-teal-800">Phase 5.2: LIVE Mode</p>
+                        <p class="text-teal-700 text-xs">Completed final safety switch to enable live notification sending.</p>
+                    </div>
+                </div>
+
+                <!-- Critical Handoff -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-extrabold text-slate-800 border-b pb-2 mb-4">Critical Fixes</h3>
+                    <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                        <p class="font-bold text-red-700 text-sm">Critical Error Resolution</p>
+                        <p class="text-red-600 text-xs mt-1">Resolved **SellerApp2 Keyboard UI Bug** (Login/OTP screens) using the mandatory **KAV + ScrollView** pattern.</p>
+                        <p class="text-xs text-red-500 mt-2">Solution is documented in `Bug-fixed.md`.</p>
+                    </div>
+                     <div class="p-4 bg-slate-100 rounded-lg">
+                        <p class="font-bold text-slate-700 text-sm">Deployment Environment</p>
+                        <p class="text-slate-600 text-xs mt-1">Staging Server: <code class="bg-slate-200 rounded px-1">root@147.93.108.121</code></p>
+                        <p class="text-slate-600 text-xs">Local Path: <code class="bg-slate-200 rounded px-1">C:\\Seller App 2\\SellerApp2</code></p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <div class="border-t border-slate-200 my-10"></div>
+
+        <!-- FUTURE ROADMAP -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-slate-700 mb-6 text-center">Future Roadmap & Long-Term Strategy</h2>
+
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+                <div class="flex flex-wrap justify-center mb-6">
+                    <button id="enhancements-btn" class="tab-btn active px-6 py-3 rounded-lg text-sm font-semibold m-2">Enhancements</button>
+                    <button id="performance-btn" class="tab-btn px-6 py-3 rounded-lg text-sm font-semibold m-2 bg-slate-100 text-slate-600">Performance</button>
+                    <button id="security-btn" class="tab-btn px-6 py-3 rounded-lg text-sm font-semibold m-2 bg-slate-100 text-slate-600">Security</button>
+                </div>
+
+                <!-- Enhancements Content -->
+                <div id="enhancements-content">
+                    <h3 class="text-xl font-semibold text-teal-600 mb-4">High-Impact Feature Enhancements</h3>
+                    <p class="text-slate-600 mb-4">Focus on improving content creation and user feedback loops.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-teal-50 border-l-2 border-teal-500 rounded-lg">
+                            <p class="font-bold text-teal-800">Media & Custom Action Support</p>
+                            <p class="text-xs text-teal-700 mt-1">Allow for image/video attachments and deep links/custom action buttons.</p>
+                        </div>
+                        <div class="p-4 bg-teal-50 border-l-2 border-teal-500 rounded-lg">
+                            <p class="font-bold text-teal-800">Analytics Dashboard</p>
+                            <p class="text-xs text-teal-700 mt-1">Implement monitoring for click-through rates and notification engagement.</p>
+                        </div>
+                        <div class="p-4 bg-teal-50 border-l-2 border-teal-500 rounded-lg">
+                            <p class="font-bold text-teal-800">Template Management</p>
+                            <p class="text-xs text-teal-700 mt-1">Create, save, and reuse pre-defined notification templates.</p>
+                        </div>
+                        <div class="p-4 bg-teal-50 border-l-2 border-teal-500 rounded-lg">
+                            <p class="font-bold text-teal-800">User Segmentation</p>
+                            <p class="text-xs text-teal-700 mt-1">Advanced targeting based on user behavior metrics (e.g., active vs. dormant sellers).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Content -->
+                <div id="performance-content" class="hidden">
+                    <h3 class="text-xl font-semibold text-teal-600 mb-4">Scalability and Speed Optimizations</h3>
+                    <ul class="space-y-2 text-slate-600 list-disc pl-5">
+                        <li>**Redis Caching**: Implement caching for frequently accessed statistics and FCM token data.</li>
+                        <li>**Background Processing**: Utilize message queues to handle large notification send batches asynchronously.</li>
+                        <li>**WebSocket Updates**: Integrate WebSockets for real-time history and status updates on the dashboard.</li>
+                        <li>**Database Indexing**: Optimize indexing strategy on the FCM token collection for fast lookups.</li>
+                    </ul>
+                </div>
+
+                <!-- Security Content -->
+                <div id="security-content" class="hidden">
+                    <h3 class="text-xl font-semibold text-teal-600 mb-4">Access Control and Hardening</h3>
+                    <ul class="space-y-2 text-slate-600 list-disc pl-5">
+                        <li>**Role-based Access Control (RBAC)**: Limit FCM dashboard access and features based on admin roles.</li>
+                        <li>**Rate Limiting**: Implement server-side rate limiting on the send API to prevent notification spam/abuse.</li>
+                        <li>**Token Encryption**: Ensure all stored FCM tokens are encrypted at rest in the database.</li>
+                        <li>**IP Whitelisting**: Restrict access to the dashboard management interface to authorized IP addresses.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <div class="border-t border-slate-200 my-10"></div>
+
+        <!-- NEW COMPREHENSIVE TECHNICAL REFERENCE -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-slate-700 mb-6 text-center">Comprehensive Technical Reference Manual</h2>
+            <div class="section-card p-6 divide-y divide-slate-200 space-y-4">
+
+                <!-- CRITICAL SAFETY HIGHLIGHT -->
+                <div class="p-4 bg-green-100 border-4 border-green-400 rounded-xl shadow-md">
+                    <h3 class="text-xl font-extrabold text-green-700 mb-2">
+                        <span class="text-2xl mr-2">🔒</span> KILL-SWITCH & SAFETY VERIFICATION
+                    </h3>
+                    <div class="flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0 text-lg font-bold">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-green-800">FCM Mode: LIVE ✅</span>
+                            <span class="text-green-600 text-base">(Mode switched successfully!)</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-green-800">Max Tokens: 50 ✅</span>
+                            <span class="text-green-600 text-base">(Safety limit active!)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accordion 1: Overview & Status -->
+                <details class="pt-4">
+                    <summary class="text-xl font-extrabold text-slate-800 py-2">
+                        1. Project Overview & Status (PRODUCTION-READY)
+                    </summary>
+                    <div class="py-4 px-2 space-y-4">
+                        <table class="w-full custom-table border border-slate-300 rounded-lg overflow-hidden text-sm">
+                            <thead class="bg-slate-100">
+                                <tr><th>Item</th><th>Detail</th><th>Purpose</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>FCM Dashboard</td><td>admin dashboard for seller push notifications</td><td>Firebase Cloud Messaging (FCM)</td></tr>
+                                <tr><td>Scope</td><td>Staging server only (safe by default)</td><td>Development and Testing Boundary</td></tr>
+                                <tr><td>Tech Stack</td><td>Node 20.x, Fastify, MongoDB, Firebase Admin SDK, AdminJS, Bootstrap 5</td><td>Backend and Frontend Frameworks</td></tr>
+                                <tr><td>Live URL</td><td><code class="text-blue-600">https://staging.goatgoat.tech/admin/fcm-management</code></td><td>Direct Access Link</td></tr>
+                                <tr><td>AdminJS Panel</td><td><code class="text-blue-600">https://staging.goatgoat.tech/admin</code> (untouched)</td><td>Confirms AdminJS isolation</td></tr>
+                                <tr><td>Default Mode</td><td><code class="text-orange-600">DRY-RUN</code> (<code class="font-mono">FCM_LIVE_MODE=false</code>)</td><td>Safety Default Configuration</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+
+                <!-- Accordion 2: Architecture, Safety & Feature Inventory -->
+                <details class="pt-4">
+                    <summary class="text-xl font-extrabold text-slate-800 py-2">
+                        2. Architecture & Feature Inventory
+                    </summary>
+                    <div class="py-4 px-2 space-y-6">
+                        <h4 class="text-lg font-semibold text-slate-700">2.1. Architecture & Safety Measures</h4>
+                        <table class="w-full custom-table border border-slate-300 rounded-lg overflow-hidden text-sm">
+                            <thead><tr><th>Safety Measure</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>Kill-Switch</td><td>✅ Instant via <code class="font-mono">.env.staging</code> change + PM2 restart</td></tr>
+                                <tr><td>Token Limit</td><td>✅ **50 tokens max** per send (env var)</td></tr>
+                                <tr><td>Audit Logging</td><td>✅ <code class="font-mono">[FCM-LIVE-AUDIT]</code> in PM2 logs</td></tr>
+                                <tr><td>AdminJS Isolation</td><td>✅ Zero touch – panel fully operational</td></tr>
+                                <tr><td>Source → Dist Sync</td><td>✅ Rebuild via <code class="font-mono">scripts/build-staging.sh</code></td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-lg font-semibold text-slate-700 mt-6">2.2. Feature Inventory</h4>
+                        <table class="w-full custom-table border border-slate-300 rounded-lg overflow-hidden text-sm">
+                            <thead><tr><th>Section</th><th>Features</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>Statistics Card</td><td>Live token count, seller count, FCM mode</td><td>✅</td></tr>
+                                <tr><td>Tokens Table</td><td>21 tokens, seller email, platform, copy icon</td><td>✅</td></tr>
+                                <tr><td>History Table</td><td>Live sends only (dry-run not logged)</td><td>✅</td></tr>
+                                <tr><td>Send Form</td><td>Title, message, targeting (all/sellers/tokens)</td><td>✅</td></tr>
+                                <tr><td>Target Selection</td><td>Multi-select sellers/tokens</td><td>✅</td></tr>
+                                <tr><td>Auto-Refresh</td><td>30 s timer + green pulse</td><td>✅</td></tr>
+                                <tr><td>Copy Token</td><td>One-click 📋 + micro-toast</td><td>✅</td></tr>
+                                <tr><td>Mode Toggle</td><td>Env var only (no UI write)</td><td>✅</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+
+                <!-- Accordion 3: APIs & Configuration -->
+                <details class="pt-4">
+                    <summary class="text-xl font-extrabold text-slate-800 py-2">
+                        3. API Endpoints & Environment Variables
+                    </summary>
+                    <div class="py-4 px-2 space-y-6">
+                        <h4 class="text-lg font-semibold text-slate-700">3.1. Core API Endpoints</h4>
+                        <table class="w-full custom-table border border-slate-300 rounded-lg overflow-hidden text-sm">
+                            <thead>
+                                <tr><th>Method</th><th>URL</th><th>Description</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>GET</td><td><code class="font-mono">/admin/fcm-management/api/stats</code></td><td>Token & seller counts</td></tr>
+                                <tr><td>GET</td><td><code class="font-mono">/admin/fcm-management/api/tokens</code></td><td>Paginated token list</td></tr>
+                                <tr><td>GET</td><td><code class="font-mono">/admin/fcm-management/api/history</code></td><td>Notification history (live only)</td></tr>
+                                <tr><td>POST</td><td><code class="font-mono">/admin/fcm-management/api/send</code></td><td>Send notification (env-controlled)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-lg font-semibold text-slate-700 mt-6">3.2. Environment Variables</h4>
+                        <div id="env-vars-container" class="code-container">
+                            <button class="copy-btn" onclick="copyCommand('env-vars-code', this)">Copy</button>
+                            <pre id="env-vars-code" class="text-sm font-mono text-green-400">
+# /var/www/goatgoat-staging/server/.env.staging
+FCM_LIVE_MODE=false        # false = dry-run (safe), true = live pushes
+FCM_MAX_TOKENS_PER_SEND=50 # safety ceiling (edit anytime)
+                            </pre>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Accordion 4: Operational Commands -->
+                <details class="pt-4">
+                    <summary class="text-xl font-extrabold text-slate-800 py-2">
+                        4. Operational Commands (Kill-Switch, Deploy, Test)
+                    </summary>
+                    <div class="py-4 px-2 space-y-6">
+                        <h4 class="text-lg font-semibold text-slate-700">4.1. Kill-Switch Commands</h4>
+                        <div id="kill-off-container" class="code-container">
+                            <button class="copy-btn" onclick="copyCommand('kill-off-code', this)">Copy</button>
+                            <pre id="kill-off-code" class="text-sm font-mono text-green-400">
+# INSTANT OFF (dry-run mode)
+ssh root@147.93.108.121 "sed -i 's/FCM_LIVE_MODE=true/FCM_LIVE_MODE=false/' /var/www/goatgoat-staging/server/.env.staging && pm2 restart goatgoat-staging"
+                            </pre>
+                        </div>
+                        <div id="kill-on-container" class="code-container">
+                            <button class="copy-btn" onclick="copyCommand('kill-on-code', this)">Copy</button>
+                            <pre id="kill-on-code" class="text-sm font-mono text-green-400">
+# INSTANT ON (live mode)
+ssh root@147.93.108.121 "sed -i 's/FCM_LIVE_MODE=false/FCM_LIVE_MODE=true/' /var/www/goatgoat-staging/server/.env.staging && pm2 restart goatgoat-staging"
+                            </pre>
+                        </div>
+
+                        <h4 class="text-lg font-semibold text-slate-700 mt-6">4.2. Build & Deploy Commands</h4>
+                        <div id="deploy-container" class="code-container">
+                            <button class="copy-btn" onclick="copyCommand('deploy-code', this)">Copy</button>
+                            <pre id="deploy-code" class="text-sm font-mono text-green-400">
+# 1. SSH into server
+ssh root@147.93.108.121
+# 2. Pull latest (if git used)
+cd /var/www/goatgoat-staging/server
+git pull origin main
+# 3. Install deps (if needed)
+npm install
+# 4. Rebuild TypeScript → dist
+bash scripts/build-staging.sh
+# 5. Restart PM2
+pm2 restart goatgoat-staging
+# 6. Verify
+curl -I https://staging.goatgoat.tech/health
+                            </pre>
+                        </div>
+                        
+                        <h4 class="text-lg font-semibold text-slate-700 mt-6">4.3. Quick Test Commands (PowerShell)</h4>
+                        <div id="quick-test-container" class="code-container">
+                            <button class="copy-btn" onclick="copyCommand('quick-test-code', this)">Copy</button>
+                            <pre id="quick-test-code" class="text-sm font-mono text-green-400">
+# Health check
+Invoke-WebRequest -Uri "https://staging.goatgoat.tech/health" -Method HEAD
+# Stats
+Invoke-WebRequest -Uri "https://staging.goatgoat.tech/admin/fcm-management/api/stats" | ConvertFrom-Json
+# Send dry-run
+Invoke-WebRequest -Uri "https://staging.goatgoat.tech/admin/fcm-management/api/send" -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"title":"Test","message":"Hello","targetType":"all"}' | ConvertFrom-Json
+                            </pre>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Accordion 5: Code Snippets & Handoff Checklist -->
+                <details class="pt-4">
+                    <summary class="text-xl font-extrabold text-slate-800 py-2">
+                        5. Frontend Code & Handoff Checklist
+                    </summary>
+                    <div class="py-4 px-2 space-y-6">
+                        <h4 class="text-lg font-semibold text-slate-700">5.1. Frontend Enhancements Status</h4>
+                        <table class="w-full custom-table border border-slate-300 rounded-lg overflow-hidden text-sm">
+                            <thead><tr><th>Enhancement</th><th>Detail</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>Auto-Refresh</td><td>30 s timer + green pulse on cards</td><td>✅</td></tr>
+                                <tr><td>Copy Token</td><td>📋 icon per row + micro-toast</td><td>✅</td></tr>
+                                <tr><td>Mode Display</td><td>Shows “DRY-RUN 🧪” or “🔴 LIVE”</td><td>✅</td></tr>
+                                <tr><td>Button States</td><td>“Sending…” → mode-based text</td><td>✅</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-lg font-semibold text-slate-700 mt-6">5.2. Production Handoff Checklist</h4>
+                        <table class="w-full custom-table border border-slate-300 rounded-lg overflow-hidden text-sm">
+                            <thead><tr><th>Task</th><th>Command / Action</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>Golden Backup</td><td>tar -czf FCM-DASHBOARD-FINAL-*.tar.gz /var/www/goatgoat-staging</td><td>Done</td></tr>
+                                <tr><td>Local Backup</td><td>scp … to C:\Seller App 2\SellerApp2\Serverbackup\</td><td>Done</td></tr>
+                                <tr><td>Health Check</td><td>curl -I https://staging.goatgoat.tech/admin</td><td>200 OK</td></tr>
+                                <tr><td>FCM Check</td><td>curl https://staging.goatgoat.tech/admin/fcm-management/api/stats</td><td>200 OK</td></tr>
+                                <tr><td>Kill-Switch Tested</td><td>Run both kill-switch commands</td><td>Verified</td></tr>
+                                <tr><td>Source → Dist Sync</td><td>Rebuilt via scripts/build-staging.sh</td><td>Verified</td></tr>
+                                <tr><td>Features Working</td><td>Auto-refresh + copy-token + live/dry-run</td><td>Verified</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+            </div>
+        </section>
+        <!-- END NEW COMPREHENSIVE TECHNICAL REFERENCE -->
+
+        <div class="border-t border-slate-200 my-10"></div>
+
+        <!-- QUICK LINKS -->
+        <section class="mb-10 text-center">
+            <h2 class="text-3xl font-bold text-slate-700 mb-6">Quick Access & Handoff Links</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="https://staging.goatgoat.tech/admin/fcm-management" target="_blank" class="section-card card-link p-6 border-l-4 border-blue-500 flex flex-col items-center">
+                    <span class="text-xl font-extrabold text-blue-700">Staging Dashboard</span>
+                    <span class="text-xs text-slate-500 mt-1">Validation Environment</span>
+                </a>
+                <a href="https://goatgoat.tech/admin/fcm-management" target="_blank" class="section-card card-link p-6 border-l-4 border-green-500 flex flex-col items-center">
+                    <span class="text-xl font-extrabold text-green-700">Production Dashboard</span>
+                    <span class="text-xs text-slate-500 mt-1">Live Management System</span>
+                </a>
+                <a href="javascript:void(0)" class="section-card card-link p-6 border-l-4 border-slate-500 flex flex-col items-center">
+                    <span class="text-xl font-extrabold text-slate-700">Server SSH Access</span>
+                    <span class="text-xs text-slate-500 mt-1">root@147.93.108.121</span>
+                </a>
+            </div>
+        </section>
+
+        <div class="border-t border-slate-200 my-10"></div>
+
+        <!-- OPERATIONAL COMMANDS SECTION (Now includes both Staging and Production) -->
+        <section class="mb-10 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-slate-700 mb-6 text-center">Operational Control Commands</h2>
+            <p class="text-center text-slate-500 mb-8 max-w-3xl mx-auto">These commands safely toggle the FCM LIVE mode for the respective environments. Use Production commands with extreme caution.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- COLUMN 1: STAGING COMMANDS -->
+                <div>
+                    <h3 class="text-2xl font-extrabold text-blue-700 mb-4 border-b pb-2">Staging Server Controls (<code class="font-mono text-sm">.env.staging</code>)</h3>
+                    
+                    <!-- Enable LIVE Mode (Staging) -->
+                    <h3 class="flex items-center text-xl font-bold text-green-600 mb-3 mt-6">
+                        <span class="text-2xl mr-2">🔴</span> Enable LIVE Mode (Staging)
+                    </h3>
+                    <div id="enable-live-staging-container" class="code-container">
+                        <button class="copy-btn" onclick="copyCommand('enable-live-command-staging', this)">Copy</button>
+                        <pre id="enable-live-command-staging" class="text-sm font-mono text-green-400">
+# INSTANT ON (live mode) - Full command in Reference Manual
+ssh root@147.93.108.121 "sed -i 's/FCM_LIVE_MODE=false/FCM_LIVE_MODE=true/' /var/www/goatgoat-staging/server/.env.staging && pm2 restart goatgoat-staging"
+                        </pre>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 italic">Activates live sending for the **Staging environment**.</p>
+
+                    <!-- Emergency Kill-Switch (Staging) -->
+                    <h3 class="flex items-center text-xl font-bold text-red-600 mb-3 mt-6">
+                        <span class="text-2xl mr-2">🛑</span> Emergency Kill-Switch (Staging)
+                    </h3>
+                    <div id="kill-switch-staging-container" class="code-container">
+                        <button class="copy-btn" onclick="copyCommand('kill-switch-command-staging', this)">Copy</button>
+                        <pre id="kill-switch-command-staging" class="text-sm font-mono text-green-400">
+# INSTANT DISABLE (Single Line Command)
+ssh root@147.93.108.121 "sed -i 's/FCM_LIVE_MODE=true/FCM_LIVE_MODE=false/' /var/www/goatgoat-staging/server/.env.staging && pm2 restart goatgoat-staging"
+                        </pre>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 italic">Executes a swift rollback to dry-run mode and instantly restarts the staging process.</p>
+                </div>
+
+                <!-- COLUMN 2: PRODUCTION COMMANDS -->
+                <div>
+                    <h3 class="text-2xl font-extrabold text-red-700 mb-4 border-b pb-2">Production Server Controls (<code class="font-mono text-sm">.env.production</code>)</h3>
+
+                    <!-- Enable LIVE Mode (Production) -->
+                    <h3 class="flex items-center text-xl font-bold text-green-600 mb-3 mt-6">
+                        <span class="text-2xl mr-2">🔴</span> Enable LIVE Mode (Production)
+                    </h3>
+                    <div id="enable-live-prod-container" class="code-container">
+                        <button class="copy-btn" onclick="copyCommand('enable-live-command-prod', this)">Copy</button>
+                        <pre id="enable-live-command-prod" class="text-sm font-mono text-green-400">
+# INSTANT ON (live mode) - Use with EXTREME CAUTION
+ssh root@147.93.108.121 "sed -i 's/FCM_LIVE_MODE=false/FCM_LIVE_MODE=true/' /var/www/goatgoat-production/server/.env.production && pm2 restart goatgoat-production"
+                        </pre>
+                    </div>
+                    <p class="text-xs mt-2 italic text-red-600 font-bold">WARNING: This command initiates live notifications on the **Production environment**.</p>
+
+                    <!-- Emergency Kill-Switch (Production) -->
+                    <h3 class="flex items-center text-xl font-bold text-red-600 mb-3 mt-6">
+                        <span class="text-2xl mr-2">🛑</span> Emergency Kill-Switch (Production)
+                    </h3>
+                    <div id="kill-switch-prod-container" class="code-container">
+                        <button class="copy-btn" onclick="copyCommand('kill-switch-command-prod', this)">Copy</button>
+                        <pre id="kill-switch-command-prod" class="text-sm font-mono text-green-400">
+# INSTANT DISABLE (Production Rollback)
+ssh root@147.93.108.121 "sed -i 's/FCM_LIVE_MODE=true/FCM_LIVE_MODE=false/' /var/www/goatgoat-production/server/.env.production && pm2 restart goatgoat-production"
+                        </pre>
+                    </div>
+                    <p class="text-xs mt-2 italic text-red-600 font-bold">EMERGENCY: Executes swift rollback to dry-run mode and instantly restarts the production process.</p>
+                </div>
+            </div>
+        </section>
+        <!-- END OPERATIONAL COMMANDS SECTION -->
+
+
+    </div>
+
+    <script>
+        // Copy function uses execCommand for better iframe compatibility
+        function copyCommand(elementId, button) {
+            const commandText = document.getElementById(elementId).textContent.trim();
+            const tempInput = document.createElement('textarea');
+            tempInput.value = commandText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            // Give feedback to the user
+            const originalText = button.textContent;
+            button.textContent = 'Copied!';
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 1500);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = [
+                { id: 'enhancements', btn: document.getElementById('enhancements-btn'), content: document.getElementById('enhancements-content') },
+                { id: 'performance', btn: document.getElementById('performance-btn'), content: document.getElementById('performance-content') },
+                { id: 'security', btn: document.getElementById('security-btn'), content: document.getElementById('security-content') }
+            ];
+
+            function setActiveTab(selectedTab) {
+                tabs.forEach(tab => {
+                    if (tab.id === selectedTab) {
+                        tab.btn.classList.add('active');
+                        tab.btn.classList.remove('bg-slate-100', 'text-slate-600');
+                        tab.content.classList.remove('hidden');
+                    } else {
+                        tab.btn.classList.remove('active');
+                        tab.btn.classList.add('bg-slate-100', 'text-slate-600');
+                        tab.content.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Set initial active tab
+            setActiveTab('enhancements');
+
+            // Add event listeners
+            tabs.forEach(tab => {
+                tab.btn.addEventListener('click', () => setActiveTab(tab.id));
+            });
+        });
+    </script>
+</body>
+</html>

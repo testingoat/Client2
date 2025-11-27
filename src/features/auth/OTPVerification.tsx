@@ -10,27 +10,27 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import React, {useState, useRef, useEffect} from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import CustomSafeAreaView from '@components/global/CustomSafeAreaView';
-import {Colors, Fonts} from '@utils/Constants';
+import { Colors, Fonts } from '@utils/Constants';
 import CustomText from '@components/ui/CustomText';
-import {RFValue} from 'react-native-responsive-fontsize';
+import { RFValue } from 'react-native-responsive-fontsize';
 import CustomButton from '@components/ui/CustomButton';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {useNavigation, useRoute} from '@react-navigation/native';
-import {verifyOTP, requestOTP} from '@service/otpService';
-import {useAuthStore} from '@state/authStore';
-import {tokenStorage} from '@state/storage';
-import {resetAndNavigate, goBack} from '@utils/NavigationUtils';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { verifyOTP, requestOTP } from '@service/otpService';
+import { useAuthStore } from '@state/authStore';
+import { tokenStorage } from '@state/storage';
+import { resetAndNavigate, goBack } from '@utils/NavigationUtils';
 import CustomModal from '@components/ui/CustomModal';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const OTPVerification = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const {phone}: any = route.params || {};
-  
+  const { phone }: any = route.params || {};
+
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(0); // Start with 0 so resend is immediately available
@@ -106,7 +106,7 @@ const OTPVerification = () => {
     } else {
       pulseAnimation.setValue(1);
     }
-    
+
     return () => {
       pulseAnimation.setValue(1);
     };
@@ -116,10 +116,10 @@ const OTPVerification = () => {
   const triggerShake = () => {
     // Set error state to show red borders
     setHasError(true);
-    
+
     // Vibrate to provide haptic feedback
     Vibration.vibrate([100, 100, 100]);
-    
+
     Animated.sequence([
       Animated.timing(shakeAnimation, {
         toValue: 10,
@@ -146,7 +146,7 @@ const OTPVerification = () => {
         useNativeDriver: true,
       }),
     ]).start();
-    
+
     // Reset error state after animation
     setTimeout(() => {
       setHasError(false);
@@ -155,7 +155,7 @@ const OTPVerification = () => {
 
   const handleOtpChange = (text: string, index: number) => {
     if (isNaN(Number(text))) return;
-    
+
     const newOtp = [...otp];
     newOtp[index] = text;
     setOtp(newOtp);
@@ -174,7 +174,7 @@ const OTPVerification = () => {
           useNativeDriver: true,
         }),
       ]).start();
-      
+
       // Haptic feedback when entering a digit
       Vibration.vibrate(50);
     }
@@ -218,7 +218,7 @@ const OTPVerification = () => {
   const handleVerifyOTP = async () => {
     Keyboard.dismiss();
     const otpString = otp.join('');
-    
+
     if (otpString.length !== 6) {
       triggerShake();
       return;
@@ -227,21 +227,21 @@ const OTPVerification = () => {
     setLoading(true);
     try {
       const response = await verifyOTP(phone, otpString);
-      
+
       if (response.success && response.token && response.user) {
         // Success vibration
         Vibration.vibrate([0, 100, 100, 100]);
-        
+
         // Store tokens
         await tokenStorage.set('accessToken', response.token.accessToken);
         await tokenStorage.set('refreshToken', response.token.refreshToken);
-        
+
         // Update auth store
-        const {setUser} = useAuthStore.getState();
+        const { setUser } = useAuthStore.getState();
         setUser(response.user);
-        
+
         // Navigate to dashboard
-        resetAndNavigate('ProductDashboard');
+        resetAndNavigate('MainStack');
       } else {
         triggerShake();
         showModal('error', 'Error', response.message || 'Invalid OTP. Please try again.');
@@ -259,20 +259,20 @@ const OTPVerification = () => {
       console.log('OTPVerification: Resend not allowed, canResend:', canResend);
       return;
     }
-    
+
     console.log('OTPVerification: Phone number for resend:', phone);
     if (!phone) {
       console.log('OTPVerification: No phone number available for resend');
       showModal('error', 'Error', 'Phone number not available. Please try again.');
       return;
     }
-    
+
     setLoading(true);
     try {
       console.log('OTPVerification: Resend OTP requested for phone:', phone);
       const response = await requestOTP(phone);
       console.log('OTPVerification: Resend OTP response:', response);
-      
+
       if (response.success) {
         // Reset timer
         setTimer(30); // Set timer to 30 seconds
@@ -304,7 +304,7 @@ const OTPVerification = () => {
           </CustomText>
           <View style={{ width: 30 }} />
         </View>
-        
+
         <View style={styles.content}>
           <Icon name="shield-check" size={RFValue(40)} color={Colors.primary} />
           <CustomText
@@ -324,7 +324,7 @@ const OTPVerification = () => {
             style={[
               styles.otpContainer,
               {
-                transform: [{translateX: shakeAnimation}],
+                transform: [{ translateX: shakeAnimation }],
               },
             ]}>
             {otp.map((digit, index) => (
@@ -335,7 +335,7 @@ const OTPVerification = () => {
                   {
                     borderColor: hasError ? '#F44336' : digit ? Colors.primary : Colors.border,
                     backgroundColor: digit ? '#e0e0e0' : '#f8f9fc',
-                    transform: [{scale: scaleAnimations[index]}],
+                    transform: [{ scale: scaleAnimations[index] }],
                   },
                 ]}>
                 <CustomText
@@ -366,11 +366,11 @@ const OTPVerification = () => {
               disabled={otp.join('').length !== 6}
               style={styles.verifyButton}
             />
-            
+
             <CustomText style={styles.helperText}>
               Didn't receive the code?
             </CustomText>
-            
+
             <Animated.View style={{ transform: [{ scale: pulseAnimation }] }}>
               <CustomButton
                 onPress={handleResendOTP}
@@ -383,7 +383,7 @@ const OTPVerification = () => {
             </Animated.View>
           </View>
         </View>
-        
+
         <CustomModal
           visible={modalVisible}
           onClose={() => setModalVisible(false)}

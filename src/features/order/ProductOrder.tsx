@@ -7,25 +7,25 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import CustomHeader from '@components/ui/CustomHeader';
-import {Colors, Fonts} from '@utils/Constants';
+import { Colors, Fonts } from '@utils/Constants';
 import OrderList from './OrderList';
 import CustomText from '@components/ui/CustomText';
-import {RFValue} from 'react-native-responsive-fontsize';
+import { RFValue } from 'react-native-responsive-fontsize';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import BillDetails from './BillDetails';
-import {useCartStore} from '@state/cartStore';
-import {useAuthStore} from '@state/authStore';
-import {hocStyles} from '@styles/GlobalStyles';
+import { useCartStore } from '@state/cartStore';
+import { useAuthStore } from '@state/authStore';
+import { hocStyles } from '@styles/GlobalStyles';
 import ArrowButton from '@components/ui/ArrowButton';
 import { createOrder } from '@service/orderService';
 import { navigate } from '@utils/NavigationUtils';
 import { getValidatedDeliveryLocation } from '@service/locationService';
 
 const ProductOrder = () => {
-  const {getTotalPrice, cart, clearCart} = useCartStore();
-  const {user, setCurrentOrder, currentOrder} = useAuthStore();
+  const { getTotalPrice, cart, clearCart } = useCartStore();
+  const { user, setCurrentOrder, currentOrder } = useAuthStore();
   const totalItemPrice = getTotalPrice();
 
   const [loading, setLoading] = useState(false);
@@ -33,19 +33,19 @@ const ProductOrder = () => {
   const handlePlaceOrder = async () => {
 
     if (currentOrder !== null) {
-        Alert.alert('Let your first order to be delivered');
-        return;
+      Alert.alert('Let your first order to be delivered');
+      return;
     }
 
     const formattedData = cart.map(item => ({
-        id: item._id,
-        item: item._id,
-        count: item.count,
+      id: item._id,
+      item: item._id,
+      count: item.count,
     }));
 
     if (formattedData.length === 0) {
-        Alert.alert('Add any items to place order');
-        return;
+      Alert.alert('Add any items to place order');
+      return;
     }
 
     setLoading(true);
@@ -53,41 +53,41 @@ const ProductOrder = () => {
     // Try to get location from user state first
     let deliveryLocation = null;
     if (user?.address?.latitude && user?.address?.longitude) {
-        deliveryLocation = {
-            latitude: user.address.latitude,
-            longitude: user.address.longitude,
-        };
+      deliveryLocation = {
+        latitude: user.address.latitude,
+        longitude: user.address.longitude,
+      };
     } else {
-        // If no location in user state, try to get current location
-        try {
-            deliveryLocation = await getValidatedDeliveryLocation();
-        } catch (error) {
-            console.error('Error getting current location:', error);
-        }
+      // If no location in user state, try to get current location
+      try {
+        deliveryLocation = await getValidatedDeliveryLocation();
+      } catch (error) {
+        console.error('Error getting current location:', error);
+      }
     }
 
     if (!deliveryLocation) {
-        Alert.alert(
-            'Location Required',
-            'Please enable location services or update your address to place an order.',
-            [{ text: 'OK' }]
-        );
-        setLoading(false);
-        return;
+      Alert.alert(
+        'Location Required',
+        'Please enable location services or update your address to place an order.',
+        [{ text: 'OK' }]
+      );
+      setLoading(false);
+      return;
     }
 
     const data = await createOrder(formattedData, totalItemPrice, deliveryLocation);
 
     if (data != null) {
-        setCurrentOrder(data);
-        clearCart();
-        navigate('OrderSuccess', { ...data });
+      setCurrentOrder(data);
+      clearCart();
+      navigate('OrderSuccess', { ...data });
     } else {
-        Alert.alert(
-            'Order Failed',
-            'Unable to place your order. Please check your location and try again.',
-            [{ text: 'OK' }]
-        );
+      Alert.alert(
+        'Order Failed',
+        'Unable to place your order. Please check your location and try again.',
+        [{ text: 'OK' }]
+      );
     }
 
     setLoading(false);
@@ -95,7 +95,7 @@ const ProductOrder = () => {
 
   return (
     <View style={styles.container}>
-      <CustomHeader title="Checkout" />
+      <CustomHeader title="Checkout" hideBack />
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <OrderList />
 
@@ -143,18 +143,18 @@ const ProductOrder = () => {
                   Delivering to Home
                 </CustomText>
                 <CustomText
-                variant="h9"
-                numberOfLines={2}
-                style={styles.addressText}>
-                {user?.address?.address}
-              </CustomText>
+                  variant="h9"
+                  numberOfLines={2}
+                  style={styles.addressText}>
+                  {user?.address?.address}
+                </CustomText>
               </View>
             </View>
 
             <TouchableOpacity>
               <CustomText
                 variant="h8"
-                style={{color: Colors.secondary}}
+                style={{ color: Colors.secondary }}
                 fontFamily={Fonts.Medium}>
                 Change
               </CustomText>

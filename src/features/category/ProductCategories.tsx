@@ -1,15 +1,23 @@
-import {View, Text, StyleSheet, ActivityIndicator} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import CustomHeader from '@components/ui/CustomHeader';
-import {Colors} from '@utils/Constants';
+import { Colors } from '@utils/Constants';
 import Sidebar from './Sidebar';
-import {getAllCategories, getProductsByCategoryId} from '@service/productService';
+import { getAllCategories, getProductsByCategoryId } from '@service/productService';
 import ProductList from './ProductList';
 import withCart from '@features/cart/WithCart';
 
+let cachedCategories: any[] | null = null;
+let cachedSelectedCategoryId: string | null = null;
+let cachedProductsByCategory: Record<string, any[]> = {};
+
 const ProductCategories = () => {
-  const [categories, setCategories] = useState<any[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+  const [categories, setCategories] = useState<any[]>(cachedCategories || []);
+  const [selectedCategory, setSelectedCategory] = useState<any>(
+    cachedSelectedCategoryId && cachedCategories
+      ? cachedCategories.find(c => c._id === cachedSelectedCategoryId) || null
+      : null
+  );
   const [products, setProducts] = useState<any[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState<boolean>(true);
   const [productsLoading, setProductsLoading] = useState<boolean>(false);
@@ -18,10 +26,26 @@ const ProductCategories = () => {
     const fetchCategories = async () => {
       try {
         setCategoriesLoading(true);
+
+        if (cachedCategories && cachedCategories.length > 0) {
+          setCategories(cachedCategories);
+
+          const selected =
+            (cachedSelectedCategoryId &&
+              cachedCategories.find(c => c._id === cachedSelectedCategoryId)) ||
+            cachedCategories[0];
+
+          setSelectedCategory(selected || null);
+          return;
+        }
+
         const data = await getAllCategories();
         setCategories(data);
-        if (data && data?.length > 0) {
-          setSelectedCategory(data[0]);
+        cachedCategories = data || [];
+        if (data && data.length > 0) {
+          const initialCategory = data[0];
+          setSelectedCategory(initialCategory);
+          cachedSelectedCategoryId = initialCategory?._id || null;
         }
       } catch (error) {
         console.log('Error Fetching Categories', error);
@@ -37,25 +61,35 @@ const ProductCategories = () => {
   useEffect(() => {
 
     const fetchProducts = async (categoryId: string) => {
-        try {
-            setProductsLoading(true)
-            const data = await getProductsByCategoryId(categoryId)
-            setProducts(data)
-        } catch (error) {
-            console.log("Error Fetching Products", error)
-        } finally {
-            setProductsLoading(false)
+      try {
+        setProductsLoading(true);
+
+        const cached = cachedProductsByCategory[categoryId];
+        if (cached && cached.length > 0) {
+          setProducts(cached);
+          return;
         }
+
+        const data = await getProductsByCategoryId(categoryId);
+        setProducts(data);
+        cachedProductsByCategory[categoryId] = data || [];
+      } catch (error) {
+        console.log("Error Fetching Products", error);
+      } finally {
+        setProductsLoading(false);
+      }
     }
 
     if (selectedCategory?._id) {
-        fetchProducts(selectedCategory?._id)
+      const id = selectedCategory._id;
+      cachedSelectedCategoryId = id || null;
+      fetchProducts(id);
     }
-}, [selectedCategory])
+  }, [selectedCategory])
 
   return (
     <View style={styles.mainContainer}>
-      <CustomHeader title={selectedCategory?.name || 'Categories'} search />
+      <CustomHeader title={selectedCategory?.name || 'Categories'} search hideBack />
       <View style={styles.subContainer}>
         {categoriesLoading ? (
           <ActivityIndicator size="small" color={Colors.border} />

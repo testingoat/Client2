@@ -134,37 +134,56 @@ class FCMService {
 
   private async sendTokenToServer(token: string): Promise<void> {
     try {
-      // TODO: Replace with your actual server endpoint
-      const serverEndpoint = 'YOUR_SERVER_ENDPOINT/api/users/fcm-token';
-      
+      // Import BASE_URL from config
+      const { BASE_URL } = await import('../service/config');
+      const serverEndpoint = `${BASE_URL}/users/fcm-token`;
+
       console.log('📤 Sending FCM token to server...');
-      
-      // For now, just log the token since server integration is ready
-      console.log('FCM Token to send to server:', token);
-      
-      // Uncomment when ready to integrate with your server
-      /*
+      console.log('🔗 Server endpoint:', serverEndpoint);
+
+      // Get auth token from AsyncStorage or your auth service
+      const authToken = await this.getAuthToken();
+
+      if (!authToken) {
+        console.warn('⚠️ No auth token available, skipping FCM token registration');
+        return;
+      }
+
       const response = await fetch(serverEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer YOUR_AUTH_TOKEN', // Add your auth token
+          'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           fcmToken: token,
           platform: Platform.OS,
-          deviceId: 'DEVICE_ID', // Add device ID if available
         }),
       });
 
       if (response.ok) {
-        console.log('✅ FCM token sent to server successfully');
+        const result = await response.json();
+        console.log('✅ FCM token sent to server successfully:', result);
       } else {
-        console.error('❌ Failed to send FCM token to server:', response.status);
+        const errorText = await response.text();
+        console.error('❌ Failed to send FCM token to server:', response.status, errorText);
       }
-      */
     } catch (error) {
       console.error('Error sending FCM token to server:', error);
+    }
+  }
+
+  private async getAuthToken(): Promise<string | null> {
+    try {
+      // Try to get auth token from AsyncStorage
+      const AsyncStorage = await import('@react-native-async-storage/async-storage');
+      const token = await AsyncStorage.default.getItem('authToken') ||
+                   await AsyncStorage.default.getItem('userToken') ||
+                   await AsyncStorage.default.getItem('access_token');
+      return token;
+    } catch (error) {
+      console.error('Error getting auth token:', error);
+      return null;
     }
   }
 

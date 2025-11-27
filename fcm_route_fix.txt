@@ -1,0 +1,24 @@
+    // FCM Management Routes - Final Working Version
+    console.log('🔧 Registering FCM Management routes...');
+    app.get('/admin/fcm-management', async (request, reply) => {
+        reply.type('text/html').send(`<!DOCTYPE html>
+<html>
+<head>
+    <title>FCM Management</title>
+    <style>
+        body { background: #111; color: #fff; font-family: Arial; padding: 20px; }
+        .btn { background: #4CAF50; color: #fff; padding: 12px 20px; text-decoration: none; margin: 10px; display: inline-block; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>📨 FCM Management</h1>
+    <p>Panel is working correctly!</p>
+    <a href="/admin" class="btn">← Back to Admin</a>
+    <a href="/admin/monitoring-dashboard" class="btn">📊 Monitoring</a>
+</body>
+</html>`);
+    });
+    app.get('/admin/resources/fcmmanagement', async (req, rep) => {
+        rep.redirect('/admin/fcm-management');
+    });
+    console.log('✅ FCM Management routes registered successfully!');

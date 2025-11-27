@@ -1,23 +1,26 @@
-import {View, Text, SafeAreaView, StyleSheet, Pressable} from 'react-native';
-import React, {FC} from 'react';
-import {Colors, Fonts} from '@utils/Constants';
+import { View, Text, SafeAreaView, StyleSheet, Pressable } from 'react-native';
+import React, { FC } from 'react';
+import { Colors, Fonts } from '@utils/Constants';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {goBack} from '@utils/NavigationUtils';
-import {RFValue} from 'react-native-responsive-fontsize';
+import { goBack } from '@utils/NavigationUtils';
+import { RFValue } from 'react-native-responsive-fontsize';
 import CustomText from './CustomText';
 
-const CustomHeader: FC<{title: string; search?: boolean}> = ({
+const CustomHeader: FC<{ title: string; search?: boolean; hideBack?: boolean }> = ({
   title,
   search,
+  hideBack,
 }) => {
   return (
     <SafeAreaView>
       <View style={styles.flexRow}>
-        <Pressable onPress={() => goBack()}>
-          <Icon name="chevron-back" color={Colors.text} size={RFValue(16)} />
-        </Pressable>
+        {!hideBack && (
+          <Pressable onPress={() => goBack()}>
+            <Icon name="chevron-back" color={Colors.text} size={RFValue(16)} />
+          </Pressable>
+        )}
         <CustomText
-          style={styles.text}
+          style={[styles.text, hideBack ? styles.textNoBack : undefined]}
           variant="h5"
           fontFamily={Fonts.SemiBold}>
           {title}
@@ -46,6 +49,10 @@ const styles = StyleSheet.create({
   },
   text: {
     textAlign: 'center',
+    flex: 1,
+  },
+  textNoBack: {
+    marginLeft: 10,
   },
 });
 

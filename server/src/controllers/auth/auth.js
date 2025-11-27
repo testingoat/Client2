@@ -1,4 +1,4 @@
-import {Customer,DeliveryPartner} from '../../models/user.js';
+import {Customer,DeliveryPartner,Seller} from '../../models/user.js';
 import jwt from 'jsonwebtoken';
 
 const generateTokens = (user)=>{
@@ -115,6 +115,8 @@ export const refreshToken = async(req,reply)=>{
             user = await Customer.findById(decoded.userId);
           } else if (decoded.role === 'DeliveryPartner') {
             user = await DeliveryPartner.findById(decoded.userId);
+          } else if (decoded.role === 'Seller') {
+            user = await Seller.findById(decoded.userId);
           } else {
             return reply.status(403).send({ message: 'Invalid Role' });
           }
@@ -147,6 +149,8 @@ export const fetchUser = async (req,reply)=>{
           user = await Customer.findById(userId);
         } else if (role === 'DeliveryPartner') {
           user = await DeliveryPartner.findById(userId);
+        } else if (role === 'Seller') {
+          user = await Seller.findById(userId);
         } else {
           return reply.status(403).send({ message: 'Invalid Role' });
         }

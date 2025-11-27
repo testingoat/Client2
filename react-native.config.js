@@ -5,7 +5,7 @@ module.exports = {
       // Android 8 compatibility settings
       sourceDir: './android',
       appName: 'app',
-      packageName: 'com.grocery_app',
+      packageName: 'com.goatgoat.app',
     },
   },
   dependencies: {

@@ -1,8 +1,8 @@
-import {View, Text} from 'react-native';
-import React, {FC} from 'react';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {NavigationContainer} from '@react-navigation/native';
-import {navigationRef} from '@utils/NavigationUtils';
+import { View, Text } from 'react-native';
+import React, { FC } from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { NavigationContainer } from '@react-navigation/native';
+import { navigationRef } from '@utils/NavigationUtils';
 import SplashScreen from '@features/auth/SplashScreen';
 import DeliveryLogin from '@features/auth/DeliveryLogin';
 import CustomerLogin from '@features/auth/CustomerLogin';
@@ -15,6 +15,28 @@ import OrderSuccess from '@features/order/OrderSuccess';
 import LiveTracking from '@features/map/LiveTracking';
 import Profile from '@features/profile/Profile';
 import DeliveryMap from '@features/delivery/DeliveryMap';
+import NotificationScreen from '@features/notifications/NotificationScreen';
+import FAQScreen from '@features/dashboard/FAQScreen';
+import OrdersScreen from '@features/profile/OrdersScreen';
+import WishlistScreen from '@features/profile/WishlistScreen';
+import SupportScreen from '@features/profile/SupportScreen';
+
+// Profile Screens
+import AddressBookScreen from '@features/profile/screens/AddressBookScreen';
+import SavedItemsScreen from '@features/profile/screens/SavedItemsScreen';
+import OffersRewardsScreen from '@features/profile/screens/OffersRewardsScreen';
+import TransactionHistoryScreen from '@features/profile/screens/TransactionHistoryScreen';
+import HelpCenterScreen from '@features/profile/screens/HelpCenterScreen';
+import RaiseTicketScreen from '@features/profile/screens/RaiseTicketScreen';
+import SafetyTrustScreen from '@features/profile/screens/SafetyTrustScreen';
+import TermsScreen from '@features/profile/screens/TermsScreen';
+import PrivacyScreen from '@features/profile/screens/PrivacyScreen';
+import CancellationPolicyScreen from '@features/profile/screens/CancellationPolicyScreen';
+import NotificationSettingsScreen from '@features/profile/screens/NotificationSettingsScreen';
+import LanguageSettingsScreen from '@features/profile/screens/LanguageSettingsScreen';
+import PermissionsScreen from '@features/profile/screens/PermissionsScreen';
+
+import BottomTabNavigator from './BottomTabNavigator';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,14 +49,31 @@ const Navigation: FC = () => {
           headerShown: false,
         }}>
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
-        <Stack.Screen name="ProductDashboard" component={ProductDashboard} />
+        <Stack.Screen name="MainStack" component={BottomTabNavigator} />
         <Stack.Screen name="DeliveryDashboard" component={DeliveryDashboard} />
-        <Stack.Screen name="ProductOrder" component={ProductOrder} />
         <Stack.Screen name="OrderSuccess" component={OrderSuccess} />
         <Stack.Screen name="Profile" component={Profile} />
-        <Stack.Screen name="LiveTracking" component={LiveTracking} />
         <Stack.Screen name="DeliveryMap" component={DeliveryMap} />
-        <Stack.Screen name="ProductCategories" component={ProductCategories} />
+        <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
+        <Stack.Screen name="FAQScreen" component={FAQScreen} />
+        <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
+        <Stack.Screen name="WishlistScreen" component={WishlistScreen} />
+        <Stack.Screen name="SupportScreen" component={SupportScreen} />
+
+        {/* Profile Screens */}
+        <Stack.Screen name="AddressBookScreen" component={AddressBookScreen} />
+        <Stack.Screen name="SavedItemsScreen" component={SavedItemsScreen} />
+        <Stack.Screen name="OffersRewardsScreen" component={OffersRewardsScreen} />
+        <Stack.Screen name="TransactionHistoryScreen" component={TransactionHistoryScreen} />
+        <Stack.Screen name="HelpCenterScreen" component={HelpCenterScreen} />
+        <Stack.Screen name="RaiseTicketScreen" component={RaiseTicketScreen} />
+        <Stack.Screen name="SafetyTrustScreen" component={SafetyTrustScreen} />
+        <Stack.Screen name="TermsScreen" component={TermsScreen} />
+        <Stack.Screen name="PrivacyScreen" component={PrivacyScreen} />
+        <Stack.Screen name="CancellationPolicyScreen" component={CancellationPolicyScreen} />
+        <Stack.Screen name="NotificationSettingsScreen" component={NotificationSettingsScreen} />
+        <Stack.Screen name="LanguageSettingsScreen" component={LanguageSettingsScreen} />
+        <Stack.Screen name="PermissionsScreen" component={PermissionsScreen} />
         <Stack.Screen
           options={{
             animation: 'fade',
@@ -49,9 +88,9 @@ const Navigation: FC = () => {
           name="CustomerLogin"
           component={CustomerLogin}
         />
-        <Stack.Screen 
-          name="OTPVerification" 
-          component={OTPVerification} 
+        <Stack.Screen
+          name="OTPVerification"
+          component={OTPVerification}
           options={{
             animation: 'slide_from_right',
           }}

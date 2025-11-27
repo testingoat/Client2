@@ -49,7 +49,7 @@ class FirebaseConfig {
 
       // If we reach here, Firebase didn't auto-initialize
       console.error('❌ Firebase failed to auto-initialize after', maxAttempts, 'attempts');
-      console.log('💡 Check google-services.json package name matches com.grocery_app');
+      console.log('💡 Check google-services.json package name matches com.goatgoat.app');
       return false;
 
     } catch (error) {

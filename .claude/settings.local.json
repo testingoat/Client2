@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ssh:*)",
+      "Bash(curl:*)",
+      "Read(//c/Seller App 2/SellerApp2/**)",
+      "Bash(npm install:*)",
+      "Bash(move:*)",
+      "Bash(ren:*)",
+      "Bash(npm start:*)",
+      "Bash(taskkill:*)",
+      "Bash(timeout:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

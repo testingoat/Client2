@@ -195,3 +195,20 @@ android/app/build/
 **/.transforms/
 **/bundleLibRuntimeToDirDebug/
 Bug-fixed.md
+
+# Backups and Archives
+*.bak
+*.backup
+*.tar.gz
+*.zip
+*.rar
+*.7z
+Server Backup/
+
+# Security keys
+*.pem
+*.key
+*.cert
+*.p12
+*.jks
+
