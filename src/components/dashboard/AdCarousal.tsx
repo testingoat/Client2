@@ -214,7 +214,8 @@ const AdCarousal: FC<{adData: any}> = ({adData}) => {
 
 const styles = StyleSheet.create({
   carouselContainer: {
-    marginTop: 35, // Reduced from 45 to 35 to balance the increased height
+    // Tighten vertical gap below the search bar while keeping a small buffer.
+    marginTop: 8,
     marginBottom: 12, // Increased from 8 to 12 for better spacing below
     marginHorizontal: 0,
     borderRadius: 16,

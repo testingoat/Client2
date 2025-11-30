@@ -35,6 +35,7 @@ import CancellationPolicyScreen from '@features/profile/screens/CancellationPoli
 import NotificationSettingsScreen from '@features/profile/screens/NotificationSettingsScreen';
 import LanguageSettingsScreen from '@features/profile/screens/LanguageSettingsScreen';
 import PermissionsScreen from '@features/profile/screens/PermissionsScreen';
+import SearchResults from '@features/search/SearchResults';
 
 import BottomTabNavigator from './BottomTabNavigator';
 
@@ -59,6 +60,11 @@ const Navigation: FC = () => {
         <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
         <Stack.Screen name="WishlistScreen" component={WishlistScreen} />
         <Stack.Screen name="SupportScreen" component={SupportScreen} />
+        <Stack.Screen
+          name="SearchResults"
+          component={SearchResults}
+          options={{ headerShown: false }}
+        />
 
         {/* Profile Screens */}
         <Stack.Screen name="AddressBookScreen" component={AddressBookScreen} />

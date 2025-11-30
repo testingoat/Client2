@@ -2,23 +2,16 @@ import { WeatherCondition } from './weatherService';
 
 // Animation mapping service for weather-based lottie animations
 export const getWeatherAnimation = (condition?: WeatherCondition) => {
-  switch (condition) {
-    case 'rain':
-      return require('@assets/animations/raining.json');
-    case 'clear':
-    case 'sunny':
-      return require('@assets/animations/sunny.json');
-    case 'cloudy':
-    case 'snow':
-    case 'fog':
-    case 'unknown':
-    default:
-      // Default to rain animation for all other conditions
-      return require('@assets/animations/raining.json');
+  // Only show animation when it's actually raining
+  if (condition === 'rain') {
+    return require('@assets/animations/raining.json');
   }
+
+  // For all other conditions, don't render a weather animation
+  return null;
 };
 
 // Get a unique key for animation re-rendering when condition changes
 export const getAnimationKey = (condition?: WeatherCondition): string => {
-  return condition || 'rain';
+  return condition || 'none';
 };

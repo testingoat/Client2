@@ -1,34 +1,33 @@
-import React, { useEffect } from 'react'
-import Navigation from './src/navigation/Navigation'
-import FCMService from './src/services/FCMService'
-import FirebaseConfig from './src/config/firebase'
-import FCMTest from './src/utils/FCMTest'
+import React, { useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import Navigation from '@navigation/Navigation';
+import FirebaseConfig from '@config/firebase';
+import FCMService from './src/services/FCMService';
+import FCMTest from './src/utils/FCMTest';
 
-const App = () => {
+const queryClient = new QueryClient();
+
+const App: React.FC = () => {
   useEffect(() => {
-    // Initialize Firebase and FCM service when app starts
     const initializeServices = async () => {
       try {
-        // First initialize Firebase
-        console.log('🔥 App: Initializing Firebase...');
+        console.log('dY"� App: Initializing Firebase...');
         const firebaseReady = await FirebaseConfig.initialize();
 
         if (firebaseReady) {
-          console.log('✅ App: Firebase initialized successfully');
+          console.log('�o. App: Firebase initialized successfully');
 
-          // Then initialize FCM service
-          console.log('📱 App: Initializing FCM Service...');
+          console.log('dY"� App: Initializing FCM Service...');
           await FCMService.initialize();
-          console.log('🚀 App: FCM Service initialized successfully');
+          console.log('dYs? App: FCM Service initialized successfully');
 
-          // Run FCM test after successful initialization
-          console.log('🧪 App: Running FCM tests...');
+          console.log('dY� App: Running FCM tests...');
           await FCMTest.runFullTest();
         } else {
-          console.warn('⚠️ App: Firebase initialization failed, FCM service may not work properly');
+          console.warn('�s��,? App: Firebase initialization failed, FCM service may not work properly');
         }
       } catch (error) {
-        console.error('❌ App: Service initialization failed:', error);
+        console.error('�?O App: Service initialization failed:', error);
       }
     };
 
@@ -36,8 +35,10 @@ const App = () => {
   }, []);
 
   return (
-    <Navigation />
-  )
-}
+    <QueryClientProvider client={queryClient}>
+      <Navigation />
+    </QueryClientProvider>
+  );
+};
 
-export default App
+export default App;

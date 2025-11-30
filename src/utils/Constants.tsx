@@ -34,4 +34,13 @@ export const darkWeatherColors = [
     'rgba(54, 67, 92, 0.0)',
 ];
 
+export const sunnyWeatherColors = [
+    // Darker blue gradient for stronger contrast on sunny days
+    'rgba(40, 54, 120, 1)',
+    'rgba(40, 54, 120, 0.95)',
+    'rgba(40, 54, 120, 0.8)',
+    'rgba(40, 54, 120, 0.4)',
+    'rgba(40, 54, 120, 0.0)',
+];
+
 

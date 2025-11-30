@@ -37,6 +37,7 @@ appAxios.interceptors.response.use(
             console.log(errorMessage)
         }
 
-        return Promise.resolve(error)
+        // Propagate the error so callers (and React Query) can handle it correctly
+        return Promise.reject(error)
     }
 )

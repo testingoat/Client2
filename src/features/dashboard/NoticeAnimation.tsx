@@ -9,9 +9,19 @@ const NOTICE_HEIGHT = -(NoticeHeight + 12);
 interface Props {
   noticePosition?: any;
   children: ReactNode;
+  enabled?: boolean;
 }
 
-const NoticeAnimation: React.FC<Props> = ({ noticePosition, children }) => {
+const NoticeAnimation: React.FC<Props> = ({ noticePosition, children, enabled = true }) => {
+  // When disabled, render children without notice bar or animated padding.
+  if (!enabled) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.contentContainer}>{children}</View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <RNAnimated.View
@@ -23,7 +33,7 @@ const NoticeAnimation: React.FC<Props> = ({ noticePosition, children }) => {
       <RNAnimated.View
         style={[
           styles.contentContainer,
-          {
+          noticePosition && {
             paddingTop: noticePosition.interpolate({
               inputRange: [NOTICE_HEIGHT, 0],
               outputRange: [0, NoticeHeight + 20],
@@ -50,7 +60,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    // Allow underlying visuals/gradients to show through
+    backgroundColor: 'transparent',
   },
 });
 

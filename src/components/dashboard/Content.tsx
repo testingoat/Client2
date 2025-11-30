@@ -29,7 +29,9 @@ const Content:FC = () => {
 const styles = StyleSheet.create({
     container:{
         paddingHorizontal:20,
-        marginTop: 10  // Reduced since scroll container now has proper padding
+        // Keep a small gap below the search bar, but avoid
+        // a large white block above the first banner.
+        marginTop: 4
     },
     sectionTitle: {
         marginTop: 20,

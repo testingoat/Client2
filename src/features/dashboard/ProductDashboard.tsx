@@ -31,6 +31,7 @@ import StickySearchBar from './StickySearchBar';
 import withCart from '@features/cart/WithCart';
 import withLiveStatus from '@features/map/withLiveStatus';
 import NotificationManager from '@utils/NotificationManager';
+import { useWeatherStore } from '@state/weatherStore';
 
 const {height} = Dimensions.get('window');
 const HEADER_HEIGHT = 120; // Adjust this value based on your header height
@@ -40,6 +41,8 @@ const ProductDashboard = () => {
   const {user, setUser} = useAuthStore();
   const noticePosition = useRef(new RNAnimated.Value(NOTICE_HEIGHT)).current;
   const insets = useSafeAreaInsets();
+  const { current } = useWeatherStore();
+  const isRaining = current?.condition === 'rain';
 
   // Use React Native Animated for scroll tracking (simpler and more stable)
   const scrollY = useRef(new RNAnimated.Value(0)).current;
@@ -122,10 +125,14 @@ const ProductDashboard = () => {
   };
 
   useEffect(() => {
-    slideDown();
-    const timeoutId = setTimeout(() => {
-      slideUp();
-    }, 3500);
+    if (isRaining) {
+      slideDown();
+      const timeoutId = setTimeout(() => {
+        slideUp();
+      }, 3500);
+
+      return () => clearTimeout(timeoutId);
+    }
 
     // Initialize NotificationManager and add sample notifications
     const initializeNotifications = async () => {
@@ -137,16 +144,14 @@ const ProductDashboard = () => {
     };
 
     initializeNotifications();
-
-    return () => clearTimeout(timeoutId);
-  }, []);
+  }, [isRaining]);
 
   if (__DEV__) {
     console.log("🚨 Rendering ProductDashboard");
   }
 
   return (
-    <NoticeAnimation noticePosition={noticePosition}>
+    <NoticeAnimation noticePosition={noticePosition} enabled={isRaining}>
       <>
         <Visuals />
 

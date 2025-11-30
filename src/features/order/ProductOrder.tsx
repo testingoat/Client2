@@ -22,6 +22,7 @@ import ArrowButton from '@components/ui/ArrowButton';
 import { createOrder } from '@service/orderService';
 import { navigate } from '@utils/NavigationUtils';
 import { getValidatedDeliveryLocation } from '@service/locationService';
+import { useDeliveryEta } from '../../features/dashboard/hooks/useDeliveryEta';
 
 const ProductOrder = () => {
   const { getTotalPrice, cart, clearCart } = useCartStore();
@@ -29,8 +30,18 @@ const ProductOrder = () => {
   const totalItemPrice = getTotalPrice();
 
   const [loading, setLoading] = useState(false);
+  const { state: etaState } = useDeliveryEta();
 
   const handlePlaceOrder = async () => {
+
+    if (etaState === 'OUT_OF_COVERAGE') {
+      Alert.alert(
+        'Service Unavailable',
+        'Delivery is not available at your location.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
 
     if (currentOrder !== null) {
       Alert.alert('Let your first order to be delivered');

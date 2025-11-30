@@ -18,9 +18,57 @@ import SearchHistoryManager, { SearchHistoryItem } from '@utils/SearchHistoryMan
 import { RFValue } from 'react-native-responsive-fontsize';
 import Voice from '@react-native-voice/voice';
 import { categories } from '@utils/dummyData';
+import Config from 'react-native-config';
+import { useQuery } from '@tanstack/react-query';
+import { suggest, SearchResult } from '@service/searchService';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+
+// Default to enabling real search unless explicitly disabled via env
+const USE_REAL_SEARCH = Config.USE_REAL_SEARCH !== 'false';
+
+function localSearch(query: string): SearchResult[] {
+  if (!query || !query.trim()) {
+    return [];
+  }
+
+  const results: SearchResult[] = [];
+  const lowerQuery = query.toLowerCase();
+
+  // Search in categories
+  categories.forEach(category => {
+    if (category.name.toLowerCase().includes(lowerQuery)) {
+      results.push({
+        type: 'category',
+        id: String(category.id),
+        name: category.name,
+        image: category.image,
+        soldCount: 0,
+      });
+    }
+
+    // Search in products within categories
+    if (category.products && category.products.length > 0) {
+      category.products.forEach(product => {
+        if (product.name.toLowerCase().includes(lowerQuery)) {
+          results.push({
+            type: 'product',
+            id: String(product.id),
+            name: product.name,
+            image: product.image,
+            soldCount: 0,
+            // @ts-ignore - keeping for compatibility if needed, though not in SearchResult interface
+            categoryName: category.name,
+          });
+        }
+      });
+    }
+  });
+
+  return results;
+}
 
 interface FunctionalSearchBarProps {
-  onSearch?: (query: string, results: any[]) => void;
+  onSearch?: (query: string, results: SearchResult[]) => void;
   placeholder?: string;
   style?: object;
 }
@@ -31,11 +79,13 @@ const FunctionalSearchBar: React.FC<FunctionalSearchBarProps> = ({
   style,
 }) => {
   const [query, setQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(query, 300);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [backendSuggestionNames, setBackendSuggestionNames] = useState<string[]>([]);
 
 
   const inputRef = useRef<TextInput>(null);
@@ -44,20 +94,91 @@ const FunctionalSearchBar: React.FC<FunctionalSearchBarProps> = ({
   useEffect(() => {
     loadSearchHistory();
     initializeVoice();
-    
+
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     };
   }, []);
 
   useEffect(() => {
-    if (query.length > 0) {
-      loadSuggestions(query);
-      performSearch(query);
-    } else {
+    if (!query.length) {
       setSuggestions([]);
+      return;
     }
-  }, [query]);
+
+    // If we have backend-based suggestions, prefer them
+    if (backendSuggestionNames.length > 0) {
+      setSuggestions(backendSuggestionNames);
+    } else {
+      // Fallback: existing history-based suggestions
+      loadSuggestions(query);
+    }
+  }, [query, backendSuggestionNames]);
+
+  const shouldUseBackend = USE_REAL_SEARCH && debouncedQuery.length >= 2;
+
+  const {
+    data: backendData,
+    isLoading: isBackendLoading,
+    isError: isBackendError,
+  } = useQuery({
+    queryKey: ['search', debouncedQuery],
+    queryFn: () => suggest(debouncedQuery),
+    enabled: shouldUseBackend,
+    staleTime: 60_000,
+  });
+
+  // Compute final results
+  let results: SearchResult[] = [];
+
+  if (!debouncedQuery || debouncedQuery.length < 2) {
+    // Very short query → behave as before.
+    results = localSearch(debouncedQuery);
+  } else if (!USE_REAL_SEARCH) {
+    // Feature flag OFF → always local search.
+    results = localSearch(debouncedQuery);
+  } else if (isBackendError) {
+    // Backend error → silent fallback.
+    results = localSearch(debouncedQuery);
+  } else if (backendData) {
+    // Backend success → use API data.
+    results = backendData.results;
+  } else {
+    // Backend loading, no data yet.
+    results = [];
+  }
+
+  // Derive backend-based suggestion names from backend/local results
+  useEffect(() => {
+    if (!debouncedQuery || debouncedQuery.length < 2) {
+      setBackendSuggestionNames([]);
+      return;
+    }
+
+    let sourceResults: SearchResult[] = [];
+
+    if (!USE_REAL_SEARCH || isBackendError) {
+      sourceResults = localSearch(debouncedQuery);
+    } else if (backendData) {
+      sourceResults = backendData.results;
+    }
+
+    const names = sourceResults
+      .map(item => item.name)
+      .filter(Boolean)
+      .map(name => name.trim())
+      .filter(name => name.length > 0);
+
+    const uniqueNames = Array.from(new Set(names));
+    const newNames = uniqueNames.slice(0, 10);
+
+    setBackendSuggestionNames(prev => {
+      if (prev.length === newNames.length && prev.every((val, index) => val === newNames[index])) {
+        return prev;
+      }
+      return newNames;
+    });
+  }, [debouncedQuery, backendData, isBackendError]);
 
   useEffect(() => {
     // Animate suggestions container
@@ -171,41 +292,7 @@ const FunctionalSearchBar: React.FC<FunctionalSearchBarProps> = ({
     setShowSuggestions(suggestions.length > 0 && isFocused);
   };
 
-  const performSearch = (searchQuery: string) => {
-    if (!searchQuery.trim()) {
-      return;
-    }
-
-    const results: any[] = [];
-    const lowerQuery = searchQuery.toLowerCase();
-
-    // Search in categories
-    categories.forEach(category => {
-      if (category.name.toLowerCase().includes(lowerQuery)) {
-        results.push({
-          type: 'category',
-          id: category.id,
-          name: category.name,
-          image: category.image,
-        });
-      }
-
-      // Search in products within categories
-      if (category.products && category.products.length > 0) {
-        category.products.forEach(product => {
-          if (product.name.toLowerCase().includes(lowerQuery)) {
-            results.push({
-              type: 'product',
-              ...product,
-              categoryName: category.name,
-            });
-          }
-        });
-      }
-    });
-
-    onSearch?.(searchQuery, results);
-  };
+  // performSearch removed in favor of declarative results calculation
 
   const handleSearch = async (searchQuery: string = query) => {
     if (!searchQuery.trim()) return;
@@ -214,8 +301,10 @@ const FunctionalSearchBar: React.FC<FunctionalSearchBarProps> = ({
     setQuery(searchQuery);
     setShowSuggestions(false);
     Keyboard.dismiss();
-    performSearch(searchQuery);
     loadSearchHistory();
+
+    // Notify parent with the current results for navigation / logging
+    onSearch?.(searchQuery, results);
   };
 
   const handleSuggestionPress = (suggestion: string) => {
@@ -266,7 +355,7 @@ const FunctionalSearchBar: React.FC<FunctionalSearchBarProps> = ({
     <View style={[styles.container, style]}>
       <View style={styles.searchContainer}>
         <Icon name="search" color={Colors.text} size={RFValue(20)} />
-        
+
         <TextInput
           ref={inputRef}
           style={styles.input}
@@ -295,10 +384,10 @@ const FunctionalSearchBar: React.FC<FunctionalSearchBarProps> = ({
           style={[styles.micButton, isListening && styles.micButtonActive]}
           activeOpacity={0.7}
         >
-          <Icon 
-            name={isListening ? "stop" : "mic"} 
-            color={isListening ? Colors.primary : Colors.text} 
-            size={RFValue(20)} 
+          <Icon
+            name={isListening ? "stop" : "mic"}
+            color={isListening ? Colors.primary : Colors.text}
+            size={RFValue(20)}
           />
         </TouchableOpacity>
       </View>
@@ -322,18 +411,20 @@ const FunctionalSearchBar: React.FC<FunctionalSearchBarProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 15,
-    marginHorizontal: 10,
+    // Tighter spacing so more of the header gradient is visible
+    marginTop: 8,
+    marginHorizontal: 16,
   },
   searchContainer: {
-    backgroundColor: '#F3F4F7',
+    // Make the search bar feel like a floating pill over the gradient
+    backgroundColor: 'rgba(243, 244, 247, 0.9)',
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: 24,
     borderWidth: 0.6,
     borderColor: Colors.border,
-    paddingHorizontal: 10,
-    height: 50,
+    paddingHorizontal: 12,
+    height: 48,
   },
   input: {
     flex: 1,
