@@ -1,7 +1,12 @@
-import {appAxios} from './apiInterceptors';
-import {BRANCH_ID} from './config';
+import { appAxios } from './apiInterceptors';
+import { BRANCH_ID } from './config';
 
-export const createOrder = async (items: any, totalPrice: number, deliveryLocation: { latitude: number; longitude: number }) => {
+export const createOrder = async (
+  items: any,
+  totalPrice: number,
+  deliveryLocation: { latitude: number; longitude: number },
+  branchId?: string
+) => {
   try {
     // Validate input parameters
     if (!items || items.length === 0) {
@@ -14,16 +19,18 @@ export const createOrder = async (items: any, totalPrice: number, deliveryLocati
       return null;
     }
 
+    const resolvedBranchId = branchId || BRANCH_ID;
+
     console.log('Creating order with:', {
       items: items.length,
       totalPrice,
       deliveryLocation,
-      branch: BRANCH_ID
+      branch: resolvedBranchId
     });
 
     const response = await appAxios.post('/order', {
       items: items,
-      branch: BRANCH_ID,
+      branch: resolvedBranchId,
       totalPrice: totalPrice,
       deliveryLocation: deliveryLocation,
     });

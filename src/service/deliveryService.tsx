@@ -32,7 +32,15 @@ export interface EtaError {
     success: boolean;
     reason: string;
     message: string;
+    status?: number;
 }
+
+export interface EstimateEtaOptions {
+    signal?: AbortSignal;
+    timeoutMs?: number;
+}
+
+export const DEFAULT_ETA_TIMEOUT_MS = 15000; // 15s is a common mobile-network SLA
 
 /* -----------------------------------------------------------
    API CALLS
@@ -47,20 +55,44 @@ export interface EtaError {
  */
 export const estimateEtaForLocation = async (
     latitude: number,
-    longitude: number
+    longitude: number,
+    options: EstimateEtaOptions = {}
 ): Promise<EtaResponse> => {
+    const { signal, timeoutMs = DEFAULT_ETA_TIMEOUT_MS } = options;
+
     try {
         const response = await appAxios.get('/delivery/estimate-for-location', {
             params: {
                 latitude,
                 longitude,
             },
+            signal,
+            timeout: timeoutMs,
         });
         return response.data;
     } catch (error: any) {
+        if (signal?.aborted || error?.code === 'ERR_CANCELED') {
+            throw {
+                success: false,
+                reason: 'REQUEST_CANCELLED',
+                message: 'Delivery ETA request was cancelled',
+            };
+        }
+
+        if (error?.code === 'ECONNABORTED') {
+            throw {
+                success: false,
+                reason: 'NETWORK_TIMEOUT',
+                message: `Delivery ETA request timed out after ${timeoutMs}ms`,
+            };
+        }
+
         // Propagate the error response data if available, otherwise throw generic error
         if (error.response && error.response.data) {
-            throw error.response.data;
+            throw {
+                ...error.response.data,
+                status: error.response.status,
+            };
         }
         throw {
             success: false,

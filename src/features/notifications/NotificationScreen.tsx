@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,7 +14,7 @@ import { Colors, Fonts } from '@utils/Constants';
 import { RFValue } from 'react-native-responsive-fontsize';
 import CustomText from '@components/ui/CustomText';
 import NotificationManager, { NotificationItem } from '@utils/NotificationManager';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 const NotificationScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -36,23 +36,28 @@ const NotificationScreen: React.FC = () => {
   };
 
   useEffect(() => {
-    // Initialize notification manager
     NotificationManager.initialize();
-
-    // Subscribe to notification updates
     const unsubscribe = NotificationManager.addListener((updatedNotifications) => {
       setNotifications(updatedNotifications);
     });
-
-    // Load initial notifications
     loadNotifications();
-
     return unsubscribe;
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      NotificationManager.refreshFromServer().catch((error) => {
+        console.error('Error refreshing notifications:', error);
+      });
+    }, [])
+  );
 
   const loadNotifications = async () => {
     const loadedNotifications = await NotificationManager.loadNotifications();
     setNotifications(loadedNotifications);
+    NotificationManager.refreshFromServer().catch((error) => {
+      console.error('Error syncing notifications:', error);
+    });
   };
 
   const handleClearAll = () => {
@@ -70,12 +75,12 @@ const NotificationScreen: React.FC = () => {
     );
   };
 
-  const handleMarkAsRead = (notificationId: string) => {
-    NotificationManager.markAsRead(notificationId);
+  const handleMarkAsRead = async (notificationId: string) => {
+    await NotificationManager.markAsRead(notificationId);
   };
 
-  const handleDeleteNotification = (notificationId: string) => {
-    NotificationManager.deleteNotification(notificationId);
+  const handleDeleteNotification = async (notificationId: string) => {
+    await NotificationManager.deleteNotification(notificationId);
   };
 
   const getNotificationIcon = (type: NotificationItem['type']) => {
@@ -354,4 +359,3 @@ const styles = StyleSheet.create({
 });
 
 export default NotificationScreen;
-

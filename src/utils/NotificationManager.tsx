@@ -1,4 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  fetchCustomerNotifications,
+  markNotificationRead,
+  deleteNotification as deleteNotificationRemote,
+  clearNotifications as clearNotificationsRemote,
+  markAllNotificationsRead as markAllNotificationsReadRemote,
+} from '@service/notificationService';
 
 export interface NotificationItem {
   id: string;
@@ -8,6 +15,7 @@ export interface NotificationItem {
   read: boolean;
   type: 'order' | 'delivery' | 'promotion' | 'system' | 'general';
   data?: any;
+  origin?: 'local' | 'server';
 }
 
 const NOTIFICATIONS_KEY = 'app_notifications';
@@ -16,10 +24,18 @@ const MAX_NOTIFICATIONS = 100;
 class NotificationManager {
   private notifications: NotificationItem[] = [];
   private listeners: ((notifications: NotificationItem[]) => void)[] = [];
+  private initialized = false;
 
   async initialize(): Promise<void> {
     try {
+      if (this.initialized) {
+        return;
+      }
       await this.loadNotifications();
+      this.initialized = true;
+      this.syncWithServer().catch(error => {
+        console.error('Error syncing notifications during init:', error);
+      });
     } catch (error) {
       console.error('Error initializing NotificationManager:', error);
     }
@@ -31,6 +47,7 @@ class NotificationManager {
       if (stored) {
         this.notifications = JSON.parse(stored);
       }
+      this.sortAndTrim();
       this.notifyListeners();
       return this.notifications;
     } catch (error) {
@@ -53,14 +70,11 @@ class NotificationManager {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: Date.now(),
       read: false,
+      origin: 'local',
     };
 
     this.notifications.unshift(newNotification);
-
-    // Keep only the latest notifications
-    if (this.notifications.length > MAX_NOTIFICATIONS) {
-      this.notifications = this.notifications.slice(0, MAX_NOTIFICATIONS);
-    }
+    this.sortAndTrim();
 
     await this.saveNotifications();
     this.notifyListeners();
@@ -68,10 +82,20 @@ class NotificationManager {
 
   async markAsRead(notificationId: string): Promise<void> {
     const notification = this.notifications.find(n => n.id === notificationId);
-    if (notification) {
-      notification.read = true;
-      await this.saveNotifications();
-      this.notifyListeners();
+    if (!notification || notification.read) {
+      return;
+    }
+
+    notification.read = true;
+    await this.saveNotifications();
+    this.notifyListeners();
+
+    if (notification.origin === 'server') {
+      try {
+        await markNotificationRead(notificationId);
+      } catch (error) {
+        console.error('Error marking server notification as read:', error);
+      }
     }
   }
 
@@ -81,18 +105,37 @@ class NotificationManager {
     });
     await this.saveNotifications();
     this.notifyListeners();
+    try {
+      await markAllNotificationsReadRemote();
+    } catch (error) {
+      console.error('Error marking all server notifications as read:', error);
+    }
   }
 
   async deleteNotification(notificationId: string): Promise<void> {
+    const notification = this.notifications.find(n => n.id === notificationId);
     this.notifications = this.notifications.filter(n => n.id !== notificationId);
     await this.saveNotifications();
     this.notifyListeners();
+
+    if (notification?.origin === 'server') {
+      try {
+        await deleteNotificationRemote(notificationId);
+      } catch (error) {
+        console.error('Error deleting server notification:', error);
+      }
+    }
   }
 
   async clearAllNotifications(): Promise<void> {
     this.notifications = [];
     await this.saveNotifications();
     this.notifyListeners();
+    try {
+      await clearNotificationsRemote();
+    } catch (error) {
+      console.error('Error clearing server notifications:', error);
+    }
   }
 
   getNotifications(): NotificationItem[] {
@@ -151,6 +194,48 @@ class NotificationManager {
 
     for (const notification of sampleNotifications) {
       await this.addNotification(notification);
+    }
+  }
+
+  async refreshFromServer(): Promise<void> {
+    await this.syncWithServer();
+  }
+
+  private async syncWithServer(): Promise<void> {
+    try {
+      const response = await fetchCustomerNotifications(1, MAX_NOTIFICATIONS);
+      const serverData = response?.data || response?.notifications;
+      if (!Array.isArray(serverData)) {
+        return;
+      }
+      const serverNotifications = serverData.map(item => this.mapServerNotification(item));
+      const localOnly = this.notifications.filter(n => n.origin === 'local');
+      this.notifications = [...serverNotifications, ...localOnly];
+      this.sortAndTrim();
+      await this.saveNotifications();
+      this.notifyListeners();
+    } catch (error) {
+      console.error('Error syncing notifications from server:', error);
+    }
+  }
+
+  private mapServerNotification(notification: any): NotificationItem {
+    return {
+      id: notification?._id || notification?.id || Date.now().toString(),
+      title: notification?.title || 'Notification',
+      body: notification?.body || notification?.message || '',
+      timestamp: notification?.createdAt ? new Date(notification.createdAt).getTime() : Date.now(),
+      read: !!notification?.read,
+      type: (notification?.type || 'general') as NotificationItem['type'],
+      data: notification?.data,
+      origin: 'server',
+    };
+  }
+
+  private sortAndTrim(): void {
+    this.notifications.sort((a, b) => b.timestamp - a.timestamp);
+    if (this.notifications.length > MAX_NOTIFICATIONS) {
+      this.notifications = this.notifications.slice(0, MAX_NOTIFICATIONS);
     }
   }
 }

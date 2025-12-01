@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import CustomHeader from '@components/ui/CustomHeader';
 import { Colors, Fonts } from '@utils/Constants';
 import OrderList from './OrderList';
@@ -22,7 +22,7 @@ import ArrowButton from '@components/ui/ArrowButton';
 import { createOrder } from '@service/orderService';
 import { navigate } from '@utils/NavigationUtils';
 import { getValidatedDeliveryLocation } from '@service/locationService';
-import { useDeliveryEta } from '../../features/dashboard/hooks/useDeliveryEta';
+import { useDeliveryEta } from '@features/dashboard/hooks/useDeliveryEta';
 
 const ProductOrder = () => {
   const { getTotalPrice, cart, clearCart } = useCartStore();
@@ -30,7 +30,26 @@ const ProductOrder = () => {
   const totalItemPrice = getTotalPrice();
 
   const [loading, setLoading] = useState(false);
-  const { state: etaState } = useDeliveryEta();
+  const {
+    state: etaState,
+    etaText,
+    branchName,
+    branchDistance,
+    branchId,
+  } = useDeliveryEta();
+
+  const branchDisplay = useMemo(() => {
+    if (!branchName) {
+      return null;
+    }
+
+    const distanceText =
+      typeof branchDistance === 'number'
+        ? `${branchDistance.toFixed(1)} km away`
+        : null;
+
+    return distanceText ? `${branchName} • ${distanceText}` : branchName;
+  }, [branchName, branchDistance]);
 
   const handlePlaceOrder = async () => {
 
@@ -87,7 +106,12 @@ const ProductOrder = () => {
       return;
     }
 
-    const data = await createOrder(formattedData, totalItemPrice, deliveryLocation);
+    const data = await createOrder(
+      formattedData,
+      totalItemPrice,
+      deliveryLocation,
+      branchId,
+    );
 
     if (data != null) {
       setCurrentOrder(data);
@@ -162,7 +186,7 @@ const ProductOrder = () => {
               </View>
             </View>
 
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigate('AddressBookScreen')}>
               <CustomText
                 variant="h8"
                 style={{ color: Colors.secondary }}
@@ -172,10 +196,42 @@ const ProductOrder = () => {
             </TouchableOpacity>
           </View>
 
+          <View
+            style={[
+              styles.coverageBanner,
+              etaState === 'OUT_OF_COVERAGE'
+                ? styles.coverageBannerDanger
+                : styles.coverageBannerSafe,
+            ]}>
+            <Icon
+              name={
+                etaState === 'OUT_OF_COVERAGE' ? 'alert-circle' : 'map-marker-radius'
+              }
+              size={RFValue(10)}
+              color={etaState === 'OUT_OF_COVERAGE' ? '#AB1C2E' : '#0B8F3A'}
+            />
+            <CustomText
+              variant="h9"
+              fontFamily={Fonts.SemiBold}
+              style={styles.coverageBannerText}
+              numberOfLines={2}>
+              {etaText}
+            </CustomText>
+          </View>
+
+          {branchDisplay && etaState === 'SUCCESS' && (
+            <CustomText
+              variant="h9"
+              style={styles.branchText}
+              fontFamily={Fonts.Medium}>
+              {`Order fulfilled by ${branchDisplay}`}
+            </CustomText>
+          )}
+
           <View style={styles.paymentGateway}>
             <View style={styles.paymentInfo}>
               <CustomText fontSize={RFValue(6)} fontFamily={Fonts.Regular}>
-                💵 PAY USING
+                PAY USING
               </CustomText>
               <CustomText
                 fontFamily={Fonts.Regular}
@@ -269,6 +325,31 @@ const styles = StyleSheet.create({
   },
   orderButtonContainer: {
     width: '70%',
+  },
+  coverageBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  coverageBannerSafe: {
+    backgroundColor: '#E6F5EC',
+  },
+  coverageBannerDanger: {
+    backgroundColor: '#FDEAEA',
+  },
+  coverageBannerText: {
+    flex: 1,
+    marginLeft: 4,
+    color: Colors.text,
+  },
+  branchText: {
+    marginTop: 6,
+    color: Colors.text,
+    opacity: 0.8,
   },
 });
 

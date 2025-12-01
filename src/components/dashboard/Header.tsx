@@ -1,5 +1,5 @@
-import { View, StyleSheet, TouchableOpacity, AppState } from 'react-native';
-import React, { FC, useEffect, useRef } from 'react';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { FC, useEffect, useMemo, useRef } from 'react';
 import { useAuthStore } from '@state/authStore';
 import Geolocation from '@react-native-community/geolocation';
 import { reverseGeocode } from '@service/mapService';
@@ -7,10 +7,9 @@ import CustomText from '@components/ui/CustomText';
 import { Fonts } from '@utils/Constants';
 import { RFValue } from 'react-native-responsive-fontsize';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { navigate } from '@utils/NavigationUtils';
-import { useWeatherStore, WEATHER_REFRESH_INTERVAL_MS } from '@state/weatherStore';
+import { useWeatherStore } from '@state/weatherStore';
 import { calculateDistance } from '@utils/etaCalculator';
-import { useDeliveryEta } from '../../features/dashboard/hooks/useDeliveryEta';
+import { useDeliveryEta } from '@features/dashboard/hooks/useDeliveryEta';
 
 // Helper function to format and truncate address
 const formatAddress = (address: string): string => {
@@ -50,14 +49,25 @@ const getWeatherBadgeText = (current: any): string => {
 };
 
 const Header: FC<{ showNotice: () => void }> = ({ showNotice }) => {
-  const { setUser, user } = useAuthStore();
-  const { current, refresh, needsRefresh } = useWeatherStore();
+  const setUser = useAuthStore(state => state.setUser);
+  const user = useAuthStore(state => state.user);
+  const current = useWeatherStore(state => state.current);
+  const refresh = useWeatherStore(state => state.refresh);
+  const needsRefresh = useWeatherStore(state => state.needsRefresh);
   const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const locationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Use the new ETA hook
   const { state: etaState, etaText, branchName, branchDistance, refresh: refreshEta } = useDeliveryEta();
+
+  const branchSubtitle = useMemo(() => {
+    if (etaState !== 'SUCCESS' || !branchName) {
+      return null;
+    }
+    if (typeof branchDistance === 'number') {
+      return `${branchName} • ${branchDistance.toFixed(1)} km away`;
+    }
+    return branchName;
+  }, [branchName, branchDistance, etaState]);
 
   const updateUserLocation = async () => {
     Geolocation.requestAuthorization();
@@ -109,65 +119,6 @@ const Header: FC<{ showNotice: () => void }> = ({ showNotice }) => {
 
   useEffect(() => {
     updateUserLocation();
-
-    // TEMPORARILY DISABLED - Focus/AppState-based refresh every 10 minutes (weather + location)
-    const handleAppStateChange = (state: string) => {
-      if (false && state === 'active') {
-        // Immediate check when app becomes active
-        if (lastCoordsRef.current) {
-          const { lat, lng } = lastCoordsRef.current;
-          if (needsRefresh(lat, lng)) {
-            refresh(lat, lng);
-          }
-        }
-
-        // Start weather refresh interval while app is active
-        if (!intervalRef.current) {
-          intervalRef.current = setInterval(() => {
-            if (lastCoordsRef.current) {
-              const { lat, lng } = lastCoordsRef.current;
-              if (needsRefresh(lat, lng)) {
-                refresh(lat, lng);
-              }
-            }
-          }, WEATHER_REFRESH_INTERVAL_MS);
-        }
-
-        // Start location refresh interval (every 10 minutes)
-        if (!locationIntervalRef.current) {
-          locationIntervalRef.current = setInterval(() => {
-            if (__DEV__) {
-              console.log('🔄 Refreshing location (10min interval)');
-            }
-            updateUserLocation();
-          }, WEATHER_REFRESH_INTERVAL_MS); // Same 10-minute interval
-        }
-      } else {
-        // Clear intervals when not active to save battery/data
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        if (locationIntervalRef.current) {
-          clearInterval(locationIntervalRef.current);
-          locationIntervalRef.current = null;
-        }
-      }
-    };
-
-    const sub = AppState.addEventListener('change', handleAppStateChange);
-
-    return () => {
-      sub.remove();
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      if (locationIntervalRef.current) {
-        clearInterval(locationIntervalRef.current);
-        locationIntervalRef.current = null;
-      }
-    };
   }, []);
 
   // Debug user data and weather
@@ -185,14 +136,14 @@ const Header: FC<{ showNotice: () => void }> = ({ showNotice }) => {
     <View style={styles.subContainer}>
       <TouchableOpacity activeOpacity={0.8} onPress={refreshEta}>
         <CustomText fontFamily={Fonts.Bold} variant="h8" style={styles.text}>
-          {etaState === 'OUT_OF_COVERAGE' ? 'Service Unavailable' : 'Delivery in'}
+          {etaState === 'OUT_OF_COVERAGE' ? 'Service Unavailable' : 'Delivery ETA'}
         </CustomText>
         <View style={styles.flexRowGap}>
           <CustomText
             fontFamily={Fonts.SemiBold}
             variant="h2"
             style={styles.text}>
-            {etaState === 'LOADING' ? 'Calculating...' : etaText.replace('Delivery in ', '')}
+            {etaState === 'LOADING' ? 'Calculating...' : etaText}
           </CustomText>
           <TouchableOpacity style={styles.noticeBtn} onPress={showNotice}>
             <CustomText
@@ -218,6 +169,15 @@ const Header: FC<{ showNotice: () => void }> = ({ showNotice }) => {
           </CustomText>
           <Icon name="check-circle" color="#0B8F3A" size={RFValue(9)} />
         </View>
+        {branchSubtitle && (
+          <CustomText
+            variant="h9"
+            fontFamily={Fonts.Medium}
+            style={[styles.text, styles.branchText]}
+            numberOfLines={1}>
+            {branchSubtitle}
+          </CustomText>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -246,6 +206,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
     marginTop: 5,
+  },
+  branchText: {
+    opacity: 0.85,
+    marginTop: 4,
   },
 });
 
