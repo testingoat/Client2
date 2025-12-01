@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { useAuthStore } from '@state/authStore';
 import { useCartStore } from '@state/cartStore';
@@ -10,6 +10,7 @@ import { storage, tokenStorage } from '@state/storage';
 import { resetAndNavigate } from '@utils/NavigationUtils';
 import WalletSection from './WalletSection';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const Profile = () => {
   const { logout, user } = useAuthStore();
@@ -58,14 +59,21 @@ const Profile = () => {
       <CustomHeader title="Profile" />
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.headerContainer}>
-          <CustomText variant="h3" fontFamily={Fonts.SemiBold} style={styles.centerText}>
-            Your account
-          </CustomText>
+        <TouchableOpacity
+          style={styles.headerContainer}
+          onPress={() => navigation.navigate('CustomerProfileScreen' as never)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.headerTitleRow}>
+            <CustomText variant="h3" fontFamily={Fonts.SemiBold} style={styles.centerText}>
+              Your account
+            </CustomText>
+            <Icon name="chevron-forward" size={20} color={Colors.text} />
+          </View>
           <CustomText variant="h7" fontFamily={Fonts.Medium} style={styles.centerText}>
             {formatPhone(user?.phone)}
           </CustomText>
-        </View>
+        </TouchableOpacity>
 
         <WalletSection />
 
@@ -127,6 +135,12 @@ const styles = StyleSheet.create({
   logoutContainer: {
     marginTop: 20,
     marginBottom: 40,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
   }
 });
 

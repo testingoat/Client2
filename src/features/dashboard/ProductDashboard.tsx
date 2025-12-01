@@ -134,13 +134,8 @@ const ProductDashboard = () => {
       return () => clearTimeout(timeoutId);
     }
 
-    // Initialize NotificationManager and add sample notifications
     const initializeNotifications = async () => {
       await NotificationManager.initialize();
-      // Add sample notifications for testing (only in development)
-      if (__DEV__) {
-        await NotificationManager.createSampleNotifications();
-      }
     };
 
     initializeNotifications();

@@ -2,6 +2,8 @@ import messaging from '@react-native-firebase/messaging';
 import { Platform, PermissionsAndroid, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NotificationManager from '@utils/NotificationManager';
+import { appAxios } from '@service/apiInterceptors';
+import { tokenStorage } from '@state/storage';
 
 const FCM_TOKEN_KEY = 'fcm_token';
 const FCM_PERMISSION_REQUESTED = 'fcm_permission_requested';
@@ -134,53 +136,43 @@ class FCMService {
 
   private async sendTokenToServer(token: string): Promise<void> {
     try {
-      // Import BASE_URL from config
-      const { BASE_URL } = await import('../service/config');
-      const serverEndpoint = `${BASE_URL}/users/fcm-token`;
-
-      console.log('📤 Sending FCM token to server...');
-      console.log('🔗 Server endpoint:', serverEndpoint);
-
-      // Get auth token from AsyncStorage or your auth service
-      const authToken = await this.getAuthToken();
-
-      if (!authToken) {
-        console.warn('⚠️ No auth token available, skipping FCM token registration');
+      const accessToken = tokenStorage.getString('accessToken');
+      if (!accessToken) {
+        console.warn('⚠️ No access token available, skipping FCM token registration');
         return;
       }
 
-      const response = await fetch(serverEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          fcmToken: token,
-          platform: Platform.OS,
-        }),
+      console.log('📤 Sending FCM token to server via appAxios...');
+
+      const response = await appAxios.post('/users/fcm-token', {
+        fcmToken: token,
+        platform: Platform.OS,
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('✅ FCM token sent to server successfully:', result);
-      } else {
-        const errorText = await response.text();
-        console.error('❌ Failed to send FCM token to server:', response.status, errorText);
-      }
-    } catch (error) {
-      console.error('Error sending FCM token to server:', error);
+      console.log('✅ FCM token sent to server successfully:', response.data);
+    } catch (error: any) {
+      console.error('Error sending FCM token to server:', {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status,
+      });
     }
   }
 
   private async getAuthToken(): Promise<string | null> {
     try {
-      // Try to get auth token from AsyncStorage
-      const AsyncStorage = await import('@react-native-async-storage/async-storage');
-      const token = await AsyncStorage.default.getItem('authToken') ||
-                   await AsyncStorage.default.getItem('userToken') ||
-                   await AsyncStorage.default.getItem('access_token');
-      return token;
+      const accessToken = tokenStorage.getString('accessToken');
+      if (accessToken) {
+        return accessToken;
+      }
+
+      // Fallback for any older AsyncStorage-based tokens
+      const legacyAuthToken =
+        (await AsyncStorage.getItem('authToken')) ||
+        (await AsyncStorage.getItem('userToken')) ||
+        (await AsyncStorage.getItem('access_token'));
+
+      return legacyAuthToken;
     } catch (error) {
       console.error('Error getting auth token:', error);
       return null;
@@ -305,7 +297,8 @@ class FCMService {
     if (!this.isInitialized) {
       await this.initialize();
     }
-    return this.fcmToken;
+    // Re-fetch to ensure we have a fresh token and that it is registered
+    return await this.getFCMToken();
   }
 
   public async refreshToken(): Promise<string | null> {

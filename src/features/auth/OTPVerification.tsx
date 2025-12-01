@@ -22,6 +22,7 @@ import { verifyOTP, requestOTP } from '@service/otpService';
 import { useAuthStore } from '@state/authStore';
 import { tokenStorage } from '@state/storage';
 import { resetAndNavigate, goBack } from '@utils/NavigationUtils';
+import FCMService from '../../services/FCMService';
 import CustomModal from '@components/ui/CustomModal';
 
 const { width } = Dimensions.get('window');
@@ -239,6 +240,13 @@ const OTPVerification = () => {
         // Update auth store
         const { setUser } = useAuthStore.getState();
         setUser(response.user);
+
+        // Ensure FCM token is registered for this authenticated user
+        try {
+          await FCMService.getToken();
+        } catch (error) {
+          console.log('FCM token registration after OTP verification failed:', error);
+        }
 
         // Navigate to dashboard
         resetAndNavigate('MainStack');

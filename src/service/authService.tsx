@@ -4,6 +4,7 @@ import { tokenStorage } from '@state/storage'
 import { useAuthStore } from '@state/authStore'
 import { resetAndNavigate } from '@utils/NavigationUtils'
 import { appAxios } from './apiInterceptors'
+import FCMService from '../services/FCMService'
 
 // Type definitions
 interface LoginResponse {
@@ -40,6 +41,13 @@ export const customerLogin = async (phone: string): Promise<AuthResult> => {
         const { setUser } = useAuthStore.getState()
         setUser(customer)
 
+        // Ensure FCM token is registered for this authenticated customer
+        try {
+            await FCMService.getToken()
+        } catch (error) {
+            console.log('FCM token registration after customer login failed:', error)
+        }
+
         return { success: true }
     } catch (error) {
         console.log("Customer Login Error", error)
@@ -60,6 +68,13 @@ export const deliveryLogin = async (email: string, password: string): Promise<Au
 
         const { setUser } = useAuthStore.getState()
         setUser(deliveryPartner)
+
+        // Ensure FCM token is registered for this authenticated delivery partner
+        try {
+            await FCMService.getToken()
+        } catch (error) {
+            console.log('FCM token registration after delivery login failed:', error)
+        }
 
         return { success: true }
     } catch (error) {

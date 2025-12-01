@@ -35,6 +35,7 @@ import CancellationPolicyScreen from '@features/profile/screens/CancellationPoli
 import NotificationSettingsScreen from '@features/profile/screens/NotificationSettingsScreen';
 import LanguageSettingsScreen from '@features/profile/screens/LanguageSettingsScreen';
 import PermissionsScreen from '@features/profile/screens/PermissionsScreen';
+import CustomerProfileScreen from '@features/profile/screens/CustomerProfileScreen';
 import SearchResults from '@features/search/SearchResults';
 
 import BottomTabNavigator from './BottomTabNavigator';
@@ -80,6 +81,7 @@ const Navigation: FC = () => {
         <Stack.Screen name="NotificationSettingsScreen" component={NotificationSettingsScreen} />
         <Stack.Screen name="LanguageSettingsScreen" component={LanguageSettingsScreen} />
         <Stack.Screen name="PermissionsScreen" component={PermissionsScreen} />
+        <Stack.Screen name="CustomerProfileScreen" component={CustomerProfileScreen} />
         <Stack.Screen
           options={{
             animation: 'fade',
