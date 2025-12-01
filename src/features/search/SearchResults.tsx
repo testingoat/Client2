@@ -6,6 +6,7 @@ import { suggest, SearchResult } from '@service/searchService';
 import CustomText from '@components/ui/CustomText';
 import { Colors, Fonts } from '@utils/Constants';
 import ProductList from '@features/category/ProductList';
+import CustomHeader from '@components/ui/CustomHeader';
 
 type SearchResultsRouteParams = {
     query: string;
@@ -47,13 +48,10 @@ const SearchResults: React.FC = () => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <CustomText
-                    variant="h5"
-                    fontFamily={Fonts.SemiBold}
-                    style={styles.headerText}
-                >
-                    {`Results for "${query}"`}
+            <CustomHeader title={`Results for "${query}"`} />
+            <View style={styles.subHeader}>
+                <CustomText variant="h9" style={{ opacity: 0.6 }}>
+                    {`${mappedProducts.length} items`}
                 </CustomText>
             </View>
 
@@ -77,16 +75,12 @@ const SearchResults: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.backgroundSecondary,
     },
-    header: {
+    subHeader: {
         paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderBottomWidth: 0.5,
-        borderBottomColor: Colors.border,
-    },
-    headerText: {
-        color: Colors.text,
+        paddingTop: 4,
+        paddingBottom: 8,
     },
     listContent: {
         paddingHorizontal: 16,
