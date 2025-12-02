@@ -2,6 +2,7 @@ import messaging from '@react-native-firebase/messaging';
 import { Platform, PermissionsAndroid, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NotificationManager from '@utils/NotificationManager';
+import { navigate } from '@utils/NavigationUtils';
 import { appAxios } from '@service/apiInterceptors';
 import { tokenStorage } from '@state/storage';
 
@@ -260,17 +261,39 @@ class FCMService {
       // Handle navigation based on notification data
       const { data } = remoteMessage;
       
-      if (data?.screen) {
-        // Navigate to specific screen
-        console.log('Navigate to screen:', data.screen);
-        // TODO: Implement navigation logic
+      if (!data) {
+        return;
       }
-      
-      if (data?.orderId) {
-        // Navigate to order details
-        console.log('Navigate to order:', data.orderId);
-        // TODO: Implement order navigation
+
+      // Highest priority: explicit screen navigation from payload
+      if (data.screen) {
+        console.log('Navigate to screen from notification:', data.screen, 'with params:', data);
+        navigate(data.screen as string, data);
+        return;
       }
+
+      // Fallbacks based on type / orderId
+      if (data.type === 'order' && data.orderId) {
+        console.log('Navigate to order from notification:', data.orderId);
+        navigate('OrdersScreen', { orderId: data.orderId });
+        return;
+      }
+
+      if (data.type === 'delivery' && data.orderId) {
+        console.log('Navigate to live tracking from notification:', data.orderId);
+        navigate('LiveTracking', { orderId: data.orderId });
+        return;
+      }
+
+      if (data.type === 'promotion') {
+        console.log('Navigate to ProductDashboard from promotion notification');
+        navigate('MainStack');
+        return;
+      }
+
+      // Default: open main dashboard
+      console.log('Navigate to main dashboard from notification');
+      navigate('MainStack');
     } catch (error) {
       console.error('Error handling notification opened:', error);
     }
