@@ -47,7 +47,7 @@ const Profile = () => {
     {
       title: 'SETTINGS',
       items: [
-        { icon: 'notifications-outline', label: 'Notifications', screen: 'NotificationSettingsScreen' },
+        { icon: 'notifications-outline', label: 'Notifications', screen: 'NotificationScreen' },
         { icon: 'language-outline', label: 'Language', screen: 'LanguageSettingsScreen' },
         { icon: 'key-outline', label: 'Permissions', screen: 'PermissionsScreen' },
       ]

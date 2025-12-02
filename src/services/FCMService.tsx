@@ -221,13 +221,18 @@ class FCMService {
 
   private async handleBackgroundMessage(remoteMessage: any): Promise<void> {
     try {
-      // Add notification to local storage
-      await NotificationManager.addNotification({
-        title: remoteMessage.notification?.title || 'New Notification',
-        body: remoteMessage.notification?.body || 'You have a new message',
-        type: this.getNotificationType(remoteMessage.data?.type),
-        data: remoteMessage.data,
-      });
+      const source = remoteMessage.data?.source;
+      const shouldSkipLocal = source === 'admin-dashboard';
+
+      // For admin-dashboard campaigns we rely on server-stored notifications
+      if (!shouldSkipLocal) {
+        await NotificationManager.addNotification({
+          title: remoteMessage.notification?.title || 'New Notification',
+          body: remoteMessage.notification?.body || 'You have a new message',
+          type: this.getNotificationType(remoteMessage.data?.type),
+          data: remoteMessage.data,
+        });
+      }
     } catch (error) {
       console.error('Error handling background message:', error);
     }
@@ -235,13 +240,17 @@ class FCMService {
 
   private async handleForegroundMessage(remoteMessage: any): Promise<void> {
     try {
-      // Add notification to local storage
-      await NotificationManager.addNotification({
-        title: remoteMessage.notification?.title || 'New Notification',
-        body: remoteMessage.notification?.body || 'You have a new message',
-        type: this.getNotificationType(remoteMessage.data?.type),
-        data: remoteMessage.data,
-      });
+      const source = remoteMessage.data?.source;
+      const shouldSkipLocal = source === 'admin-dashboard';
+
+      if (!shouldSkipLocal) {
+        await NotificationManager.addNotification({
+          title: remoteMessage.notification?.title || 'New Notification',
+          body: remoteMessage.notification?.body || 'You have a new message',
+          type: this.getNotificationType(remoteMessage.data?.type),
+          data: remoteMessage.data,
+        });
+      }
 
       // Show in-app notification or alert
       Alert.alert(

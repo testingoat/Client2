@@ -4,6 +4,7 @@ export interface ServerNotification {
   _id: string;
   title: string;
   body: string;
+  imageUrl?: string;
   type?: string;
   read?: boolean;
   createdAt?: string;

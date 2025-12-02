@@ -11,6 +11,7 @@ export interface NotificationItem {
   id: string;
   title: string;
   body: string;
+  imageUrl?: string;
   timestamp: number;
   read: boolean;
   type: 'order' | 'delivery' | 'promotion' | 'system' | 'general';
@@ -224,6 +225,7 @@ class NotificationManager {
       id: notification?._id || notification?.id || Date.now().toString(),
       title: notification?.title || 'Notification',
       body: notification?.body || notification?.message || '',
+      imageUrl: notification?.imageUrl,
       timestamp: notification?.createdAt ? new Date(notification.createdAt).getTime() : Date.now(),
       read: !!notification?.read,
       type: (notification?.type || 'general') as NotificationItem['type'],

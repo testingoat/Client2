@@ -7,6 +7,7 @@ import {
   Alert,
   useColorScheme,
   StatusBar,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -115,13 +116,21 @@ const NotificationScreen: React.FC = () => {
   const renderNotificationItem = ({ item }: { item: NotificationItem }) => (
     <View style={[styles.notificationCard, { backgroundColor: theme.card }]}>
       <View style={styles.notificationContent}>
-        {/* Icon */}
+        {/* Icon or Image */}
         <View style={[styles.iconContainer, { backgroundColor: theme.primaryLight }]}>
-          <Icon
-            name={getNotificationIcon(item.type)}
-            size={RFValue(20)}
-            color={theme.primary}
-          />
+          {item.imageUrl ? (
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={styles.notificationImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <Icon
+              name={getNotificationIcon(item.type)}
+              size={RFValue(20)}
+              color={theme.primary}
+            />
+          )}
         </View>
 
         {/* Content */}
@@ -316,6 +325,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+  },
+  notificationImage: {
+    width: RFValue(40),
+    height: RFValue(40),
+    borderRadius: RFValue(20),
   },
   textContent: {
     flex: 1,
