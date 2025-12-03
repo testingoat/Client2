@@ -12,8 +12,11 @@ export interface DeliveryLocation {
 
 /* -----------------------------------------------------------
    PERMISSION HELPER
+   (exported so all features use the same logic)
 ----------------------------------------------------------- */
-async function requestLocationPermission(): Promise<boolean> {
+let hasShownBlockedAlert = false;
+
+export async function requestLocationPermission(): Promise<boolean> {
   if (Platform.OS !== 'android') return true; // iOS handled elsewhere
 
   // Android 8-9  -> only FINE/COARSE
@@ -41,17 +44,21 @@ async function requestLocationPermission(): Promise<boolean> {
         ]
       );
       return false;
-    case RESULTS.BLOCKED:
-      // user permanently denied
-      Alert.alert(
-        'Permission blocked',
-        'Location permission is required to deliver your order.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Open Settings', onPress: () => Linking.openSettings() },
-        ]
-      );
+    case RESULTS.BLOCKED: {
+      // User permanently denied – show a single, stable alert for the whole session
+      if (!hasShownBlockedAlert) {
+        hasShownBlockedAlert = true;
+        Alert.alert(
+          'Permission blocked',
+          'Location permission is required to deliver your order.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          ]
+        );
+      }
       return false;
+    }
     case RESULTS.GRANTED:
       return true;
     default:
@@ -77,7 +84,12 @@ export async function getDeliveryLocation(
         resolve({ latitude, longitude });
       },
       (error) => {
-        console.error('[LocationService] First attempt failed:', error);
+        if (__DEV__) {
+          // Non-fatal: log quietly in development without triggering global console error handlers
+          // that can surface as red screens.
+          // eslint-disable-next-line no-console
+          console.log('[LocationService] First attempt failed:', error);
+        }
         
         // Retry with different settings
         Geolocation.getCurrentPosition(
@@ -87,7 +99,10 @@ export async function getDeliveryLocation(
             resolve({ latitude, longitude });
           },
           (retryError) => {
-            console.error('[LocationService] Retry failed:', retryError);
+            if (__DEV__) {
+              // eslint-disable-next-line no-console
+              console.log('[LocationService] Retry failed:', retryError);
+            }
             
             if (fallbackToManual) {
               Alert.alert(
@@ -173,7 +188,10 @@ export async function getValidatedDeliveryLocation(): Promise<DeliveryLocation |
     
     return null;
   } catch (error) {
-    console.error('[LocationService] Error getting validated location:', error);
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.log('[LocationService] Error getting validated location:', error);
+    }
     Alert.alert(
       'Location Error',
       'Unable to get your location. Please check your location settings and try again.',

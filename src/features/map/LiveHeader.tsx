@@ -29,7 +29,7 @@ const LiveHeader: FC<{
             style={styles.backButton}
             onPress={() => {
               if (isCustomer) {
-                navigate('ProductDashboard');
+                navigate('MainStack');
                 if (currentOrder?.status == 'delivered') {
                   setCurrentOrder(null);
                 }
@@ -70,16 +70,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 10,
     alignItems: 'center',
+    width: '100%',
   },
   backButton: {
     position: 'absolute',
     left: 20,
+    height: '100%',
+    justifyContent: 'center',
+    zIndex: 1,
+    paddingTop: 16,
   },
   titleTextBlack: {
     color: 'black',
+    textAlign: 'center',
   },
   titleTextWhite: {
     color: 'white',
+    textAlign: 'center',
   },
 });
 

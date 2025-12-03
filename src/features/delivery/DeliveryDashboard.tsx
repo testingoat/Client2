@@ -12,12 +12,12 @@ import {Colors} from '@utils/Constants';
 import {useAuthStore} from '@state/authStore';
 import DeliveryHeader from '@components/delivery/DeliveryHeader';
 import TabBar from '@components/delivery/TabBar';
-import Geolocation from '@react-native-community/geolocation';
 import {reverseGeocode} from '@service/mapService';
 import {fetchOrders} from '@service/orderService';
 import DeliveryOrderItem from '@components/delivery/DeliveryOrderItem';
 import CustomText from '@components/ui/CustomText';
 import withLiveOrder from './withLiveOrder';
+import {getDeliveryLocation, requestLocationPermission} from '@service/locationService';
 
 const DeliveryDashboard = () => {
   const {user, setUser} = useAuthStore();
@@ -28,18 +28,31 @@ const DeliveryDashboard = () => {
   const [data, setData] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  const updateUser = () => {
-    Geolocation.getCurrentPosition(
-      position => {
-        const {latitude, longitude} = position.coords;
-        reverseGeocode(latitude, longitude, setUser);
-      },
-      err => console.log(err),
-      {
-        enableHighAccuracy: false,
-        timeout: 15000,
-      },
-    );
+  const updateUser = async () => {
+    try {
+      const hasPermission = await requestLocationPermission();
+      if (!hasPermission) {
+        if (__DEV__) {
+          console.log('DeliveryDashboard: location permission not granted');
+        }
+        return;
+      }
+
+      const location = await getDeliveryLocation(false);
+      if (!location) {
+        if (__DEV__) {
+          console.log('DeliveryDashboard: no location available after permission check');
+        }
+        return;
+      }
+
+      const {latitude, longitude} = location;
+      reverseGeocode(latitude, longitude, setUser);
+    } catch (error) {
+      if (__DEV__) {
+        console.log('DeliveryDashboard: error updating user location', error);
+      }
+    }
   };
 
   useEffect(() => {

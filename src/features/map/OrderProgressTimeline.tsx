@@ -1,21 +1,101 @@
-import {View, StyleSheet} from 'react-native';
-import React, {FC} from 'react';
-import {Colors, Fonts} from '@utils/Constants';
+import { View, StyleSheet } from 'react-native';
+import React, { FC, useEffect } from 'react';
+import { Colors, Fonts } from '@utils/Constants';
 import CustomText from '@components/ui/CustomText';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {RFValue} from 'react-native-responsive-fontsize';
+import { RFValue } from 'react-native-responsive-fontsize';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 
 interface OrderProgressTimelineProps {
-  currentStatus: 'available' | 'confirmed' | 'arriving' | 'delivered' | 'cancelled';
+  currentStatus:
+  | 'available'
+  | 'confirmed'
+  | 'arriving'
+  | 'delivered'
+  | 'cancelled';
 }
 
-const OrderProgressTimeline: FC<OrderProgressTimelineProps> = ({currentStatus}) => {
+const AnimatedStepIcon = ({
+  isCompleted,
+  isCurrent,
+  isFuture,
+  icon,
+}: {
+  isCompleted: boolean;
+  isCurrent: boolean;
+  isFuture: boolean;
+  icon: string;
+}) => {
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    if (isCurrent) {
+      // Pulse effect for the current step
+      scale.value = withRepeat(
+        withSequence(
+          withTiming(1.2, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+        ),
+        -1, // Infinite loop
+        true, // Reverse
+      );
+    } else {
+      scale.value = withTiming(1);
+    }
+  }, [isCurrent]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.iconContainer,
+        isCompleted
+          ? styles.completedIcon
+          : isCurrent
+            ? styles.currentIcon
+            : styles.pendingIcon,
+        isCurrent && animatedStyle, // Only animate if current
+      ]}>
+      {isCompleted ? (
+        <Icon name="check" size={RFValue(14)} color="#fff" />
+      ) : (
+        <Icon
+          name={icon}
+          size={RFValue(14)}
+          color={
+            isCurrent
+              ? Colors.secondary
+              : isFuture
+                ? Colors.disabled
+                : '#fff'
+          }
+        />
+      )}
+    </Animated.View>
+  );
+};
+
+const OrderProgressTimeline: FC<OrderProgressTimelineProps> = ({
+  currentStatus,
+}) => {
   // Define the steps in order
   const steps = [
-    {id: 'available', title: 'Order Confirmed', icon: 'check-circle'},
-    {id: 'confirmed', title: 'Picked Up', icon: 'package-variant'},
-    {id: 'arriving', title: 'On the Way', icon: 'motorbike'},
-    {id: 'delivered', title: 'Delivered', icon: 'home'},
+    { id: 'available', title: 'Order Confirmed', icon: 'check-circle' },
+    { id: 'confirmed', title: 'Picked Up', icon: 'package-variant' },
+    { id: 'arriving', title: 'On the Way', icon: 'motorbike' },
+    { id: 'delivered', title: 'Delivered', icon: 'home' },
   ];
 
   // Determine the current step index
@@ -51,37 +131,20 @@ const OrderProgressTimeline: FC<OrderProgressTimelineProps> = ({currentStatus}) 
                 <View
                   style={[
                     styles.connector,
-                    isCompleted ? styles.completedConnector : styles.pendingConnector,
+                    isCompleted
+                      ? styles.completedConnector
+                      : styles.pendingConnector,
                   ]}
                 />
               )}
 
-              {/* Step icon container */}
-              <View
-                style={[
-                  styles.iconContainer,
-                  isCompleted
-                    ? styles.completedIcon
-                    : isCurrent
-                    ? styles.currentIcon
-                    : styles.pendingIcon,
-                ]}>
-                {isCompleted ? (
-                  <Icon name="check" size={RFValue(14)} color="#fff" />
-                ) : (
-                  <Icon
-                    name={step.icon}
-                    size={RFValue(14)}
-                    color={
-                      isCurrent
-                        ? Colors.secondary
-                        : isFuture
-                        ? Colors.disabled
-                        : '#fff'
-                    }
-                  />
-                )}
-              </View>
+              {/* Step icon container with Animation */}
+              <AnimatedStepIcon
+                isCompleted={isCompleted}
+                isCurrent={isCurrent}
+                isFuture={isFuture}
+                icon={step.icon}
+              />
 
               {/* Step label */}
               <CustomText
@@ -110,6 +173,12 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 15,
     paddingHorizontal: 10,
+    // Add shadow for better look
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   timelineContainer: {
     flexDirection: 'row',
@@ -159,6 +228,7 @@ const styles = StyleSheet.create({
   stepLabel: {
     textAlign: 'center',
     width: '100%',
+    fontSize: RFValue(9), // Slightly smaller for better fit
   },
   activeLabel: {
     color: '#000',

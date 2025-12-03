@@ -7,7 +7,7 @@ import {hocStyles} from '@styles/GlobalStyles';
 import {Colors, Fonts} from '@utils/Constants';
 import {navigate} from '@utils/NavigationUtils';
 import {FC, useEffect} from 'react';
-import {Image, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Image, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {io} from 'socket.io-client';
 import React from 'react';
 
@@ -40,6 +40,22 @@ const withLiveStatus = <P extends object>(
       setCurrentOrder(data);
     };
 
+    const getStatusLabel = (status?: string) => {
+      switch (status) {
+        case 'pending_seller_approval':
+          return 'Waiting for store confirmation';
+        case 'available':
+        case 'confirmed':
+          return 'Order accepted';
+        case 'arriving':
+          return 'On the way';
+        case 'delivered':
+          return 'Order delivered';
+        default:
+          return 'Processing your order';
+      }
+    };
+
     useEffect(() => {
       if (currentOrder) {
         const socketInstance = io(SOCKET_URL, {
@@ -59,6 +75,13 @@ const withLiveStatus = <P extends object>(
           fetchOrderDetails();
           if (__DEV__) {
             console.log('ORDER CONFIRMATION LIVE UPDATES🔴');
+          }
+        });
+
+        socketInstance.on('orderAccepted', acceptedOrder => {
+          fetchOrderDetails();
+          if (__DEV__) {
+            console.log('ORDER ACCEPTED LIVE UPDATE');
           }
         });
 
@@ -87,9 +110,17 @@ const withLiveStatus = <P extends object>(
               </View>
 
               <View style={{width: '68%'}}>
-                <CustomText variant="h7" fontFamily={Fonts.SemiBold}>
-                  Order is {currentOrder?.status}
-                </CustomText>
+                <View style={styles.statusRow}>
+                  {currentOrder?.status === 'pending_seller_approval' && (
+                    <ActivityIndicator size="small" color={Colors.secondary} />
+                  )}
+                  <CustomText
+                    variant="h7"
+                    fontFamily={Fonts.SemiBold}
+                    style={styles.statusText}>
+                    {getStatusLabel(currentOrder?.status)}
+                  </CustomText>
+                </View>
                 <CustomText variant="h9" fontFamily={Fonts.Medium}>
                   {currentOrder?.items && currentOrder.items.length > 0
                     ? (currentOrder.items[0]?.item?.name || 'Unknown Item') +
@@ -134,6 +165,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingVertical: 10,
     padding: 10,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statusText: {
+    flexShrink: 1,
   },
   img: {
     backgroundColor: Colors.backgroundSecondary,

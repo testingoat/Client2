@@ -9,6 +9,7 @@ import { useAuthStore } from '@state/authStore';
 import { tokenStorage } from '@state/storage';
 import { jwtDecode } from 'jwt-decode';
 import { refetchUser, refresh_tokens } from '@service/authService';
+import { requestLocationPermission } from '@service/locationService';
 
 GeoLocation.setRNConfiguration({
   skipPermissionRequests: false,
@@ -75,7 +76,8 @@ const SplashScreen: FC = () => {
   useEffect(() => {
     const intialStartup = async () => {
       try {
-        GeoLocation.requestAuthorization();
+        // Use shared permission helper so behaviour is consistent everywhere.
+        await requestLocationPermission();
         await tokenCheck();
       } catch (error) {
         Alert.alert(

@@ -35,6 +35,12 @@ const OrderSuccess: FC = () => {
         style={styles.orderPlaceText}>
         ORDER PLACED
       </CustomText>
+      <CustomText
+        variant="h9"
+        fontFamily={Fonts.Medium}
+        style={styles.subtitleText}>
+        Waiting for store to confirm your order
+      </CustomText>
       <View style={styles.deliveryContainer}>
         <CustomText
           variant="h4"
@@ -65,6 +71,10 @@ const styles = StyleSheet.create({
   },
   orderPlaceText: {
     opacity: 0.4,
+  },
+  subtitleText: {
+    opacity: 0.8,
+    marginTop: 6,
   },
   deliveryContainer: {
     borderBottomWidth: 2,

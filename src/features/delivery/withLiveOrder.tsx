@@ -7,6 +7,7 @@ import {Colors, Fonts} from '@utils/Constants';
 import {navigate} from '@utils/NavigationUtils';
 import {FC, useEffect, useState} from 'react';
 import {Image, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {requestLocationPermission} from '@service/locationService';
 
 const withLiveOrder = <P extends object>(
   WrappedComponent: React.ComponentType<P>,
@@ -17,7 +18,17 @@ const withLiveOrder = <P extends object>(
 
     useEffect(() => {
       if (currentOrder) {
-        const watchId = Geolocation.watchPosition(
+        let watchId: number | null = null;
+
+        requestLocationPermission().then(hasPermission => {
+          if (!hasPermission) {
+            if (__DEV__) {
+              console.log('withLiveOrder: location permission not granted, skipping live tracking');
+            }
+            return;
+          }
+
+          watchId = Geolocation.watchPosition(
           async position => {
             const {latitude, longitude} = position.coords;
             console.log(
@@ -33,8 +44,13 @@ const withLiveOrder = <P extends object>(
           error => console.log('Error fetching Location', error),
           {enableHighAccuracy: true, distanceFilter: 200},
         );
+        });
 
-        return () => Geolocation.clearWatch(watchId);
+        return () => {
+          if (watchId !== null) {
+            Geolocation.clearWatch(watchId);
+          }
+        };
       }
     }, [currentOrder]);
 

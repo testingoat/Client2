@@ -1,31 +1,34 @@
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import React, { FC, useEffect, useMemo, useRef } from 'react';
-import { useAuthStore } from '@state/authStore';
-import Geolocation from '@react-native-community/geolocation';
-import { reverseGeocode } from '@service/mapService';
-import CustomText from '@components/ui/CustomText';
-import { Fonts } from '@utils/Constants';
-import { RFValue } from 'react-native-responsive-fontsize';
+import React, {FC, useEffect, useMemo, useRef} from 'react';
+import {View, StyleSheet, TouchableOpacity} from 'react-native';
+import {RFValue} from 'react-native-responsive-fontsize';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useWeatherStore } from '@state/weatherStore';
-import { calculateDistance } from '@utils/etaCalculator';
-import { useDeliveryEta } from '@features/dashboard/hooks/useDeliveryEta';
+import CustomText from '@components/ui/CustomText';
+import {useAuthStore} from '@state/authStore';
+import {useWeatherStore} from '@state/weatherStore';
+import {reverseGeocode} from '@service/mapService';
+import {calculateDistance} from '@utils/etaCalculator';
+import {Fonts} from '@utils/Constants';
+import {useDeliveryEta} from '@features/dashboard/hooks/useDeliveryEta';
+import {
+  getDeliveryLocation,
+  requestLocationPermission,
+} from '@service/locationService';
 
 // Helper function to format and truncate address
 const formatAddress = (address: string): string => {
-  if (!address) return 'Live tracking available';
-
-  // Split address by commas and take relevant parts
-  const parts = address.split(',').map(part => part.trim());
-
-  // Try to get street and area (first 2-3 parts usually)
-  if (parts.length >= 2) {
-    const shortAddress = parts.slice(0, 2).join(', ');
-    // Limit to 25 characters for better UI
-    return shortAddress.length > 25 ? shortAddress.substring(0, 22) + '...' : shortAddress;
+  if (!address) {
+    return 'Live tracking available';
   }
 
-  // Fallback: truncate the full address
+  const parts = address.split(',').map(part => part.trim());
+
+  if (parts.length >= 2) {
+    const shortAddress = parts.slice(0, 2).join(', ');
+    return shortAddress.length > 25
+      ? shortAddress.substring(0, 22) + '...'
+      : shortAddress;
+  }
+
   return address.length > 25 ? address.substring(0, 22) + '...' : address;
 };
 
@@ -35,29 +38,36 @@ const getWeatherBadgeText = (current: any): string => {
     const icon = current?.icon || '☀️';
     const label = current?.label || 'Sunny';
 
-    // Ensure both are strings and not undefined/null
     const safeIcon = String(icon).trim() || '☀️';
     const safeLabel = String(label).trim() || 'Sunny';
 
     return `${safeIcon} ${safeLabel}`;
   } catch (error) {
     if (__DEV__) {
+      // eslint-disable-next-line no-console
       console.log('Weather badge error:', error);
     }
     return '☀️ Sunny';
   }
 };
 
-const Header: FC<{ showNotice: () => void }> = ({ showNotice }) => {
+const Header: FC<{showNotice: () => void}> = ({showNotice}) => {
   const setUser = useAuthStore(state => state.setUser);
   const user = useAuthStore(state => state.user);
-  const current = useWeatherStore(state => state.current);
-  const refresh = useWeatherStore(state => state.refresh);
-  const needsRefresh = useWeatherStore(state => state.needsRefresh);
-  const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
 
-  // Use the new ETA hook
-  const { state: etaState, etaText, branchName, branchDistance, refresh: refreshEta } = useDeliveryEta();
+  const current = useWeatherStore(state => state.current);
+  const refreshWeather = useWeatherStore(state => state.refresh);
+  const needsRefresh = useWeatherStore(state => state.needsRefresh);
+
+  const lastCoordsRef = useRef<{lat: number; lng: number} | null>(null);
+
+  const {
+    state: etaState,
+    etaText,
+    branchName,
+    branchDistance,
+    refresh: refreshEta,
+  } = useDeliveryEta();
 
   const branchSubtitle = useMemo(() => {
     if (etaState !== 'SUCCESS' || !branchName) {
@@ -70,65 +80,82 @@ const Header: FC<{ showNotice: () => void }> = ({ showNotice }) => {
   }, [branchName, branchDistance, etaState]);
 
   const updateUserLocation = async () => {
-    Geolocation.requestAuthorization();
-    Geolocation.getCurrentPosition(
-      async position => {
-        const { latitude, longitude } = position.coords;
-        const previousCoords = lastCoordsRef.current;
-
+    try {
+      const hasPermission = await requestLocationPermission();
+      if (!hasPermission) {
         if (__DEV__) {
-          console.log('Location obtained:', { latitude, longitude });
-        }
-
-        // Check for significant movement (>1km) for weather refresh
-        let significantMovement = false;
-        if (previousCoords) {
-          const distance = calculateDistance(
-            previousCoords.lat,
-            previousCoords.lng,
-            latitude,
-            longitude,
+          // eslint-disable-next-line no-console
+          console.log(
+            'Header: location permission not granted, skipping fetch',
           );
-          significantMovement = distance >= 1; // 1km threshold
-          if (__DEV__ && significantMovement) {
-            console.log(`🚶 Significant movement detected: ${distance.toFixed(2)}km`);
-          }
         }
+        return;
+      }
 
-        // Update location in auth store (this refreshes the address display)
-        reverseGeocode(latitude, longitude, setUser);
-        lastCoordsRef.current = { lat: latitude, lng: longitude };
-
-        // Refresh weather if needed (initial fetch, time-based, or significant movement)
-        if (needsRefresh(latitude, longitude) || significantMovement) {
-          await refresh(latitude, longitude);
-        }
-      },
-      error => {
+      const location = await getDeliveryLocation(false);
+      if (!location) {
         if (__DEV__) {
-          console.log('Location error:', error);
-          console.log('Using fallback location display');
+          // eslint-disable-next-line no-console
+          console.log('Header: no location available after permission check');
         }
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 10000,
-      },
-    );
+        return;
+      }
+
+      const {latitude, longitude} = location;
+      const previousCoords = lastCoordsRef.current;
+
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.log('Header: Location obtained via service:', {
+          latitude,
+          longitude,
+        });
+      }
+
+      let significantMovement = false;
+      if (previousCoords) {
+        const distance = calculateDistance(
+          previousCoords.lat,
+          previousCoords.lng,
+          latitude,
+          longitude,
+        );
+        significantMovement = distance >= 1;
+        if (__DEV__ && significantMovement) {
+          // eslint-disable-next-line no-console
+          console.log(
+            `Header: Significant movement detected: ${distance.toFixed(2)}km`,
+          );
+        }
+      }
+
+      reverseGeocode(latitude, longitude, setUser);
+      lastCoordsRef.current = {lat: latitude, lng: longitude};
+
+      if (needsRefresh(latitude, longitude) || significantMovement) {
+        await refreshWeather(latitude, longitude);
+      }
+    } catch (error) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.log('Header: Location update failed', error);
+      }
+    }
   };
 
   useEffect(() => {
     updateUserLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Debug user data and weather
   useEffect(() => {
     if (__DEV__) {
+      // eslint-disable-next-line no-console
       console.log('Header: Current user data:', user);
+      // eslint-disable-next-line no-console
       console.log('Header: User address:', user?.address);
+      // eslint-disable-next-line no-console
       console.log('Header: Weather current:', current);
-      console.log('Header: Weather icon type:', typeof current?.icon, current?.icon);
-      console.log('Header: Weather label type:', typeof current?.label, current?.label);
     }
   }, [user, current]);
 
@@ -136,7 +163,9 @@ const Header: FC<{ showNotice: () => void }> = ({ showNotice }) => {
     <View style={styles.subContainer}>
       <TouchableOpacity activeOpacity={0.8} onPress={refreshEta}>
         <CustomText fontFamily={Fonts.Bold} variant="h8" style={styles.text}>
-          {etaState === 'OUT_OF_COVERAGE' ? 'Service Unavailable' : 'Delivery ETA'}
+          {etaState === 'OUT_OF_COVERAGE'
+            ? 'Service Unavailable'
+            : 'Delivery ETA'}
         </CustomText>
         <View style={styles.flexRowGap}>
           <CustomText
@@ -149,7 +178,7 @@ const Header: FC<{ showNotice: () => void }> = ({ showNotice }) => {
             <CustomText
               fontSize={RFValue(5)}
               fontFamily={Fonts.SemiBold}
-              style={{ color: '#3B4886' }}>
+              style={{color: '#3B4886'}}>
               {getWeatherBadgeText(current)}
             </CustomText>
           </TouchableOpacity>
@@ -159,7 +188,7 @@ const Header: FC<{ showNotice: () => void }> = ({ showNotice }) => {
           <CustomText
             variant="h8"
             fontFamily={Fonts.Medium}
-            style={[styles.text, { opacity: 0.8, fontSize: RFValue(8) }]}
+            style={[styles.text, {opacity: 0.8, fontSize: RFValue(8)}]}
             numberOfLines={1}>
             {String(
               user?.address
@@ -214,3 +243,4 @@ const styles = StyleSheet.create({
 });
 
 export default Header;
+

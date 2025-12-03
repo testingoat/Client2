@@ -54,6 +54,7 @@ const Navigation: FC = () => {
         <Stack.Screen name="MainStack" component={BottomTabNavigator} />
         <Stack.Screen name="DeliveryDashboard" component={DeliveryDashboard} />
         <Stack.Screen name="OrderSuccess" component={OrderSuccess} />
+        <Stack.Screen name="LiveTracking" component={LiveTracking} />
         <Stack.Screen name="Profile" component={Profile} />
         <Stack.Screen name="DeliveryMap" component={DeliveryMap} />
         <Stack.Screen name="NotificationScreen" component={NotificationScreen} />

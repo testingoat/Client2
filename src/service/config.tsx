@@ -14,7 +14,9 @@ const IS_DEVELOPMENT = __DEV__;
 // 🎯 AUTOMATIC ENVIRONMENT SELECTION BASED ON BUILD TYPE
 // Debug builds (__DEV__ = true) → Staging Server
 // Release builds (__DEV__ = false) → Production Server
-const ENVIRONMENT = __DEV__ ? 'staging' : 'production'; // staging | production
+const APP_ENV = Config.APP_ENV || 'staging'; // 'staging' | 'production'
+const ENVIRONMENT: 'staging' | 'production' =
+  APP_ENV === 'production' ? 'production' : 'staging';
 
 // 🎯 ENVIRONMENT-SPECIFIC URL GENERATION
 const getBaseURL = () => {

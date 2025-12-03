@@ -108,7 +108,6 @@ const LiveTracking = () => {
         title={msg}
         secondTitle={time}
         eta={dynamicETA}
-        hideBack
       />
 
       <ScrollView

@@ -25,7 +25,12 @@ class MainActivity : ReactActivity() {
    * Android 8 compatibility fixes
    */
   override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
+    // IMPORTANT: prevent Fragment restoration for react-native-screens
+    // See: https://github.com/software-mansion/react-native-screens/issues/17#issuecomment-424704067
+    // Passing null here ensures ScreenStackFragment is not recreated from a saved state,
+    // which was causing: "Screen fragments should never be restored" crashes when
+    // the app process was killed and the activity was re-created.
+    super.onCreate(null)
 
     // Fix for Android 8 threading issues
     try {
@@ -36,4 +41,3 @@ class MainActivity : ReactActivity() {
     }
   }
 }
-
