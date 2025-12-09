@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Linking, Alert, RefreshControl } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '@state/authStore';
 import { getOrderById } from '@service/orderService';
@@ -19,6 +19,13 @@ const LiveTracking = () => {
   const { currentOrder, setCurrentOrder, user } = useAuthStore();
   const [dynamicETA, setDynamicETA] = useState<string>('');
   const insets = useSafeAreaInsets();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchOrderDetails();
+    setRefreshing(false);
+  };
 
   const fetchOrderDetails = async () => {
     const data = await getOrderById(currentOrder?._id as any);
@@ -114,7 +121,10 @@ const LiveTracking = () => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: 150 + insets.bottom }]}>
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 150 + insets.bottom }]}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.secondary]} />
+        }>
 
         {/* Order Progress Timeline */}
         <OrderProgressTimeline currentStatus={currentOrder?.status || 'available'} />

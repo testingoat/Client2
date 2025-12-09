@@ -65,23 +65,35 @@ const withLiveStatus = <P extends object>(
         socketInstance.emit('joinRoom', currentOrder?._id);
 
         socketInstance?.on('liveTrackingUpdates', updatedOrder => {
-          fetchOrderDetails();
+          if (updatedOrder) {
+            setCurrentOrder(updatedOrder);
+          } else {
+            fetchOrderDetails();
+          }
           if (__DEV__) {
-            console.log('RECEIVING LIVE UPDATES 🔴');
+            console.log('RECEIVING LIVE UPDATES 🔴', updatedOrder ? 'Payload Used' : 'Refetched');
           }
         });
 
         socketInstance.on('orderConfirmed', confirmOrder => {
-          fetchOrderDetails();
+          if (confirmOrder) {
+            setCurrentOrder(confirmOrder);
+          } else {
+            fetchOrderDetails();
+          }
           if (__DEV__) {
-            console.log('ORDER CONFIRMATION LIVE UPDATES🔴');
+            console.log('ORDER CONFIRMATION LIVE UPDATES🔴', confirmOrder ? 'Payload Used' : 'Refetched');
           }
         });
 
         socketInstance.on('orderAccepted', acceptedOrder => {
-          fetchOrderDetails();
+          if (acceptedOrder) {
+            setCurrentOrder(acceptedOrder);
+          } else {
+            fetchOrderDetails();
+          }
           if (__DEV__) {
-            console.log('ORDER ACCEPTED LIVE UPDATE');
+            console.log('ORDER ACCEPTED LIVE UPDATE', acceptedOrder ? 'Payload Used' : 'Refetched');
           }
         });
 
