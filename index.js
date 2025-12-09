@@ -4,8 +4,10 @@
 
 import {AppRegistry, Text, TextInput} from 'react-native';
 import React from 'react';
+import messaging from '@react-native-firebase/messaging';
 import App from './App';
 import {name as appName} from './app.json';
+import {persistNotificationFromRemoteMessage} from './src/utils/backgroundNotificationStorage';
 
 // Development-only console filter to keep dev logs usable
 // without crashing the UI on expected geolocation permission errors.
@@ -57,5 +59,14 @@ if (TextInput.defaultProps) {
   TextInput.defaultProps = {};
   TextInput.defaultProps.allowFontScaling = false;
 }
+
+messaging().setBackgroundMessageHandler(async remoteMessage => {
+  try {
+    console.log('dY"ñ Customer App: background message received', remoteMessage);
+    await persistNotificationFromRemoteMessage(remoteMessage);
+  } catch (error) {
+    console.error('Лил?O Failed to persist background notification:', error);
+  }
+});
 
 AppRegistry.registerComponent(appName, () => App);

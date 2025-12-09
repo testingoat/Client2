@@ -1,11 +1,15 @@
-import {View, Text, StyleSheet, Image} from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import React from 'react';
-import {Colors, Fonts} from '@utils/Constants';
-import {useCartStore} from '@state/cartStore';
+import { Colors, Fonts } from '@utils/Constants';
+import { useCartStore } from '@state/cartStore';
 import CustomText from '@components/ui/CustomText';
 import OrderItem from './OrderItem';
 
-const OrderList = () => {
+interface OrderListProps {
+  etaText: string;
+}
+
+const OrderList: React.FC<OrderListProps> = ({ etaText }) => {
   const cartItems = useCartStore(state => state.cart);
   const totalItems = cartItems?.reduce((acc, cart) => acc + cart?.count, 0);
   return (
@@ -19,7 +23,7 @@ const OrderList = () => {
         </View>
         <View>
           <CustomText variant="h5" fontFamily={Fonts.SemiBold}>
-            Delivery in 12 minutes
+            {etaText || 'Delivery time unavailable'}
           </CustomText>
           <CustomText
             variant="h8"

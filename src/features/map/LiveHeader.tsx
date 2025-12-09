@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { FC } from 'react';
 import { useAuthStore } from '@state/authStore';
 import { navigate } from '@utils/NavigationUtils';
@@ -21,64 +22,60 @@ const LiveHeader: FC<{
   // Determine which text to display - dynamic ETA or fallback to secondTitle
   const displayText = eta ? `Delivery in ${eta}` : (secondTitle || 'Delivery in 10 minutes');
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView>
-      <View style={styles.headerContainer}>
-        {!hideBack && (
-          <Pressable
-            style={styles.backButton}
-            onPress={() => {
-              if (isCustomer) {
-                navigate('MainStack');
-                if (currentOrder?.status == 'delivered') {
-                  setCurrentOrder(null);
-                }
-                return;
+    <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
+      {!hideBack && (
+        <Pressable
+          style={[styles.backButton, { top: insets.top + 10 }]}
+          onPress={() => {
+            if (isCustomer) {
+              navigate('MainStack');
+              if (currentOrder?.status == 'delivered') {
+                setCurrentOrder(null);
               }
-              navigate('DeliveryDashboard');
-            }}>
-            <Icon
-              name="chevron-back"
-              size={RFValue(16)}
-              color={isCustomer ? '#fff' : '#000'}
-            />
-          </Pressable>
-        )}
+              return;
+            }
+            navigate('DeliveryDashboard');
+          }}>
+          <Icon
+            name="chevron-back"
+            size={RFValue(16)}
+            color={isCustomer ? '#fff' : '#000'}
+          />
+        </Pressable>
+      )}
 
-        <CustomText
-          variant="h8"
-          fontFamily={Fonts.Medium}
-          style={isCustomer ? styles.titleTextWhite : styles.titleTextBlack}>
-          {title}
-        </CustomText>
+      <CustomText
+        variant="h8"
+        fontFamily={Fonts.Medium}
+        style={isCustomer ? styles.titleTextWhite : styles.titleTextBlack}>
+        {title}
+      </CustomText>
 
-        <CustomText
-          variant="h4"
-          fontFamily={Fonts.SemiBold}
-          style={isCustomer ? styles.titleTextWhite : styles.titleTextBlack}>
-          {displayText}
-        </CustomText>
-
-
-      </View>
-    </SafeAreaView>
+      <CustomText
+        variant="h4"
+        fontFamily={Fonts.SemiBold}
+        style={isCustomer ? styles.titleTextWhite : styles.titleTextBlack}>
+        {displayText}
+      </CustomText>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   headerContainer: {
     justifyContent: 'center',
-    paddingVertical: 10,
+    paddingBottom: 20,
     alignItems: 'center',
     width: '100%',
   },
   backButton: {
     position: 'absolute',
     left: 20,
-    height: '100%',
     justifyContent: 'center',
     zIndex: 1,
-    paddingTop: 16,
   },
   titleTextBlack: {
     color: 'black',

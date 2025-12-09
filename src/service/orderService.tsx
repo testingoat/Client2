@@ -1,11 +1,39 @@
 import { appAxios } from './apiInterceptors';
 import { BRANCH_ID } from './config';
+import type { DeliveryLocation } from './locationService';
+
+export interface DeliveryQuotePayload {
+  branchId: string;
+  deliveryLocation?: DeliveryLocation | null;
+  cartValue: number;
+  vehicleType?: string;
+  addressId?: string | null;
+}
+
+export interface DeliveryQuoteResponse {
+  final_fee: number;
+  agent_payout: number;
+  platform_margin: number;
+  currency: string;
+  applied_config_id?: string | null;
+  city?: string;
+  distance_km?: number;
+  breakdown: {
+    type: 'calculated' | 'fallback' | 'manual_override';
+    base_fare: number;
+    distance_surcharge: number;
+    small_order_surcharge: number;
+    surge_applied: number;
+    distance_km?: number;
+  };
+}
 
 export const createOrder = async (
   items: any,
   totalPrice: number,
-  deliveryLocation: { latitude: number; longitude: number },
-  branchId?: string
+  deliveryLocation: { latitude: number; longitude: number } | null,
+  branchId?: string,
+  addressId?: string | null,
 ) => {
   try {
     // Validate input parameters
@@ -14,7 +42,7 @@ export const createOrder = async (
       return null;
     }
 
-    if (!deliveryLocation || !deliveryLocation.latitude || !deliveryLocation.longitude) {
+    if (!addressId && (!deliveryLocation || !deliveryLocation.latitude || !deliveryLocation.longitude)) {
       console.error('Create Order Error: Invalid delivery location', deliveryLocation);
       return null;
     }
@@ -32,7 +60,8 @@ export const createOrder = async (
       items: items,
       branch: resolvedBranchId,
       totalPrice: totalPrice,
-      deliveryLocation: deliveryLocation,
+      deliveryLocation: deliveryLocation || undefined,
+      addressId,
     });
 
     console.log('Order created successfully:', response.data);
@@ -65,6 +94,22 @@ export const getOrderById = async (id: string) => {
   } catch (error) {
     console.log('Fetch Order Error', error);
     return null;
+  }
+};
+
+export const fetchDeliveryQuote = async (
+  payload: DeliveryQuotePayload,
+) => {
+  try {
+    const response = await appAxios.post('/order/quote', payload);
+    return response.data as DeliveryQuoteResponse;
+  } catch (error) {
+    console.error('Fetch Delivery Quote Error:', {
+      message: (error as any)?.message,
+      response: (error as any)?.response?.data,
+      status: (error as any)?.response?.status,
+    });
+    throw error;
   }
 };
 

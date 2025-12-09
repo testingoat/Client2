@@ -40,8 +40,8 @@ const AnimatedStepIcon = ({
       // Pulse effect for the current step
       scale.value = withRepeat(
         withSequence(
-          withTiming(1.2, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1.15, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1000, easing: Easing.out(Easing.ease) }),
         ),
         -1, // Infinite loop
         true, // Reverse
@@ -123,10 +123,11 @@ const OrderProgressTimeline: FC<OrderProgressTimelineProps> = ({
           const isCompleted = index < currentStepIndex;
           const isCurrent = index === currentStepIndex;
           const isFuture = index > currentStepIndex;
+          const zIndex = steps.length - index;
 
           return (
-            <View key={step.id} style={styles.stepContainer}>
-              {/* Connector line (except for the first step) */}
+            <View key={step.id} style={[styles.stepContainer, { zIndex }]}>
+              {/* Connector line */}
               {index > 0 && (
                 <View
                   style={[
@@ -169,49 +170,45 @@ const OrderProgressTimeline: FC<OrderProgressTimelineProps> = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderRadius: 15,
-    marginVertical: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    // Add shadow for better look
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    borderRadius: 16,
+    marginVertical: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
   timelineContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    position: 'relative',
+    alignItems: 'center',
   },
   stepContainer: {
     alignItems: 'center',
-    zIndex: 2,
     width: '25%',
   },
   connector: {
     position: 'absolute',
-    height: 2,
+    height: 3,
     width: '100%',
-    top: 15,
+    top: 19, // Center of 40px icon (roughly, adjusted for border)
     left: '-50%',
-    zIndex: 1,
+    zIndex: -1,
   },
   completedConnector: {
     backgroundColor: Colors.secondary,
   },
   pendingConnector: {
-    backgroundColor: Colors.disabled,
+    backgroundColor: '#E0E0E0',
   },
   iconContainer: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 5,
-    borderWidth: 2,
+    marginBottom: 8,
+    borderWidth: 3,
+    backgroundColor: '#fff', // Ensure background covers connector
   },
   completedIcon: {
     backgroundColor: Colors.secondary,
@@ -222,19 +219,21 @@ const styles = StyleSheet.create({
     borderColor: Colors.secondary,
   },
   pendingIcon: {
-    backgroundColor: '#fff',
-    borderColor: Colors.disabled,
+    backgroundColor: '#F5F5F5',
+    borderColor: '#E0E0E0',
   },
   stepLabel: {
     textAlign: 'center',
     width: '100%',
-    fontSize: RFValue(9), // Slightly smaller for better fit
+    fontSize: RFValue(9),
+    marginTop: 4,
   },
   activeLabel: {
-    color: '#000',
+    color: Colors.text,
+    transform: [{ scale: 1.05 }],
   },
   inactiveLabel: {
-    color: Colors.disabled,
+    color: '#999',
   },
 });
 

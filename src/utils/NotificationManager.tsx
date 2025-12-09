@@ -49,6 +49,7 @@ class NotificationManager {
         this.notifications = JSON.parse(stored);
       }
       this.sortAndTrim();
+      this.initialized = true;
       this.notifyListeners();
       return this.notifications;
     } catch (error) {
@@ -66,6 +67,10 @@ class NotificationManager {
   }
 
   async addNotification(notification: Omit<NotificationItem, 'id' | 'timestamp' | 'read'>): Promise<void> {
+    if (!this.initialized) {
+      await this.loadNotifications();
+    }
+
     const newNotification: NotificationItem = {
       ...notification,
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),

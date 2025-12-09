@@ -47,10 +47,10 @@ const OrdersScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#F7F8FA',
     },
     scrollViewContent: {
-        padding: 10,
+        padding: 16,
         paddingTop: 20,
         paddingBottom: 100,
     },

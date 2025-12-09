@@ -411,27 +411,28 @@ const FunctionalSearchBar: React.FC<FunctionalSearchBarProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    // Tighter spacing so more of the header gradient is visible
     marginTop: 8,
     marginHorizontal: 16,
   },
   searchContainer: {
-    // Make the search bar feel like a floating pill over the gradient
-    backgroundColor: 'rgba(243, 244, 247, 0.9)',
+    backgroundColor: '#FFFFFF',
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 24,
-    borderWidth: 0.6,
-    borderColor: Colors.border,
     paddingHorizontal: 12,
     height: 48,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   input: {
     flex: 1,
     paddingLeft: 10,
     fontSize: RFValue(14),
     fontFamily: Fonts.Medium,
-    color: Colors.text,
+    color: '#000',
   },
   clearButton: {
     padding: 5,
@@ -439,7 +440,7 @@ const styles = StyleSheet.create({
   divider: {
     width: 1,
     height: 24,
-    backgroundColor: '#ddd',
+    backgroundColor: '#eee',
     marginHorizontal: 10,
   },
   micButton: {

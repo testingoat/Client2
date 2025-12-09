@@ -7,10 +7,14 @@ import ProductDashboard from '@features/dashboard/ProductDashboard';
 import ProductCategories from '@features/category/ProductCategories';
 import ProductOrder from '@features/order/ProductOrder';
 import LiveGoat from '@features/dashboard/LiveGoat';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Platform } from 'react-native';
 
 const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
+    const insets = useSafeAreaInsets();
+
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -23,8 +27,9 @@ const BottomTabNavigator = () => {
                     shadowColor: '#000',
                     shadowOpacity: 0.1,
                     shadowRadius: 10,
-                    height: 70,
-                    paddingBottom: 10,
+                    height: Platform.OS === 'android' ? 70 + insets.bottom : 70 + insets.bottom,
+                    paddingBottom: Platform.OS === 'android' ? insets.bottom : insets.bottom,
+                    paddingTop: 10,
                 },
                 tabBarLabelStyle: {
                     fontFamily: Fonts.SemiBold,

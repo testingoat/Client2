@@ -1,14 +1,14 @@
-import React, {FC, useEffect, useMemo, useRef} from 'react';
-import {View, StyleSheet, TouchableOpacity} from 'react-native';
-import {RFValue} from 'react-native-responsive-fontsize';
+import React, { FC, useEffect, useMemo, useRef } from 'react';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CustomText from '@components/ui/CustomText';
-import {useAuthStore} from '@state/authStore';
-import {useWeatherStore} from '@state/weatherStore';
-import {reverseGeocode} from '@service/mapService';
-import {calculateDistance} from '@utils/etaCalculator';
-import {Fonts} from '@utils/Constants';
-import {useDeliveryEta} from '@features/dashboard/hooks/useDeliveryEta';
+import { useAuthStore } from '@state/authStore';
+import { useWeatherStore } from '@state/weatherStore';
+import { reverseGeocode } from '@service/mapService';
+import { calculateDistance } from '@utils/etaCalculator';
+import { Fonts } from '@utils/Constants';
+import { useDeliveryEta } from '@features/dashboard/hooks/useDeliveryEta';
 import {
   getDeliveryLocation,
   requestLocationPermission,
@@ -51,7 +51,7 @@ const getWeatherBadgeText = (current: any): string => {
   }
 };
 
-const Header: FC<{showNotice: () => void}> = ({showNotice}) => {
+const Header: FC<{ showNotice: () => void }> = ({ showNotice }) => {
   const setUser = useAuthStore(state => state.setUser);
   const user = useAuthStore(state => state.user);
 
@@ -59,7 +59,7 @@ const Header: FC<{showNotice: () => void}> = ({showNotice}) => {
   const refreshWeather = useWeatherStore(state => state.refresh);
   const needsRefresh = useWeatherStore(state => state.needsRefresh);
 
-  const lastCoordsRef = useRef<{lat: number; lng: number} | null>(null);
+  const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
 
   const {
     state: etaState,
@@ -101,7 +101,7 @@ const Header: FC<{showNotice: () => void}> = ({showNotice}) => {
         return;
       }
 
-      const {latitude, longitude} = location;
+      const { latitude, longitude } = location;
       const previousCoords = lastCoordsRef.current;
 
       if (__DEV__) {
@@ -130,7 +130,7 @@ const Header: FC<{showNotice: () => void}> = ({showNotice}) => {
       }
 
       reverseGeocode(latitude, longitude, setUser);
-      lastCoordsRef.current = {lat: latitude, lng: longitude};
+      lastCoordsRef.current = { lat: latitude, lng: longitude };
 
       if (needsRefresh(latitude, longitude) || significantMovement) {
         await refreshWeather(latitude, longitude);
@@ -162,33 +162,29 @@ const Header: FC<{showNotice: () => void}> = ({showNotice}) => {
   return (
     <View style={styles.subContainer}>
       <TouchableOpacity activeOpacity={0.8} onPress={refreshEta}>
-        <CustomText fontFamily={Fonts.Bold} variant="h8" style={styles.text}>
-          {etaState === 'OUT_OF_COVERAGE'
-            ? 'Service Unavailable'
-            : 'Delivery ETA'}
-        </CustomText>
         <View style={styles.flexRowGap}>
-          <CustomText
-            fontFamily={Fonts.SemiBold}
-            variant="h2"
-            style={styles.text}>
-            {etaState === 'LOADING' ? 'Calculating...' : etaText}
-          </CustomText>
+
           <TouchableOpacity style={styles.noticeBtn} onPress={showNotice}>
             <CustomText
-              fontSize={RFValue(5)}
+              fontSize={RFValue(6)}
               fontFamily={Fonts.SemiBold}
-              style={{color: '#3B4886'}}>
+              style={{ color: '#3B4886' }}>
               {getWeatherBadgeText(current)}
             </CustomText>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.flexRow}>
+        <CustomText
+          fontFamily={Fonts.Bold}
+          style={styles.etaValue}>
+          {etaState === 'LOADING' ? 'Calculating...' : etaText}
+        </CustomText>
+
+        <View style={styles.addressRow}>
           <CustomText
             variant="h8"
             fontFamily={Fonts.Medium}
-            style={[styles.text, {opacity: 0.8, fontSize: RFValue(8)}]}
+            style={styles.addressText}
             numberOfLines={1}>
             {String(
               user?.address
@@ -196,7 +192,7 @@ const Header: FC<{showNotice: () => void}> = ({showNotice}) => {
                 : 'Live tracking available',
             )}
           </CustomText>
-          <Icon name="check-circle" color="#0B8F3A" size={RFValue(9)} />
+          <Icon name="chevron-down" color="#ddd" size={RFValue(10)} />
         </View>
         {branchSubtitle && (
           <CustomText
@@ -214,31 +210,51 @@ const Header: FC<{showNotice: () => void}> = ({showNotice}) => {
 
 const styles = StyleSheet.create({
   subContainer: {
-    width: '70%',
+    width: '75%',
+    justifyContent: 'center',
+    paddingVertical: 10,
   },
   text: {
     color: '#fff',
   },
+  label: {
+    color: '#fff',
+    opacity: 0.8,
+    fontSize: RFValue(7),
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  etaValue: {
+    color: '#fff',
+    fontSize: RFValue(18),
+    marginTop: 2,
+  },
   flexRowGap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   noticeBtn: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 10,
-    paddingVertical: 2,
-    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
   },
-  flexRow: {
+  addressRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    marginTop: 5,
+    gap: 4,
+    marginTop: 2,
+  },
+  addressText: {
+    color: '#fff',
+    opacity: 0.85,
+    fontSize: RFValue(9),
   },
   branchText: {
-    opacity: 0.85,
-    marginTop: 4,
+    opacity: 0.6,
+    marginTop: 2,
+    fontSize: RFValue(8),
   },
 });
 

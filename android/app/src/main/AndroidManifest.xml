@@ -57,10 +57,16 @@
         </intent-filter>
       </service>
 
-      <!-- FCM Receiver -->
+      <!-- Remove default receiver so we can plug in our custom implementation -->
       <receiver
         android:name="io.invertase.firebase.messaging.ReactNativeFirebaseMessagingReceiver"
-        android:exported="true">
+        tools:node="remove" />
+
+      <!-- Custom receiver that renders big-picture notifications -->
+      <receiver
+        android:name="com.goatgoat.app.notifications.CustomerFirebaseMessagingReceiver"
+        android:exported="true"
+        android:permission="com.google.android.c2dm.permission.SEND">
         <intent-filter>
           <action android:name="com.google.android.c2dm.intent.RECEIVE" />
         </intent-filter>

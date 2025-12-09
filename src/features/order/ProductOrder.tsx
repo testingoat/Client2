@@ -6,8 +6,9 @@ import {
   Platform,
   TouchableOpacity,
   Alert,
+  RefreshControl,
 } from 'react-native';
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import CustomHeader from '@components/ui/CustomHeader';
 import { Colors, Fonts } from '@utils/Constants';
 import OrderList from './OrderList';
@@ -21,8 +22,10 @@ import { hocStyles } from '@styles/GlobalStyles';
 import ArrowButton from '@components/ui/ArrowButton';
 import { createOrder } from '@service/orderService';
 import { navigate } from '@utils/NavigationUtils';
-import { getValidatedDeliveryLocation } from '@service/locationService';
+import { DeliveryLocation, getValidatedDeliveryLocation } from '@service/locationService';
 import { useDeliveryEta } from '@features/dashboard/hooks/useDeliveryEta';
+import { useDeliveryQuote } from './hooks/useDeliveryQuote';
+import { useAddressStore } from '@state/addressStore';
 
 const ProductOrder = () => {
   const { getTotalPrice, cart, clearCart } = useCartStore();
@@ -36,7 +39,71 @@ const ProductOrder = () => {
     branchName,
     branchDistance,
     branchId,
+    refresh: refreshEta,
   } = useDeliveryEta();
+
+  const {
+    addresses,
+    selectedAddressId,
+    loadAddresses,
+    loading: addressLoading,
+  } = useAddressStore();
+
+  useEffect(() => {
+    loadAddresses();
+  }, [loadAddresses]);
+
+  const selectedAddress = useMemo(
+    () => addresses.find(addr => addr._id === selectedAddressId) || null,
+    [addresses, selectedAddressId],
+  );
+
+  const [deliveryLocationState, setDeliveryLocationState] =
+    useState<DeliveryLocation | null>(() => {
+      if (user?.address?.latitude && user?.address?.longitude) {
+        return {
+          latitude: user.address.latitude,
+          longitude: user.address.longitude,
+        };
+      }
+      return null;
+    });
+
+  useEffect(() => {
+    if (user?.address?.latitude && user?.address?.longitude) {
+      setDeliveryLocationState(prev => {
+        if (
+          prev &&
+          prev.latitude === user.address.latitude &&
+          prev.longitude === user.address.longitude
+        ) {
+          return prev;
+        }
+        return {
+          latitude: user.address.latitude,
+          longitude: user.address.longitude,
+        };
+      });
+    }
+  }, [user?.address?.latitude, user?.address?.longitude]);
+
+  const effectiveLocation = selectedAddress
+    ? { latitude: selectedAddress.latitude, longitude: selectedAddress.longitude }
+    : deliveryLocationState;
+
+  const {
+    quote,
+    loading: isQuoteLoading,
+    error: quoteError,
+    isDisabled: isQuoteDisabled,
+    refetch: refetchQuote,
+  } = useDeliveryQuote({
+    branchId,
+    cartValue: totalItemPrice,
+    deliveryLocation: effectiveLocation,
+    addressId: selectedAddress?._id || null,
+    enabled: etaState === 'SUCCESS' && (!!selectedAddress || !!effectiveLocation),
+  });
 
   const branchDisplay = useMemo(() => {
     if (!branchName) {
@@ -50,6 +117,55 @@ const ProductOrder = () => {
 
     return distanceText ? `${branchName} • ${distanceText}` : branchName;
   }, [branchName, branchDistance]);
+
+  const quoteInfoMessage =
+    quoteError?.message ||
+    (selectedAddress
+      ? null
+      : addresses.length === 0
+        ? 'Add a delivery address to view delivery fee.'
+        : 'Select a delivery address to continue.');
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadAddresses();
+      refreshEta();
+      if (!selectedAddress && !deliveryLocationState) {
+        const freshLocation = await getValidatedDeliveryLocation();
+        if (freshLocation) {
+          setDeliveryLocationState(freshLocation);
+        }
+      }
+      refetchQuote();
+    } catch (error) {
+      console.warn('Checkout refresh error', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+  const deliveryFeeTotal = quote?.final_fee ?? 0;
+  const grandTotal = totalItemPrice + deliveryFeeTotal;
+  const isPlaceOrderDisabled =
+    loading ||
+    isQuoteLoading ||
+    isQuoteDisabled ||
+    etaState === 'OUT_OF_COVERAGE' ||
+    quoteError?.code === 'DISTANCE_EXCEEDED';
+
+  const addressHeading = selectedAddress
+    ? `Delivering to ${selectedAddress.label || 'Home'}`
+    : 'Delivery Address';
+
+  const addressDescription = selectedAddress
+    ? [selectedAddress.houseNumber, selectedAddress.street, selectedAddress.landmark, selectedAddress.city, selectedAddress.pincode]
+        .filter(Boolean)
+        .join(', ')
+    : addresses.length === 0
+      ? 'Add an address to continue.'
+      : 'Select an address from your address book.';
 
   const handlePlaceOrder = async () => {
 
@@ -67,6 +183,23 @@ const ProductOrder = () => {
       return;
     }
 
+    if (quoteError?.code === 'DISTANCE_EXCEEDED') {
+      Alert.alert(
+        'Out of coverage',
+        quoteError?.message ||
+          'Delivery is currently unavailable for your address.',
+      );
+      return;
+    }
+
+    if (isQuoteDisabled || !branchId) {
+      Alert.alert(
+        'Select Address',
+        'Please set a delivery address to calculate delivery fees before placing the order.',
+      );
+      return;
+    }
+
     const formattedData = cart.map(item => ({
       id: item._id,
       item: item._id,
@@ -80,14 +213,22 @@ const ProductOrder = () => {
 
     setLoading(true);
 
-    // Try to get location from user state first
-    let deliveryLocation = null;
-    if (user?.address?.latitude && user?.address?.longitude) {
+    // Try to reuse selected address or cached delivery location first
+    let deliveryLocation: DeliveryLocation | null = selectedAddress
+      ? {
+          latitude: selectedAddress.latitude,
+          longitude: selectedAddress.longitude,
+        }
+      : deliveryLocationState;
+
+    if (!deliveryLocation && user?.address?.latitude && user?.address?.longitude) {
       deliveryLocation = {
         latitude: user.address.latitude,
         longitude: user.address.longitude,
       };
-    } else {
+    }
+
+    if (!deliveryLocation) {
       // If no location in user state, try to get current location
       try {
         deliveryLocation = await getValidatedDeliveryLocation();
@@ -106,11 +247,16 @@ const ProductOrder = () => {
       return;
     }
 
+    if (!deliveryLocationState && deliveryLocation) {
+      setDeliveryLocationState(deliveryLocation);
+    }
+
     const data = await createOrder(
       formattedData,
       totalItemPrice,
       deliveryLocation,
       branchId,
+      selectedAddress?._id || null,
     );
 
     if (data != null) {
@@ -131,8 +277,16 @@ const ProductOrder = () => {
   return (
     <View style={styles.container}>
       <CustomHeader title="Checkout" hideBack />
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <OrderList />
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={Colors.secondary}
+          />
+        }>
+        <OrderList etaText={etaText} />
 
         <View style={styles.flexRowBetween}>
           <View style={styles.flexRow}>
@@ -147,7 +301,12 @@ const ProductOrder = () => {
           <Icon name="chevron-right" size={RFValue(16)} color={Colors.text} />
         </View>
 
-        <BillDetails totalItemPrice={totalItemPrice} />
+        <BillDetails
+          totalItemPrice={totalItemPrice}
+          quote={quote}
+          isLoading={isQuoteLoading}
+          errorMessage={quoteInfoMessage}
+        />
 
         <View style={styles.flexRowBetween}>
           <View>
@@ -175,13 +334,13 @@ const ProductOrder = () => {
               />
               <View style={styles.addressTextContainer}>
                 <CustomText variant="h8" fontFamily={Fonts.Medium}>
-                  Delivering to Home
+                  {addressHeading}
                 </CustomText>
                 <CustomText
                   variant="h9"
                   numberOfLines={2}
                   style={styles.addressText}>
-                  {user?.address?.address}
+                  {addressLoading ? 'Loading addresses...' : addressDescription}
                 </CustomText>
               </View>
             </View>
@@ -191,32 +350,9 @@ const ProductOrder = () => {
                 variant="h8"
                 style={{ color: Colors.secondary }}
                 fontFamily={Fonts.Medium}>
-                Change
+                {addresses.length ? 'Change' : 'Add'}
               </CustomText>
             </TouchableOpacity>
-          </View>
-
-          <View
-            style={[
-              styles.coverageBanner,
-              etaState === 'OUT_OF_COVERAGE'
-                ? styles.coverageBannerDanger
-                : styles.coverageBannerSafe,
-            ]}>
-            <Icon
-              name={
-                etaState === 'OUT_OF_COVERAGE' ? 'alert-circle' : 'map-marker-radius'
-              }
-              size={RFValue(10)}
-              color={etaState === 'OUT_OF_COVERAGE' ? '#AB1C2E' : '#0B8F3A'}
-            />
-            <CustomText
-              variant="h9"
-              fontFamily={Fonts.SemiBold}
-              style={styles.coverageBannerText}
-              numberOfLines={2}>
-              {etaText}
-            </CustomText>
           </View>
 
           {branchDisplay && etaState === 'SUCCESS' && (
@@ -244,7 +380,8 @@ const ProductOrder = () => {
             <View style={styles.orderButtonContainer}>
               <ArrowButton
                 loading={loading}
-                price={totalItemPrice}
+                disabled={isPlaceOrderDisabled}
+                price={grandTotal}
                 title="Place Order"
                 onPress={handlePlaceOrder}
               />

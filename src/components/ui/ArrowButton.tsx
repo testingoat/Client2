@@ -4,17 +4,19 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import React, {FC} from 'react';
-import {Colors, Fonts} from '@utils/Constants';
+import React, { FC } from 'react';
+import { Colors, Fonts } from '@utils/Constants';
+import { formatINRCurrency } from '@utils/currency';
 import CustomText from './CustomText';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {RFValue} from 'react-native-responsive-fontsize';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 interface ArrowButtonProps {
   title: string;
   onPress?: () => void;
   price?: number;
   loading?: boolean;
+  disabled?: boolean;
 }
 
 const ArrowButton: FC<ArrowButtonProps> = ({
@@ -22,29 +24,33 @@ const ArrowButton: FC<ArrowButtonProps> = ({
   onPress,
   price,
   loading,
+  disabled,
 }) => {
+  const isDisabled = loading || disabled;
+
   return (
     <TouchableOpacity
       activeOpacity={0.8}
-      disabled={loading}
+      disabled={isDisabled}
       onPress={onPress}
       style={[
         styles.btn,
-        {justifyContent: price !== 0 ? 'space-between' : 'center'},
+        { justifyContent: price !== undefined ? 'space-between' : 'center' },
+        isDisabled && { opacity: 0.7 },
       ]}>
-      {price != 0 && price ? (
+      {price !== undefined ? (
         <View>
           <CustomText
             variant="h7"
-            style={{color: 'white'}}
+            style={{ color: 'white' }}
             fontFamily={Fonts.Medium}>
-            ₹{price + 34}.0
+            {formatINRCurrency(price)}
           </CustomText>
 
           <CustomText
             variant="h9"
             fontFamily={Fonts.Medium}
-            style={{color: 'white'}}>
+            style={{ color: 'white' }}>
             TOTAL
           </CustomText>
         </View>
@@ -53,22 +59,20 @@ const ArrowButton: FC<ArrowButtonProps> = ({
       <View style={styles.flexRow}>
         <CustomText
           variant="h6"
-          style={{color: '#fff'}}
+          style={{ color: '#fff' }}
           fontFamily={Fonts.Medium}>
           {title}
         </CustomText>
         {loading ? (
           <ActivityIndicator
             color="white"
-            style={{marginHorizontal: 5}}
+            style={{ marginHorizontal: 5 }}
             size="small"
           />
         ) : (
           <Icon name="arrow-right" color="#fff" size={RFValue(25)} />
         )}
       </View>
-
-      
     </TouchableOpacity>
   );
 };

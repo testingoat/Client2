@@ -13,10 +13,12 @@ import LiveMap from './LiveMap';
 import OrderProgressTimeline from './OrderProgressTimeline';
 import CustomButton from '@components/ui/CustomButton';
 import { calculateDistance, calculateETA, formatETATime } from '@utils/etaCalculator';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const LiveTracking = () => {
   const { currentOrder, setCurrentOrder, user } = useAuthStore();
   const [dynamicETA, setDynamicETA] = useState<string>('');
+  const insets = useSafeAreaInsets();
 
   const fetchOrderDetails = async () => {
     const data = await getOrderById(currentOrder?._id as any);
@@ -112,7 +114,7 @@ const LiveTracking = () => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}>
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 150 + insets.bottom }]}>
 
         {/* Order Progress Timeline */}
         <OrderProgressTimeline currentStatus={currentOrder?.status || 'available'} />
@@ -245,7 +247,7 @@ const LiveTracking = () => {
           fontFamily={Fonts.SemiBold}
           variant="h6"
           style={{ opacity: 0.6, marginTop: 20 }}>
-          Goat Grocery - Fast & Fresh Delivery
+          Goat - Meat you Fresh everytime
         </CustomText>
       </ScrollView>
     </View>

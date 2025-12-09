@@ -1,5 +1,5 @@
 import messaging from '@react-native-firebase/messaging';
-import { Platform, PermissionsAndroid, Alert } from 'react-native';
+import { Platform, PermissionsAndroid, Alert, ToastAndroid } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NotificationManager from '@utils/NotificationManager';
 import { navigate } from '@utils/NavigationUtils';
@@ -232,6 +232,20 @@ class FCMService {
           type: this.getNotificationType(remoteMessage.data?.type),
           data: remoteMessage.data,
         });
+      }
+
+      if (Platform.OS === 'android') {
+        try {
+          const toastTitle = remoteMessage.notification?.title || 'Notification';
+          const toastBody = remoteMessage.notification?.body || 'You have a new update';
+          ToastAndroid.showWithGravity(
+            `${toastTitle}: ${toastBody}`,
+            ToastAndroid.SHORT,
+            ToastAndroid.TOP,
+          );
+        } catch (toastError) {
+          console.log('ƒsÿ‹,? Unable to show background toast:', toastError?.message);
+        }
       }
     } catch (error) {
       console.error('Error handling background message:', error);
