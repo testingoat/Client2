@@ -17,12 +17,12 @@ export const imageData = [
     require('../assets/products/16.png'),
 ];
 
+import { r2PublicUrl } from '@service/r2';
+
 export const adData = [
-    require('../assets/products/c1.jpg'),
-    require('../assets/products/c2.jpg'),
-    require('../assets/products/c3.jpeg'),
-    require('../assets/products/c2.jpg'),
-    require('../assets/products/c1.jpg'),
+    { uri: r2PublicUrl('banners/banner-1.png') },
+    { uri: r2PublicUrl('banners/banner-2.png') },
+    { uri: r2PublicUrl('banners/banner-3.png') },
 ];
 
 const productsList = [
