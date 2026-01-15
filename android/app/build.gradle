@@ -92,6 +92,11 @@ android {
         versionCode 6
         versionName "1.0.6"
         resValue "string", "build_config_package", "com.goatgoat.app"
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON", "-Wl,-z,max-page-size=16384"
+            }
+        }
     }
     signingConfigs {
         debug {
@@ -145,7 +150,9 @@ android {
         pickFirst '**/libruntimeexecutor.so'
         
         // Reanimated-specific libraries - REMOVED to fix "Failed to create a worklet" error
-
+        jniLibs {
+            useLegacyPackaging = false
+        }
     }
 }
 

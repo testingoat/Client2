@@ -9,13 +9,13 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import CustomSafeAreaView from '@components/global/CustomSafeAreaView';
 import ProductSlider from '@components/login/ProductSlider';
-import {Colors, Fonts, lightColors} from '@utils/Constants';
+import { Colors, Fonts, lightColors } from '@utils/Constants';
 import CustomText from '@components/ui/CustomText';
-import {RFValue} from 'react-native-responsive-fontsize';
-import {resetAndNavigate, navigate} from '@utils/NavigationUtils';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { resetAndNavigate, navigate } from '@utils/NavigationUtils';
 import useKeyboardOffsetHeight from '@utils/useKeyboardOffsetHeight';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomInput from '@components/ui/CustomInput';
@@ -47,38 +47,38 @@ const CustomerLogin = () => {
     Keyboard.dismiss()
     setLoading(true)
     try {
-        // Format phone number with country code
-        const formattedPhoneNumber = `+91${phoneNumber}`;
-        console.log('CustomerLogin: Starting OTP request for phone number:', phoneNumber);
-        console.log('CustomerLogin: Formatted phone number:', formattedPhoneNumber);
-        
-        // Validate phone number format
-        if (!phoneNumber || phoneNumber.length !== 10) {
-          console.log('CustomerLogin: Invalid phone number length:', phoneNumber?.length);
-          Alert.alert("Error", "Please enter a valid 10-digit phone number.");
-          setLoading(false);
-          return;
-        }
-        
-        // Request OTP when user clicks Continue
-        console.log('CustomerLogin: Calling requestOTP function...');
-        const response = await requestOTP(formattedPhoneNumber);
-        console.log('CustomerLogin: OTP Request Response received:', response);
-        
-        if (response.success) {
-          console.log('CustomerLogin: OTP request successful, navigating to OTP screen');
-          // Navigate to OTP verification screen if OTP request is successful
-          navigate('OTPVerification', { phone: formattedPhoneNumber });
-        } else {
-          console.log('CustomerLogin: OTP request failed:', response.message);
-          Alert.alert("Error", response.message || "Failed to send OTP. Please try again.");
-        }
+      // Format phone number with country code
+      const formattedPhoneNumber = `+91${phoneNumber}`;
+      console.log('CustomerLogin: Starting OTP request for phone number:', phoneNumber);
+      console.log('CustomerLogin: Formatted phone number:', formattedPhoneNumber);
+
+      // Validate phone number format
+      if (!phoneNumber || phoneNumber.length !== 10) {
+        console.log('CustomerLogin: Invalid phone number length:', phoneNumber?.length);
+        Alert.alert("Error", "Please enter a valid 10-digit phone number.");
+        setLoading(false);
+        return;
+      }
+
+      // Request OTP when user clicks Continue
+      console.log('CustomerLogin: Calling requestOTP function...');
+      const response = await requestOTP(formattedPhoneNumber);
+      console.log('CustomerLogin: OTP Request Response received:', response);
+
+      if (response.success) {
+        console.log('CustomerLogin: OTP request successful, navigating to OTP screen');
+        // Navigate to OTP verification screen if OTP request is successful
+        navigate('OTPVerification', { phone: formattedPhoneNumber });
+      } else {
+        console.log('CustomerLogin: OTP request failed:', response.message);
+        Alert.alert("Error", response.message || "Failed to send OTP. Please try again.");
+      }
     } catch (error) {
-        console.log('CustomerLogin: OTP request error caught:', error);
-        Alert.alert("Error", "Failed to send OTP. Please try again.");
+      console.log('CustomerLogin: OTP request error caught:', error);
+      Alert.alert("Error", "Failed to send OTP. Please try again.");
     } finally {
-        console.log('CustomerLogin: OTP request process completed');
-        setLoading(false)
+      console.log('CustomerLogin: OTP request process completed');
+      setLoading(false)
     }
   };
 
@@ -87,19 +87,19 @@ const CustomerLogin = () => {
       <View style={styles.container}>
         <CustomSafeAreaView>
           <ProductSlider />
-          <View style={{flex: 1}}>
+          <View style={{ flex: 1 }}>
             <Animated.ScrollView
               bounces={false}
-              style={[{transform: [{translateY: animatedValue}]}, styles.scroll]}
+              style={[{ transform: [{ translateY: animatedValue }] }, styles.scroll]}
               keyboardDismissMode="on-drag"
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={styles.subContainer}>
 
               <LinearGradient colors={bottomColors} style={styles.gradient} />
-              
+
               <View style={styles.content}>
                 <Image
-                  source={require('@assets/images/logo.jpeg')}
+                  source={require('@assets/images/logo.png')}
                   style={styles.logo}
                 />
 
@@ -151,9 +151,9 @@ const CustomerLogin = () => {
           <SafeAreaView />
         </View>
 
-        <TouchableOpacity style={styles.absoluteSwitch} onPress={()=>resetAndNavigate('DeliveryLogin')}>
-          <Icon name='bike-fast' color="#000" size={RFValue(18)}/>
-        </TouchableOpacity>
+        {/* <TouchableOpacity style={styles.absoluteSwitch} onPress={() => resetAndNavigate('DeliveryLogin')}>
+          <Icon name='bike-fast' color="#000" size={RFValue(18)} />
+        </TouchableOpacity> */}
       </View>
     </View>
   );
@@ -169,23 +169,23 @@ const styles = StyleSheet.create({
     fontSize: RFValue(12),
     fontFamily: Fonts.SemiBold,
   },
-  absoluteSwitch:{
-    position:'absolute',
-    top:Platform.OS==='ios' ? 50:30,
-    backgroundColor:"#fff",
-    shadowColor:"#000",
-    shadowOffset:{width:1,height:1},
-    shadowOpacity:0.5,
-    shadowRadius:12,
-    elevation:10,
-    padding:10,
-    height:55,
-    justifyContent:"center",
-    alignItems:'center',
-    width:55,
-    borderRadius:50,
-    right:10,
-    zIndex:99
+  absoluteSwitch: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 30,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 10,
+    padding: 10,
+    height: 55,
+    justifyContent: "center",
+    alignItems: 'center',
+    width: 55,
+    borderRadius: 50,
+    right: 10,
+    zIndex: 99
   },
   text: {
     marginTop: 2,
