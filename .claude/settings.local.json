@@ -10,7 +10,8 @@
       "Bash(npm start:*)",
       "Bash(taskkill:*)",
       "Bash(timeout:*)",
-      "Bash(keytool:*)"
+      "Bash(keytool:*)",
+      "Bash(du:*)"
     ],
     "deny": [],
     "ask": []
