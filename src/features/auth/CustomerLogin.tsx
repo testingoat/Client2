@@ -103,8 +103,11 @@ const CustomerLogin = () => {
                   style={styles.logo}
                 />
 
-                <CustomText variant="h2" fontFamily={Fonts.Bold}>
-                  Grocery Delivery App
+                <CustomText variant="h1" fontFamily={Fonts.Bold} style={{ marginBottom: 5 }}>
+                  Goat
+                </CustomText>
+                <CustomText variant="h6" fontFamily={Fonts.SemiBold} style={{ opacity: 0.7, marginBottom: 5 }}>
+                  Meat you Fresh Everytime
                 </CustomText>
                 <CustomText
                   variant="h5"
