@@ -166,7 +166,17 @@ const AdCarousal: FC<{adData: any}> = ({adData}) => {
                 },
               ]}
             >
-              <Image source={item} style={styles.img} resizeMode="cover" />
+              <Image
+                source={
+                  typeof item === 'string'
+                    ? { uri: item }
+                    : item?.imageUrl && typeof item.imageUrl === 'string'
+                      ? { uri: item.imageUrl }
+                      : item
+                }
+                style={styles.img}
+                resizeMode="cover"
+              />
             </Animated.View>
           </ScalePress>
         ))}

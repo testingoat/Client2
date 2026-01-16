@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
+import { useRoute } from '@react-navigation/native';
 import CustomHeader from '@components/ui/CustomHeader';
 import { Colors } from '@utils/Constants';
 import Sidebar from './Sidebar';
@@ -12,6 +13,8 @@ let cachedSelectedCategoryId: string | null = null;
 let cachedProductsByCategory: Record<string, any[]> = {};
 
 const ProductCategories = () => {
+  const route = useRoute<any>()
+  const initialCategoryId = route?.params?.initialCategoryId as string | undefined
   const [categories, setCategories] = useState<any[]>(cachedCategories || []);
   const [selectedCategory, setSelectedCategory] = useState<any>(
     cachedSelectedCategoryId && cachedCategories
@@ -31,11 +34,12 @@ const ProductCategories = () => {
           setCategories(cachedCategories);
 
           const selected =
-            (cachedSelectedCategoryId &&
-              cachedCategories.find(c => c._id === cachedSelectedCategoryId)) ||
+            (initialCategoryId && cachedCategories.find(c => c._id === initialCategoryId)) ||
+            (cachedSelectedCategoryId && cachedCategories.find(c => c._id === cachedSelectedCategoryId)) ||
             cachedCategories[0];
 
           setSelectedCategory(selected || null);
+          if (selected?._id) cachedSelectedCategoryId = selected._id;
           return;
         }
 
@@ -43,7 +47,9 @@ const ProductCategories = () => {
         setCategories(data);
         cachedCategories = data || [];
         if (data && data.length > 0) {
-          const initialCategory = data[0];
+          const initialCategory =
+            (initialCategoryId && data.find(c => c._id === initialCategoryId)) ||
+            data[0];
           setSelectedCategory(initialCategory);
           cachedSelectedCategoryId = initialCategory?._id || null;
         }
@@ -55,7 +61,7 @@ const ProductCategories = () => {
     };
 
     fetchCategories();
-  }, []);
+  }, [initialCategoryId]);
 
 
   useEffect(() => {
