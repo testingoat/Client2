@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  RefreshControl,
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { NoticeHeight, screenHeight } from '@utils/Scaling';
@@ -48,6 +49,8 @@ const ProductDashboard = () => {
   const scrollY = useRef(new RNAnimated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const previousScroll = useRef<number>(0);
+  const [refreshing, setRefreshing] = useState(false)
+  const [refreshToken, setRefreshToken] = useState(0)
 
   // Simple scroll handler
   const handleScroll = RNAnimated.event(
@@ -168,6 +171,15 @@ const ProductDashboard = () => {
           ref={scrollViewRef}
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={async () => {
+                setRefreshing(true)
+                setRefreshToken((t) => t + 1)
+              }}
+            />
+          }
           onScroll={RNAnimated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
             {
@@ -180,7 +192,13 @@ const ProductDashboard = () => {
           )}
           scrollEventThrottle={16}
           contentContainerStyle={styles.scrollContent}>
-          <Content />
+          <Content
+            refreshToken={refreshToken}
+            bypassCache={refreshing}
+            onLoaded={() => {
+              if (refreshing) setRefreshing(false)
+            }}
+          />
 
           <View style={{ backgroundColor: '#f8f8f8', padding: 20 }}>
             <CustomText
