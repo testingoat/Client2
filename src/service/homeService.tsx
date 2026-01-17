@@ -25,6 +25,7 @@ export type HomeResponse = {
   theme?: {
     headerGradientTop?: string;
     headerGradientBottom?: string;
+    contentBackgroundColor?: string;
   };
   sections: HomeSection[];
 };

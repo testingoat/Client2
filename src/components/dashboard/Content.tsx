@@ -1,4 +1,4 @@
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet, Pressable, useWindowDimensions } from 'react-native'
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { Image } from 'react-native'
 import AdCarousal from './AdCarousal'
@@ -10,11 +10,14 @@ import { adData as fallbackAdData } from '@utils/dummyData'
 import OfferProductsSection from './OfferProductsSection'
 import { useThemeStore } from '@state/themeStore'
 import HomeSkeleton from './HomeSkeleton'
+import { navigate } from '@utils/NavigationUtils'
 
 const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () => void }> = ({ refreshToken = 0, bypassCache = false, onLoaded }) => {
   const [sections, setSections] = useState<HomeSection[]>([])
   const [loading, setLoading] = useState(true)
   const setTheme = useThemeStore((s) => s.setTheme)
+  const contentBackgroundColor = useThemeStore((s) => s.contentBackgroundColor)
+  const { width: windowWidth } = useWindowDimensions()
 
   const loadHome = useCallback(async (opts?: { bypassCache?: boolean }) => {
     setLoading(true)
@@ -105,9 +108,27 @@ const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () 
 
       if (section?.type === 'banner_strip') {
         const anySection: any = section
+        const imageUrl = String(anySection?.data?.imageUrl || '').trim()
+        const deepLink = String(anySection?.data?.deepLink || '').trim()
+        if (!imageUrl) return null
+
+        const stripWidth = windowWidth - 40
+        const stripHeight = Math.round(stripWidth * 0.25)
         return (
           <View key={`strip-${index}`} style={styles.stripWrap}>
-            <AdCarousal adData={[anySection?.data?.imageUrl].filter(Boolean)} />
+            <Pressable
+              onPress={() => {
+                if (deepLink.startsWith('category:')) {
+                  const id = deepLink.replace('category:', '').trim()
+                  if (id) return navigate('ProductCategories', { initialCategoryId: id })
+                }
+              }}
+              disabled={!deepLink}
+            >
+              <View style={[styles.bannerStrip, { width: stripWidth, height: stripHeight }]}>
+                <Image source={{ uri: imageUrl }} style={styles.bannerStripImage} resizeMode="cover" />
+              </View>
+            </Pressable>
           </View>
         )
       }
@@ -117,7 +138,7 @@ const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () 
   }, [sections])
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: contentBackgroundColor || '#FFFFFF' }]}>
       {loading ? <HomeSkeleton /> : renderSections}
     </View>
   )
@@ -134,6 +155,15 @@ const styles = StyleSheet.create({
   },
   stripWrap: {
     marginTop: 12,
+  },
+  bannerStrip: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#F0F0F0',
+  },
+  bannerStripImage: {
+    width: '100%',
+    height: '100%',
   },
 })
 
