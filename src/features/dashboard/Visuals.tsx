@@ -6,6 +6,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import LottieView from 'lottie-react-native';
 import { useWeatherStore } from '@state/weatherStore';
 import { getWeatherAnimation, getAnimationKey } from '@service/animationService';
+import { useThemeStore } from '@state/themeStore';
 
 const Visuals = () => {
   // Remove useCollapsibleContext since we're implementing our own solution
@@ -16,7 +17,12 @@ const Visuals = () => {
   const animationSource = getWeatherAnimation(current?.condition);
   const animationKey = getAnimationKey(current?.condition);
   const isRaining = current?.condition === 'rain';
-  const gradientColors = isRaining ? darkWeatherColors : sunnyWeatherColors;
+  const headerGradientTop = useThemeStore((s) => s.headerGradientTop);
+  const headerGradientBottom = useThemeStore((s) => s.headerGradientBottom);
+  const gradientColors =
+    !isRaining && headerGradientTop && headerGradientBottom
+      ? [headerGradientTop, headerGradientBottom]
+      : (isRaining ? darkWeatherColors : sunnyWeatherColors);
 
   return (
     <Animated.View style={[styles.container, { opacity }]}>

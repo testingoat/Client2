@@ -17,6 +17,10 @@ export type HomeSection =
 
 export type HomeResponse = {
   layoutVersion: number;
+  theme?: {
+    headerGradientTop?: string;
+    headerGradientBottom?: string;
+  };
   sections: HomeSection[];
 };
 

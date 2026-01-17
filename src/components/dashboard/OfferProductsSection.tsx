@@ -6,17 +6,19 @@ import UniversalAdd from '@components/ui/UniversalAdd'
 
 const OfferProductsSection: FC<{
   title: string
+  titleVariant?: 'h3' | 'h4' | 'h5'
+  titleColor?: string
   products: any[]
   showAddButton?: boolean
   showDiscountBadge?: boolean
-}> = ({ title, products, showAddButton = true, showDiscountBadge = true }) => {
+}> = ({ title, titleVariant = 'h4', titleColor = '#222222', products, showAddButton = true, showDiscountBadge = true }) => {
   const data = useMemo(() => (Array.isArray(products) ? products : []), [products])
 
   if (data.length === 0) return null
 
   return (
     <View style={styles.container}>
-      <CustomText variant="h4" fontFamily={Fonts.SemiBold} style={styles.title}>
+      <CustomText variant={titleVariant as any} fontFamily={Fonts.SemiBold} style={[styles.title, { color: titleColor }]}>
         {title}
       </CustomText>
 
