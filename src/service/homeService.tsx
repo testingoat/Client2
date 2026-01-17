@@ -9,10 +9,15 @@ export type HomeSection =
         title: string;
         showAddButton?: boolean;
         showDiscountBadge?: boolean;
+        seeAllLabel?: string;
+        seeAllDeepLink?: string;
+        titleVariant?: 'h3' | 'h4' | 'h5';
+        titleColor?: string;
         products: any[];
       };
     }
   | { type: 'category_grid'; data: { title: string; tiles: any[] } }
+  | { type: 'banner_strip'; data: { imageUrl: string; deepLink?: string } }
   | { type: string; data?: any };
 
 export type HomeResponse = {

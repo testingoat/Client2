@@ -155,15 +155,24 @@ const ProductDashboard = () => {
 
         {/* Header Container - now flows with content, gets pushed by notice */}
         <View style={[styles.headerContainer, { paddingTop: insets.top || 20 }]}>
-          <AnimatedHeader
-            showNotice={() => {
-              slideDown();
-              const timeoutId = setTimeout(() => {
-                slideUp();
-              }, 3500);
-              return () => clearTimeout(timeoutId);
+          <RNAnimated.View
+            style={{
+              height: headerHeight,
+              opacity: headerOpacity,
+              overflow: 'hidden',
             }}
-          />
+          >
+            <AnimatedHeader
+              showNotice={() => {
+                slideDown();
+                const timeoutId = setTimeout(() => {
+                  slideUp();
+                }, 3500);
+                return () => clearTimeout(timeoutId);
+              }}
+            />
+          </RNAnimated.View>
+
           <StickySearchBar scrollY={scrollY} noticePosition={noticePosition} />
         </View>
 

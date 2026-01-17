@@ -421,11 +421,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     paddingHorizontal: 12,
     height: 48,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    // No shadow (requested)
   },
   input: {
     flex: 1,
@@ -455,14 +451,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     marginTop: 5,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
+    // No shadow (requested)
   },
   suggestionsList: {
     flex: 1,

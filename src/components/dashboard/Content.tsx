@@ -1,5 +1,6 @@
 import { View, StyleSheet } from 'react-native'
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { Image } from 'react-native'
 import AdCarousal from './AdCarousal'
 import { Fonts } from '@utils/Constants'
 import CustomText from '@components/ui/CustomText'
@@ -8,15 +9,56 @@ import { getHome, HomeSection } from '@service/homeService'
 import { adData as fallbackAdData } from '@utils/dummyData'
 import OfferProductsSection from './OfferProductsSection'
 import { useThemeStore } from '@state/themeStore'
+import HomeSkeleton from './HomeSkeleton'
 
 const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () => void }> = ({ refreshToken = 0, bypassCache = false, onLoaded }) => {
   const [sections, setSections] = useState<HomeSection[]>([])
+  const [loading, setLoading] = useState(true)
   const setTheme = useThemeStore((s) => s.setTheme)
 
   const loadHome = useCallback(async (opts?: { bypassCache?: boolean }) => {
+    setLoading(true)
     const data = await getHome(opts)
     setSections(Array.isArray(data?.sections) ? data.sections : [])
     if (data?.theme) setTheme(data.theme)
+    // Prefetch images (best-effort, no extra libs)
+    try {
+      const urls: string[] = []
+      const safeSections: any[] = Array.isArray(data?.sections) ? data.sections : []
+      for (const section of safeSections) {
+        if (section?.type === 'banner_carousel') {
+          const items = section?.data?.items
+          if (Array.isArray(items)) {
+            for (const item of items) {
+              const url = typeof item === 'string' ? item : item?.imageUrl
+              if (typeof url === 'string') urls.push(url)
+            }
+          }
+        } else if (section?.type === 'banner_strip') {
+          const url = section?.data?.imageUrl
+          if (typeof url === 'string') urls.push(url)
+        } else if (section?.type === 'offer_products') {
+          const products = section?.data?.products
+          if (Array.isArray(products)) {
+            for (const p of products) {
+              const url = p?.imageUrl || p?.image
+              if (typeof url === 'string') urls.push(url)
+            }
+          }
+        } else if (section?.type === 'category_grid') {
+          const tiles = section?.data?.tiles
+          if (Array.isArray(tiles)) {
+            for (const t of tiles) {
+              const url = t?.imageUrl || t?.image
+              if (typeof url === 'string') urls.push(url)
+            }
+          }
+        }
+      }
+      const unique = Array.from(new Set(urls)).slice(0, 60)
+      await Promise.allSettled(unique.map((u) => Image.prefetch(u)))
+    } catch {}
+    setLoading(false)
     onLoaded?.()
   }, [onLoaded])
 
@@ -76,7 +118,7 @@ const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () 
 
   return (
     <View style={styles.container}>
-      {renderSections}
+      {loading ? <HomeSkeleton /> : renderSections}
     </View>
   )
 }

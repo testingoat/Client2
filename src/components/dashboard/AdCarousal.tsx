@@ -230,11 +230,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 0,
     borderRadius: 16,
     backgroundColor: 'transparent',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    // No shadow (requested)
     overflow: 'visible',
     position: 'relative',
   },

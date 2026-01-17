@@ -37,6 +37,7 @@ import LanguageSettingsScreen from '@features/profile/screens/LanguageSettingsSc
 import PermissionsScreen from '@features/profile/screens/PermissionsScreen';
 import CustomerProfileScreen from '@features/profile/screens/CustomerProfileScreen';
 import SearchResults from '@features/search/SearchResults';
+import OfferProductsScreen from '@features/dashboard/OfferProductsScreen';
 
 import BottomTabNavigator from './BottomTabNavigator';
 
@@ -67,6 +68,7 @@ const Navigation: FC = () => {
           component={SearchResults}
           options={{ headerShown: false }}
         />
+        <Stack.Screen name="OfferProductsScreen" component={OfferProductsScreen} />
 
         {/* Profile Screens */}
         <Stack.Screen name="AddressBookScreen" component={AddressBookScreen} />

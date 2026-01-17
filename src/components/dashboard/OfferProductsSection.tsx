@@ -1,26 +1,48 @@
 import React, { FC, useMemo } from 'react'
-import { FlatList, Image, StyleSheet, View } from 'react-native'
+import { FlatList, Image, Pressable, StyleSheet, View } from 'react-native'
 import CustomText from '@components/ui/CustomText'
 import { Colors, Fonts } from '@utils/Constants'
 import UniversalAdd from '@components/ui/UniversalAdd'
+import { navigate } from '@utils/NavigationUtils'
 
 const OfferProductsSection: FC<{
   title: string
   titleVariant?: 'h3' | 'h4' | 'h5'
   titleColor?: string
+  seeAllLabel?: string
+  seeAllDeepLink?: string
   products: any[]
   showAddButton?: boolean
   showDiscountBadge?: boolean
-}> = ({ title, titleVariant = 'h4', titleColor = '#222222', products, showAddButton = true, showDiscountBadge = true }) => {
+}> = ({ title, titleVariant = 'h4', titleColor = '#222222', seeAllLabel = 'See all', seeAllDeepLink, products, showAddButton = true, showDiscountBadge = true }) => {
   const data = useMemo(() => (Array.isArray(products) ? products : []), [products])
 
   if (data.length === 0) return null
 
   return (
     <View style={styles.container}>
-      <CustomText variant={titleVariant as any} fontFamily={Fonts.SemiBold} style={[styles.title, { color: titleColor }]}>
-        {title}
-      </CustomText>
+      <View style={styles.headerRow}>
+        <CustomText variant={titleVariant as any} fontFamily={Fonts.SemiBold} style={[styles.title, { color: titleColor }]}>
+          {title}
+        </CustomText>
+        <Pressable
+          onPress={() => {
+            // Basic deep link support (safe). If not provided, open default list for this section.
+            const dl = String(seeAllDeepLink || '').trim()
+            if (dl.startsWith('category:')) {
+              const id = dl.replace('category:', '').trim()
+              if (id) return navigate('ProductCategories', { initialCategoryId: id })
+            }
+            // Default: open a simple list screen with these products
+            return navigate('OfferProductsScreen', { title, products: data })
+          }}
+          hitSlop={10}
+        >
+          <CustomText style={styles.seeAll} fontFamily={Fonts.SemiBold}>
+            {seeAllLabel}
+          </CustomText>
+        </Pressable>
+      </View>
 
       <FlatList
         data={data}
@@ -89,11 +111,20 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 16,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingRight: 20,
+  },
   title: {
     marginTop: 10,
     marginBottom: 10,
     paddingHorizontal: 20,
     letterSpacing: 0.2,
+  },
+  seeAll: {
+    color: Colors.secondary,
   },
   listContent: {
     paddingHorizontal: 16,
