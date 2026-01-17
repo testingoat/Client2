@@ -16,7 +16,7 @@ const OfferProductsSection: FC<{
 
   return (
     <View style={styles.container}>
-      <CustomText variant="h5" fontFamily={Fonts.SemiBold} style={styles.title}>
+      <CustomText variant="h4" fontFamily={Fonts.SemiBold} style={styles.title}>
         {title}
       </CustomText>
 
@@ -91,6 +91,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
     paddingHorizontal: 20,
+    letterSpacing: 0.2,
   },
   listContent: {
     paddingHorizontal: 16,
@@ -102,11 +103,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#fff',
     padding: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
+    // No shadow (requested): keep flat cards for cleaner UI
   },
   imageWrap: {
     height: 120,
@@ -166,4 +163,3 @@ const styles = StyleSheet.create({
 })
 
 export default OfferProductsSection
-
