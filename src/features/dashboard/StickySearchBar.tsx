@@ -1,37 +1,43 @@
-import { View, StyleSheet, Animated } from 'react-native'
+import { StyleSheet, Animated } from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native';
-import { Colors } from '@utils/Constants'
 import FunctionalSearchBar from '@components/dashboard/FunctionalSearchBar'
 import { NoticeHeight } from '@utils/Scaling'
 
 interface StickySearchBarProps {
   scrollY?: Animated.Value;
   noticePosition?: Animated.Value;
+  headerHeight?: number;
 }
 
-const StickySearchBar: React.FC<StickySearchBarProps> = ({ scrollY, noticePosition }) => {
+const StickySearchBar: React.FC<StickySearchBarProps> = ({ scrollY, noticePosition, headerHeight = 120 }) => {
   const navigation = useNavigation<any>();
 
-  // Calculate sticky position - stick below notice when visible
+  // Push down when notice is visible
   const NOTICE_HEIGHT = -(NoticeHeight + 12);
-  const stickyTop = noticePosition ? noticePosition.interpolate({
+  const noticeTranslateY = noticePosition ? noticePosition.interpolate({
     inputRange: [NOTICE_HEIGHT, 0],
     outputRange: [0, NoticeHeight], // Stick below notice when it's visible
     extrapolate: 'clamp',
   }) : 0;
 
+  // As user scrolls down, slide search bar up to the top (true "sticky" behavior)
+  const slideUp = scrollY
+    ? scrollY.interpolate({
+        inputRange: [0, headerHeight],
+        outputRange: [0, -headerHeight],
+        extrapolate: 'clamp',
+      })
+    : 0;
+
+  const translateY = Animated.add(slideUp as any, noticeTranslateY as any)
+
   return (
     <Animated.View style={[
       styles.stickyContainer,
       {
-        // Keep transparent background always - no visual changes
-        backgroundColor: 'transparent',
-        // Position search bar to stick below notice
-        // position: 'sticky', // Removed invalid property, default is relative which works
-
-        top: stickyTop,
-        zIndex: 800, // Below header but above content
+        top: headerHeight,
+        transform: [{ translateY }],
       }
     ]}>
       <FunctionalSearchBar onSearch={(query, results) => {
@@ -54,10 +60,12 @@ const StickySearchBar: React.FC<StickySearchBarProps> = ({ scrollY, noticePositi
 
 const styles = StyleSheet.create({
   stickyContainer: {
-    // Slight bottom padding so the search bar doesn't collide
-    // with the top of the ad banner, but keeps the gap tight.
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 800, // Below header but above scroll content
     paddingBottom: 6,
-    // No additional styling that could create visual changes
+    backgroundColor: 'transparent',
   },
 })
 

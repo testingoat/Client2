@@ -4,6 +4,11 @@ import CustomText from '@components/ui/CustomText'
 import { Colors, Fonts } from '@utils/Constants'
 import UniversalAdd from '@components/ui/UniversalAdd'
 import { navigate } from '@utils/NavigationUtils'
+import Icon from 'react-native-vector-icons/Ionicons'
+import { useWishlistStore } from '@state/wishlistStore'
+import { addToWishlist, removeFromWishlist } from '@service/wishlistService'
+
+const getProductId = (p: any) => String(p?._id || p?.id || '')
 
 const OfferProductsSection: FC<{
   title: string
@@ -16,6 +21,8 @@ const OfferProductsSection: FC<{
   showDiscountBadge?: boolean
 }> = ({ title, titleVariant = 'h4', titleColor = '#222222', seeAllLabel = 'See all', seeAllDeepLink, products, showAddButton = true, showDiscountBadge = true }) => {
   const data = useMemo(() => (Array.isArray(products) ? products : []), [products])
+  const has = useWishlistStore((s) => s.has)
+  const toggleLocal = useWishlistStore((s) => s.toggleLocal)
 
   if (data.length === 0) return null
 
@@ -60,6 +67,28 @@ const OfferProductsSection: FC<{
           return (
             <View style={styles.card}>
               <View style={styles.imageWrap}>
+                <Pressable
+                  onPress={async () => {
+                    const productId = getProductId(item)
+                    if (!productId) return
+                    const nowWishlisted = toggleLocal(item)
+                    try {
+                      if (nowWishlisted) await addToWishlist(productId)
+                      else await removeFromWishlist(productId)
+                    } catch {
+                      // revert if server call fails
+                      toggleLocal(item)
+                    }
+                  }}
+                  style={styles.heartBtn}
+                  hitSlop={10}
+                >
+                  <Icon
+                    name={has(getProductId(item)) ? 'heart' : 'heart-outline'}
+                    size={18}
+                    color={has(getProductId(item)) ? '#FF5A5A' : '#333'}
+                  />
+                </Pressable>
                 {showDiscountBadge && hasDiscount ? (
                   <View style={styles.badge}>
                     <CustomText style={styles.badgeText} fontFamily={Fonts.SemiBold}>
@@ -147,6 +176,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
     marginBottom: 10,
+  },
+  heartBtn: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 3,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   image: {
     width: 110,
