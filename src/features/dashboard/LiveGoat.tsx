@@ -165,11 +165,6 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         paddingHorizontal: 40,
         borderRadius: 30,
-        elevation: 3,
-        shadowColor: Colors.secondary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
     },
     buttonText: {
         color: 'white',

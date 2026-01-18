@@ -1,5 +1,5 @@
 import { View, StyleSheet, Pressable, useWindowDimensions } from 'react-native'
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useState, memo } from 'react'
 import { Image } from 'react-native'
 import AdCarousal from './AdCarousal'
 import { Fonts } from '@utils/Constants'
@@ -11,6 +11,9 @@ import OfferProductsSection from './OfferProductsSection'
 import { useThemeStore } from '@state/themeStore'
 import HomeSkeleton from './HomeSkeleton'
 import { navigate } from '@utils/NavigationUtils'
+import FlashDealsSection from './FlashDealsSection'
+import TrendingSection from './TrendingSection'
+import RecentlyViewedSection from './RecentlyViewedSection'
 
 const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () => void }> = ({ refreshToken = 0, bypassCache = false, onLoaded }) => {
   const [sections, setSections] = useState<HomeSection[]>([])
@@ -60,7 +63,7 @@ const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () 
       }
       const unique = Array.from(new Set(urls)).slice(0, 60)
       await Promise.allSettled(unique.map((u) => Image.prefetch(u)))
-    } catch {}
+    } catch { }
     setLoading(false)
     onLoaded?.()
   }, [onLoaded])
@@ -133,13 +136,45 @@ const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () 
         )
       }
 
+      // NEW: Flash Deals Section
+      if (section?.type === 'flash_deals') {
+        const anySection: any = section
+        const endTime = anySection?.data?.endTime || (Date.now() + 4 * 60 * 60 * 1000) // Default 4 hours
+        return (
+          <FlashDealsSection
+            key={`flash-${index}`}
+            title={anySection?.data?.title || '⚡ Flash Deals'}
+            endTime={endTime}
+            products={anySection?.data?.products || []}
+          />
+        )
+      }
+
+      // NEW: Trending Section
+      if (section?.type === 'trending') {
+        const anySection: any = section
+        return (
+          <TrendingSection
+            key={`trending-${index}`}
+            title={anySection?.data?.title || '🔥 Trending Now'}
+            products={anySection?.data?.products || []}
+          />
+        )
+      }
+
       return null
     })
-  }, [sections])
+  }, [sections, windowWidth])
 
   return (
     <View style={[styles.container, { backgroundColor: contentBackgroundColor || '#FFFFFF' }]}>
-      {loading ? <HomeSkeleton /> : renderSections}
+      {loading ? <HomeSkeleton /> : (
+        <>
+          {renderSections}
+          {/* Recently Viewed - always shown if user has history */}
+          <RecentlyViewedSection maxItems={10} />
+        </>
+      )}
     </View>
   )
 }

@@ -111,7 +111,6 @@ const OfferProductsSection: FC<{
                 ) : null}
 
                 <Image
-                  pointerEvents="none"
                   source={typeof item?.imageUrl === 'string' ? { uri: item.imageUrl } : { uri: item?.image }}
                   style={styles.image}
                   resizeMode="contain"
@@ -122,7 +121,7 @@ const OfferProductsSection: FC<{
                 {String(item?.name || 'Product')}
               </CustomText>
 
-              <CustomText variant="h10" style={styles.qty} fontFamily={Fonts.Medium}>
+              <CustomText variant="h9" style={styles.qty} fontFamily={Fonts.Medium}>
                 {String(item?.quantity || '')}
               </CustomText>
 
@@ -181,32 +180,35 @@ const styles = StyleSheet.create({
   card: {
     width: 182,
     marginRight: 12,
-    borderRadius: 16,
-    backgroundColor: '#fff',
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     padding: 12,
     position: 'relative',
-    // No shadow (requested): keep flat cards for cleaner UI
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.04)',
   },
   imageWrap: {
     height: 136,
     borderRadius: 14,
-    backgroundColor: '#FFF5F2',
+    backgroundColor: '#FFF8F6',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
     position: 'relative',
     marginBottom: 10,
+    // Subtle inner glow effect
+    borderWidth: 1,
+    borderColor: 'rgba(255, 200, 180, 0.3)',
   },
   heartBtn: {
     position: 'absolute',
     top: 10,
     right: 10,
     zIndex: 3,
-    elevation: 4,
-    backgroundColor: 'rgba(255,255,255,0.85)',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -223,7 +225,6 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 999,
     zIndex: 2,
-    elevation: 3,
   },
   badgeText: {
     color: '#fff',
@@ -231,9 +232,9 @@ const styles = StyleSheet.create({
   },
   name: {
     color: Colors.text,
-    fontSize: 12,
-    lineHeight: 16,
-    minHeight: 32,
+    fontSize: 13,
+    lineHeight: 18,
+    minHeight: 36,
   },
   qty: {
     opacity: 0.6,
@@ -247,10 +248,12 @@ const styles = StyleSheet.create({
   },
   price: {
     color: Colors.text,
+    fontSize: 15,
   },
   mrp: {
     opacity: 0.5,
     textDecorationLine: 'line-through',
+    fontSize: 12,
   },
   addWrap: {
     marginTop: 10,

@@ -126,15 +126,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   imageContainer: {
-    width: 70,
-    height: 70,
+    width: 72,
+    height: 72,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 8,
-    backgroundColor: '#E5F3F3',
+    backgroundColor: '#E8F5F5',
     marginBottom: 8,
-    // No shadow (requested)
+    // Gradient-like border
+    borderWidth: 1.5,
+    borderColor: 'rgba(0, 180, 180, 0.15)',
   },
   image: {
     width: 54,

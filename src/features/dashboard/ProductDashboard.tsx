@@ -29,6 +29,7 @@ import NotificationManager from '@utils/NotificationManager';
 import { useWeatherStore } from '@state/weatherStore';
 import { fetchWishlist } from '@service/wishlistService';
 import { useWishlistStore } from '@state/wishlistStore';
+import QuickFilterChips from '@components/dashboard/QuickFilterChips';
 
 const { height } = Dimensions.get('window');
 const HEADER_HEIGHT = 120; // Adjust this value based on your header height
@@ -254,6 +255,22 @@ const ProductDashboard = () => {
           )}
           scrollEventThrottle={16}
           contentContainerStyle={[styles.scrollContent, { paddingTop: headerSpacer }]}>
+
+          {/* Quick Filter Chips */}
+          <QuickFilterChips
+            chips={[
+              { id: 'under500', label: 'Under ₹500', icon: 'pricetag', value: 500 },
+              { id: 'fresh', label: 'Fresh Today', icon: 'leaf', value: 'fresh' },
+              { id: 'popular', label: 'Popular', icon: 'star', value: 'popular' },
+              { id: 'newArrivals', label: 'New Arrivals', icon: 'sparkles', value: 'new' },
+              { id: 'deals', label: 'Best Deals', icon: 'flash', value: 'deals' },
+            ]}
+            onSelect={(chip) => {
+              if (__DEV__) console.log('Filter selected:', chip)
+              // TODO: Integrate with Content filtering
+            }}
+          />
+
           <Content
             refreshToken={refreshToken}
             bypassCache={refreshing}

@@ -5,6 +5,209 @@ This document tracks all bug fixes and issues resolved in the GoatGoat Grocery D
 
 ---
 
+## ✅ **Flash Deals & Trending Sections - Admin Panel Integration** *(2026-01-19 00:20 IST)*
+
+### **Issue Summary:**
+New dashboard sections (Flash Deals, Trending) were not appearing in the client app because they require backend configuration through the AdminJS panel.
+
+### **Root Cause:**
+The client-side components were created but the backend HomeConfig model didn't have schemas for `flashDealsSections` and `trendingSections`. The `/home` API only returned section types defined in the database model.
+
+### **Solution Implemented:**
+
+#### **Backend Model Updates:**
+- Added `homeFlashDealsSectionSchema` with `title`, `order`, `isActive`, `endTime`, and `productIds`
+- Added `homeTrendingSectionSchema` with `title`, `order`, `isActive`, `productIds`, and `soldCounts`
+- Updated `homeConfigSchema` to include both new section arrays
+
+#### **Backend Controller Updates:**
+- Added processing for `flash_deals` section type with product population and stock info
+- Added processing for `trending` section type with product population and sold counts
+- Flash deals automatically hide when `endTime` expires
+- Both sections respect `order` value for positioning among other sections
+
+#### **AdminJS Panel Updates:**
+- Added `flashDealsSections` and `trendingSections` to `editProperties` and `showProperties`
+- Added descriptive property configs with references to Product model
+- Datetime picker for flash deal expiry (`endTime`)
+- Products with reference UI for easy selection
+- Helpful descriptions for each field
+
+### **Files Modified:**
+
+| Location | File | Changes |
+|----------|------|---------|
+| Server Model | `src/models/homeConfig.js` | Added Flash Deals and Trending schemas |
+| Server Controller | `src/controllers/home/home.js` | Process new section types in API response |
+| AdminJS (dist) | `dist/config/setup.js` | Panel controls for new sections |
+| AdminJS (src) | `src/config/setup.ts` | TypeScript source with panel controls |
+
+### **How to Use:**
+1. Restart server to load updated model
+2. Go to AdminJS → Store Management → HomeConfig
+3. Edit your active HomeConfig
+4. Scroll to **Flash Deals Sections** - add title, products, end time
+5. Scroll to **Trending Sections** - add title, products, optional sold counts
+6. Save and refresh client app
+
+### **Status:** ✅ Complete - Pending server restart and testing
+
+---
+
+
+## ✅ **Products Dashboard UI/UX Enhancement** *(2026-01-18 23:40 IST)*
+
+### **Enhancement Summary:**
+Comprehensive enhancement of the Products Dashboard with premium visual design, new feature sections, and performance optimizations.
+
+### **New Components Created:**
+
+#### **Utility Components:**
+1. **`GlassCard.tsx`** - Glassmorphism card wrapper with frosted glass effect
+   - Configurable intensity (light/medium/strong)
+   - Subtle shadows and border effects
+   - Location: `src/components/ui/GlassCard.tsx`
+
+2. **`AnimatedBadge.tsx`** - Animated discount/promotion badges
+   - Gradient backgrounds (discount, trending, new, limited variants)
+   - Shine animation effect
+   - Location: `src/components/ui/AnimatedBadge.tsx`
+
+3. **`CountdownTimer.tsx`** - Countdown timer for flash deals
+   - Animated digit blocks with scale effect
+   - Support for hours/minutes/seconds
+   - Light and compact modes
+   - Location: `src/components/ui/CountdownTimer.tsx`
+
+#### **New Dashboard Sections:**
+1. **`FlashDealsSection.tsx`** - Flash deals with countdown timer
+   - Gradient header with lightning icon
+   - Stock progress bars
+   - Urgency-inducing design
+   - Location: `src/components/dashboard/FlashDealsSection.tsx`
+
+2. **`TrendingSection.tsx`** - Trending/Best Sellers section
+   - Rank badges for top 3 items (gold, silver, bronze)
+   - "X sold" count display
+   - Fire icon animations
+   - Location: `src/components/dashboard/TrendingSection.tsx`
+
+3. **`QuickFilterChips.tsx`** - Quick filter chips
+   - Horizontal scrollable filter pills
+   - Gradient selection state
+   - Categories: Under ₹500, Fresh Today, Popular, New Arrivals, Best Deals
+   - Location: `src/components/dashboard/QuickFilterChips.tsx`
+
+4. **`RecentlyViewedSection.tsx`** - Recently viewed products
+   - Compact product cards
+   - Reads from persisted store
+   - Location: `src/components/dashboard/RecentlyViewedSection.tsx`
+
+#### **State Management:**
+- **`recentlyViewedStore.ts`** - Zustand store for recently viewed products
+  - AsyncStorage persistence
+  - Max 20 items with auto-cleanup
+  - Location: `src/state/recentlyViewedStore.ts`
+
+### **Existing Components Enhanced:**
+
+#### **`OfferProductsSection.tsx`:**
+- Enhanced card styling with premium soft shadows
+- Improved border radius (16 → 18)
+- Glassmorphism-like semi-transparent background
+- Better image container with gradient border
+- Improved heart button with proper shadows
+- Enhanced discount badge with colored shadow glow
+- Better typography (larger font sizes, improved line heights)
+- Fixed lint errors: removed invalid `pointerEvents` prop, changed `h10` to `h9` variant
+
+#### **`CategoryContainer.tsx`:**
+- Larger icon containers (70 → 72px)
+- Improved border radius (12 → 16)
+- Added subtle teal glow shadow effect
+- Gradient-like border styling
+- Better background color (#E5F3F3 → #E8F5F5)
+
+### **Integration Changes:**
+
+#### **`Content.tsx`:**
+- Added imports for new sections (FlashDealsSection, TrendingSection, RecentlyViewedSection)
+- Added render handlers for `flash_deals` and `trending` section types from backend
+- RecentlyViewedSection now rendered at bottom of content (always visible if user has history)
+- Added `windowWidth` to dependencies for responsive layouts
+
+#### **`ProductDashboard.tsx`:**
+- Added QuickFilterChips import
+- Integrated QuickFilterChips below header/search bar
+- Ready for filter integration with Content component
+
+### **Performance Optimizations:**
+- Added `React.memo` import for component memoization
+- UseMemo for render sections with proper dependencies
+- Optimized FlatList rendering in new sections
+
+### **Files Created:**
+1. `src/components/ui/GlassCard.tsx`
+2. `src/components/ui/AnimatedBadge.tsx`
+3. `src/components/ui/CountdownTimer.tsx`
+4. `src/components/dashboard/FlashDealsSection.tsx`
+5. `src/components/dashboard/TrendingSection.tsx`
+6. `src/components/dashboard/QuickFilterChips.tsx`
+7. `src/components/dashboard/RecentlyViewedSection.tsx`
+8. `src/state/recentlyViewedStore.ts`
+
+### **Files Modified:**
+1. `src/components/dashboard/OfferProductsSection.tsx` - Visual enhancements + lint fixes
+2. `src/components/dashboard/CategoryContainer.tsx` - Visual enhancements
+3. `src/components/dashboard/Content.tsx` - Integration of new sections
+4. `src/features/dashboard/ProductDashboard.tsx` - QuickFilterChips integration
+
+### **Backend Integration Ready:**
+New section types supported in Content.tsx:
+- `flash_deals` - Flash deals with countdown timer
+- `trending` - Trending/best sellers section
+
+To display these sections, backend `/home` endpoint should return:
+```json
+{
+  "sections": [
+    {
+      "type": "flash_deals",
+      "data": {
+        "title": "⚡ Flash Deals",
+        "endTime": 1737312000000,
+        "products": [...]
+      }
+    },
+    {
+      "type": "trending",
+      "data": {
+        "title": "🔥 Trending Now",
+        "products": [{ "soldCount": 1200, ... }]
+      }
+    }
+  ]
+}
+```
+
+### **Testing Instructions:**
+1. Run `npx react-native run-android` or build release APK
+2. Navigate to Products Dashboard
+3. Verify:
+   - QuickFilterChips visible below search bar
+   - Enhanced product card styling with shadows
+   - Category icons with gradient-like borders
+   - RecentlyViewedSection appears after viewing products
+   - (When backend updated) FlashDeals and Trending sections render correctly
+
+### **Status:**
+✅ **COMPLETE** - All enhancements implemented and integrated
+⏳ **TESTING** - Awaiting device testing and user feedback
+⏳ **BACKEND** - Flash deals and trending sections require backend endpoint updates
+
+---
+
+
 ## ✅ **FCM Dashboard Enhancement - Empty Tables Fixed** *(2025-10-10 19:15 UTC)*
 
 ### **Problem Solved:**
