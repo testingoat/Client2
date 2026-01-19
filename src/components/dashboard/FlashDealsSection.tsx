@@ -131,13 +131,18 @@ const FlashDealsSection: FC<FlashDealsSectionProps> = ({
             >
                 <View style={styles.headerLeft}>
                     <Icon name="flash" size={20} color="#fff" />
-                    <CustomText style={styles.title} fontFamily={Fonts.Bold}>
+                    <CustomText
+                        style={styles.title}
+                        fontFamily={Fonts.Bold}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                    >
                         {title}
                     </CustomText>
                 </View>
 
                 <View style={styles.headerRight}>
-                    <CustomText style={styles.endsIn} fontFamily={Fonts.Medium}>
+                    <CustomText style={styles.endsIn} fontFamily={Fonts.Medium} numberOfLines={1}>
                         Ends in
                     </CustomText>
                     <CountdownTimer endTime={endTime} showLabels={false} compact />
@@ -185,19 +190,24 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
+        flex: 1,
+        minWidth: 0,
     },
     headerRight: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: 6,
+        flexShrink: 0,
     },
     title: {
         color: '#fff',
         fontSize: 16,
+        flexShrink: 1,
     },
     endsIn: {
         color: 'rgba(255,255,255,0.8)',
         fontSize: 11,
+        flexShrink: 0,
     },
     listContent: {
         paddingHorizontal: 16,

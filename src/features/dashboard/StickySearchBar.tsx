@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 800, // Below header but above scroll content
-    paddingBottom: 6,
+    paddingBottom: 0,
     backgroundColor: 'transparent',
   },
 })

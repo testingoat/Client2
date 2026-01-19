@@ -33,7 +33,7 @@ import QuickFilterChips from '@components/dashboard/QuickFilterChips';
 
 const { height } = Dimensions.get('window');
 const HEADER_HEIGHT = 120; // Adjust this value based on your header height
-const SEARCH_BAR_HEIGHT = 54; // 48 input + padding
+const SEARCH_BAR_HEIGHT = 48; // match actual search input height (keeps chips closer)
 const NOTICE_HEIGHT = -(NoticeHeight + 12);
 
 const ProductDashboard = () => {

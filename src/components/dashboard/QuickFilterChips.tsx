@@ -100,8 +100,8 @@ const QuickFilterChips: FC<QuickFilterChipsProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 12,
-        marginBottom: 4,
+        marginTop: 0,
+        marginBottom: 0,
     },
     scrollContent: {
         paddingHorizontal: 16,

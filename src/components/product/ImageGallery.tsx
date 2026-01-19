@@ -209,12 +209,6 @@ const ImageGallery: FC<ImageGalleryProps> = ({ images, showThumbnails = true }) 
             </View>
             <View style={styles.imageCounterText}>
                 <Icon name="image-outline" size={RFValue(14)} color="#fff" />
-                <View style={styles.counterTextContainer}>
-                    <Image
-                        source={require('@assets/icons/search.png')}
-                        style={[styles.counterIcon, { opacity: 0 }]}
-                    />
-                </View>
             </View>
 
             {/* Fullscreen Modal */}

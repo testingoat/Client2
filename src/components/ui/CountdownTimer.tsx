@@ -169,9 +169,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     blockCompact: {
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        minWidth: 36,
+        paddingHorizontal: 6,
+        paddingVertical: 3,
+        minWidth: 30,
         borderRadius: 6,
     },
     digit: {
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     digitCompact: {
-        fontSize: 14,
+        fontSize: 13,
     },
     label: {
         color: '#666',
@@ -198,8 +198,8 @@ const styles = StyleSheet.create({
         marginHorizontal: 4,
     },
     separatorCompact: {
-        fontSize: 14,
-        marginHorizontal: 2,
+        fontSize: 13,
+        marginHorizontal: 1,
     },
 })
 

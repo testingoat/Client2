@@ -1,10 +1,15 @@
-import {View, Text, StyleSheet, FlatList} from 'react-native';
-import React, {FC} from 'react';
+import { StyleSheet, FlatList, RefreshControl } from 'react-native';
+import React, { FC } from 'react';
 import {Colors} from '@utils/Constants';
 import ProductItem from './ProductItem';
 
-const ProductList: FC<{data: any}> = ({data}) => {
-    
+type Props = {
+  data: any[];
+  refreshing?: boolean;
+  onRefresh?: () => void;
+};
+
+const ProductList: FC<Props> = ({ data, refreshing, onRefresh }) => {
   const renderItem = ({item, index}: any) => {
     return <ProductItem item={item} index={index} />;
   };
@@ -17,6 +22,11 @@ const ProductList: FC<{data: any}> = ({data}) => {
       style={styles.container}
       contentContainerStyle={styles.content}
       numColumns={2}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} />
+        ) : undefined
+      }
     />
   );
 };
