@@ -72,7 +72,10 @@ const OfferProductsSection: FC<{
           const discountPercent = hasDiscount ? Math.round(((price - (discountPrice as number)) / price) * 100) : 0
 
           return (
-            <View style={styles.card}>
+            <Pressable
+              style={styles.card}
+              onPress={() => navigate('ProductDetailScreen', { productId: getProductId(item) })}
+            >
               <Pressable
                 onPressIn={() => {
                   // Helps on Android when scrollviews compete for touches.
@@ -141,7 +144,7 @@ const OfferProductsSection: FC<{
                   <UniversalAdd item={item} />
                 </View>
               ) : null}
-            </View>
+            </Pressable>
           )
         }}
       />

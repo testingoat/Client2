@@ -38,6 +38,7 @@ import PermissionsScreen from '@features/profile/screens/PermissionsScreen';
 import CustomerProfileScreen from '@features/profile/screens/CustomerProfileScreen';
 import SearchResults from '@features/search/SearchResults';
 import OfferProductsScreen from '@features/dashboard/OfferProductsScreen';
+import ProductDetailScreen from '@features/product/ProductDetailScreen';
 
 import BottomTabNavigator from './BottomTabNavigator';
 
@@ -69,6 +70,11 @@ const Navigation: FC = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen name="OfferProductsScreen" component={OfferProductsScreen} />
+        <Stack.Screen
+          name="ProductDetailScreen"
+          component={ProductDetailScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
 
         {/* Profile Screens */}
         <Stack.Screen name="AddressBookScreen" component={AddressBookScreen} />

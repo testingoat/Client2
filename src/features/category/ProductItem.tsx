@@ -1,18 +1,23 @@
-import {View, Text, StyleSheet, Image} from 'react-native';
-import React, {FC} from 'react';
-import {screenHeight} from '@utils/Scaling';
-import {Colors, Fonts} from '@utils/Constants';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { FC } from 'react';
+import { screenHeight } from '@utils/Scaling';
+import { Colors, Fonts } from '@utils/Constants';
 import CustomText from '@components/ui/CustomText';
-import {RFValue} from 'react-native-responsive-fontsize';
+import { RFValue } from 'react-native-responsive-fontsize';
 import UniversalAdd from '@components/ui/UniversalAdd';
+import { navigate } from '@utils/NavigationUtils';
 
-const ProductItem: FC<{item: any; index: number}> = ({index, item}) => {
+const ProductItem: FC<{ item: any; index: number }> = ({ index, item }) => {
   const isSecondColumn = index % 2 != 0;
 
   return (
-    <View style={[styles.container, {marginRight: isSecondColumn ? 10 : 0}]}>
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() => navigate('ProductDetailScreen', { productId: item._id })}
+      style={[styles.container, { marginRight: isSecondColumn ? 10 : 0 }]}
+    >
       <View style={styles.imageContainer}>
-        <Image source={{uri: item?.image}} style={styles.image} />
+        <Image source={{ uri: item?.image }} style={styles.image} />
       </View>
 
       <View style={styles.content}>
@@ -30,7 +35,7 @@ const ProductItem: FC<{item: any; index: number}> = ({index, item}) => {
           fontFamily={Fonts.Medium}
           variant="h8"
           numberOfLines={2}
-          style={{marginVertical: 4}}>
+          style={{ marginVertical: 4 }}>
           {item.name}
         </CustomText>
 
@@ -42,7 +47,7 @@ const ProductItem: FC<{item: any; index: number}> = ({index, item}) => {
             <CustomText
               fontFamily={Fonts.Medium}
               variant="h8"
-              style={{opacity: 0.8, textDecorationLine: 'line-through'}}>
+              style={{ opacity: 0.8, textDecorationLine: 'line-through' }}>
               ₹{item?.discountPrice}
             </CustomText>
           </View>
@@ -50,7 +55,7 @@ const ProductItem: FC<{item: any; index: number}> = ({index, item}) => {
           <UniversalAdd item={item} />
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

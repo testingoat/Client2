@@ -5,6 +5,54 @@ This document tracks all bug fixes and issues resolved in the GoatGoat Grocery D
 
 ---
 
+## ✅ **Cloudflare R2 Image Storage Migration** *(2026-01-19 11:40 IST)*
+
+### **Change Summary:**
+Migrated product image storage from MongoDB GridFS to Cloudflare R2 for faster CDN delivery and better scalability.
+
+### **Key Changes:**
+- **New**: `services/r2Storage.js` - R2 upload/delete using AWS S3 SDK
+- **Updated**: `controllers/seller/imageUpload.js` - Uses R2 instead of GridFS
+- **Updated**: `routes/seller.js` - Removed GET image route (CDN-direct serving)
+- **Config**: Added R2 credentials to `.env.local` and `.env.staging`
+
+### **Image URL Format:**
+- Before: `/api/seller/images/:id` (server-proxied)
+- After: `https://pub-xxx.r2.dev/products/product_xxx.jpg` (CDN-direct)
+
+### **R2 Configuration:**
+- Account: `Testingoat24@gmail.com`
+- Bucket: `goatgoat-assets`
+- Folder: `products/`
+- Public URL: `https://pub-944071cb05354e0a88fc366c307eabe2.r2.dev`
+
+### **Status:** ✅ Complete - Ready for testing
+
+---
+
+## ✅ **Banner Strips Not Editable in AdminJS** *(2026-01-19 00:42 IST)*
+
+### **Issue Summary:**
+Banner Strips section was visible in HomeConfig show view but not editable when editing or creating a new HomeConfig.
+
+### **Root Cause:**
+`bannerStrips` was included in `showProperties` but missing from `editProperties` in the AdminJS HomeConfig resource configuration.
+
+### **Solution:**
+Added `bannerStrips` to the `editProperties` array in both:
+- `dist/config/setup.js` (compiled)
+- `src/config/setup.ts` (source)
+
+### **Files Modified:**
+| File | Change |
+|------|--------|
+| `dist/config/setup.js` | Added `bannerStrips` to `editProperties` |
+| `src/config/setup.ts` | Added `bannerStrips` to `editProperties` |
+
+### **Status:** ✅ Complete
+
+---
+
 ## ✅ **Flash Deals & Trending Sections - Admin Panel Integration** *(2026-01-19 00:20 IST)*
 
 ### **Issue Summary:**
@@ -9124,3 +9172,30 @@ const filePath = `${basePath}/server/src/public/fcm-dashboard/index.html`;
 
 **All backups created, all servers tested, all tasks verified!**
 
+
+
+---
+
+## ✅ **Comprehensive Product Detail Feature Implementation** *(2026-01-19)*
+
+### **Feature Summary:**
+Implemented a rich product detail experience across Client App, Seller App, and Server/AdminJS. This enables displaying detailed product information (brand, specifications, nutritional info, highlights, warnings) and multiple images.
+
+### **Components Implemented:**
+#### **Client App:**
+- **`ProductDetailScreen.tsx`**: Full-screen modal with image gallery, product info, and related products.
+- **`ImageGallery.tsx`**: Carousel component for multiple images.
+- **`ProductItem.tsx` & `OfferProductsSection.tsx`**: Updated to navigate to detail screen.
+- **`productService.ts`**: Added `getProductById` and `getRelatedProducts`.
+
+#### **Seller App:**
+- **`AddEditProductScreen.tsx`**: Added UI fields for Brand, Highlights, Specifications, Nutritional Info, Warnings, Storage Instructions.
+- **Logic**: Updated `handleSave` to process new fields and multiple image uploads.
+- **Service**: Updated `productService` interfaces and API calls.
+
+#### **Server & AdminJS:**
+- **Models**: Updated `Product` model with new schema fields.
+- **API**: Added `GET /product/:id` and `GET /product/:id/related`.
+- **AdminJS**: Configured resources to view/edit all new fields.
+
+### **Status:** ✅ Complete
