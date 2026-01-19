@@ -41,6 +41,9 @@ const applyChipFilter = (products: any[], chip: FilterChip) => {
   if (!chip?.id) return Array.isArray(products) ? products : []
   const list = Array.isArray(products) ? products : []
 
+  // Server-driven chips: trust backend ordering/filtering for deterministic results.
+  if (chip.id === 'fresh' || chip.id === 'popular') return list
+
   switch (chip.id) {
     case 'under500':
       return list.filter((p) => getEffectivePrice(p) <= 500)
@@ -79,7 +82,8 @@ const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () 
 
   const loadHome = useCallback(async (opts?: { bypassCache?: boolean }) => {
     setLoading(true)
-    const data = await getHome(opts)
+    const chip = filterChip?.id ? String(filterChip.id) : null
+    const data = await getHome({ ...opts, chip })
     setSections(Array.isArray(data?.sections) ? data.sections : [])
     if (data?.theme) setTheme(data.theme)
     // Prefetch images (best-effort, no extra libs)
@@ -121,7 +125,7 @@ const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () 
     } catch { }
     setLoading(false)
     onLoaded?.()
-  }, [onLoaded])
+  }, [filterChip?.id, onLoaded, setTheme])
 
   useEffect(() => {
     loadHome({ bypassCache })

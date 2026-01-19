@@ -30,9 +30,13 @@ export type HomeResponse = {
   sections: HomeSection[];
 };
 
-export const getHome = async (opts?: { bypassCache?: boolean }): Promise<HomeResponse> => {
+export const getHome = async (opts?: { bypassCache?: boolean; chip?: string | null }): Promise<HomeResponse> => {
   try {
-    const url = `${BASE_URL}/home${opts?.bypassCache ? `?t=${Date.now()}` : ''}`;
+    const params: string[] = [];
+    const chip = String(opts?.chip || '').trim();
+    if (chip) params.push(`chip=${encodeURIComponent(chip)}`);
+    if (opts?.bypassCache) params.push(`t=${Date.now()}`);
+    const url = `${BASE_URL}/home${params.length ? `?${params.join('&')}` : ''}`;
     const response = await axios.get(url, {
       headers: opts?.bypassCache ? { 'Cache-Control': 'no-cache' } : undefined,
     });
