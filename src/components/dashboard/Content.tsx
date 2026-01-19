@@ -15,7 +15,62 @@ import FlashDealsSection from './FlashDealsSection'
 import TrendingSection from './TrendingSection'
 import RecentlyViewedSection from './RecentlyViewedSection'
 
-const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () => void }> = ({ refreshToken = 0, bypassCache = false, onLoaded }) => {
+type FilterChip = { id?: string; label?: string; value?: string | number } | null;
+
+const getEffectivePrice = (p: any) => {
+  const price = Number(p?.price ?? 0)
+  const discountPrice = p?.discountPrice != null ? Number(p.discountPrice) : null
+  if (discountPrice != null && discountPrice > 0 && discountPrice < price) return discountPrice
+  return price
+}
+
+const hasDiscount = (p: any) => {
+  const price = Number(p?.price ?? 0)
+  const discountPrice = p?.discountPrice != null ? Number(p.discountPrice) : null
+  return discountPrice != null && discountPrice > 0 && discountPrice < price
+}
+
+const discountPercent = (p: any) => {
+  const price = Number(p?.price ?? 0)
+  const discountPrice = p?.discountPrice != null ? Number(p.discountPrice) : null
+  if (!discountPrice || discountPrice <= 0 || discountPrice >= price) return 0
+  return Math.round(((price - discountPrice) / price) * 100)
+}
+
+const applyChipFilter = (products: any[], chip: FilterChip) => {
+  if (!chip?.id) return Array.isArray(products) ? products : []
+  const list = Array.isArray(products) ? products : []
+
+  switch (chip.id) {
+    case 'under500':
+      return list.filter((p) => getEffectivePrice(p) <= 500)
+    case 'deals':
+      return list
+        .filter((p) => hasDiscount(p))
+        .sort((a, b) => discountPercent(b) - discountPercent(a))
+    case 'newArrivals':
+      return list
+        .slice()
+        .sort((a, b) => {
+          const ad = new Date(a?.createdAt || a?.created_at || 0).getTime()
+          const bd = new Date(b?.createdAt || b?.created_at || 0).getTime()
+          return bd - ad
+        })
+    case 'popular':
+      return list
+        .slice()
+        .sort((a, b) => Number(b?.rating ?? b?.popularity ?? 0) - Number(a?.rating ?? a?.popularity ?? 0))
+    case 'fresh':
+      return list.filter((p) => {
+        const tags = Array.isArray(p?.tags) ? p.tags.map(String) : []
+        return tags.includes('fresh') || tags.includes('fresh_today') || p?.isFresh === true
+      })
+    default:
+      return list
+  }
+}
+
+const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () => void; filterChip?: FilterChip }> = ({ refreshToken = 0, bypassCache = false, onLoaded, filterChip = null }) => {
   const [sections, setSections] = useState<HomeSection[]>([])
   const [loading, setLoading] = useState(true)
   const setTheme = useThemeStore((s) => s.setTheme)
@@ -77,13 +132,14 @@ const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () 
     return safeSections.map((section, index) => {
       if (section?.type === 'offer_products') {
         const anySection: any = section
+        const filteredProducts = applyChipFilter(anySection?.data?.products || [], filterChip)
         return (
           <OfferProductsSection
             key={`${anySection?.data?.title || 'offer'}-${index}`}
             title={anySection?.data?.title || 'Offers'}
             titleVariant={anySection?.data?.titleVariant}
             titleColor={anySection?.data?.titleColor}
-            products={anySection?.data?.products || []}
+            products={filteredProducts}
             showAddButton={anySection?.data?.showAddButton}
             showDiscountBadge={anySection?.data?.showDiscountBadge}
           />
@@ -140,12 +196,13 @@ const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () 
       if (section?.type === 'flash_deals') {
         const anySection: any = section
         const endTime = anySection?.data?.endTime || (Date.now() + 4 * 60 * 60 * 1000) // Default 4 hours
+        const filteredProducts = applyChipFilter(anySection?.data?.products || [], filterChip)
         return (
           <FlashDealsSection
             key={`flash-${index}`}
             title={anySection?.data?.title || '⚡ Flash Deals'}
             endTime={endTime}
-            products={anySection?.data?.products || []}
+            products={filteredProducts}
           />
         )
       }
@@ -153,18 +210,19 @@ const Content: FC<{ refreshToken?: number; bypassCache?: boolean; onLoaded?: () 
       // NEW: Trending Section
       if (section?.type === 'trending') {
         const anySection: any = section
+        const filteredProducts = applyChipFilter(anySection?.data?.products || [], filterChip)
         return (
           <TrendingSection
             key={`trending-${index}`}
             title={anySection?.data?.title || '🔥 Trending Now'}
-            products={anySection?.data?.products || []}
+            products={filteredProducts}
           />
         )
       }
 
       return null
     })
-  }, [sections, windowWidth])
+  }, [sections, windowWidth, filterChip])
 
   return (
     <View style={[styles.container, { backgroundColor: contentBackgroundColor || '#FFFFFF' }]}>

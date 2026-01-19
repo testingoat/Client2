@@ -35,6 +35,7 @@ const { height } = Dimensions.get('window');
 const HEADER_HEIGHT = 120; // Adjust this value based on your header height
 const SEARCH_BAR_HEIGHT = 48; // match actual search input height (keeps chips closer)
 const NOTICE_HEIGHT = -(NoticeHeight + 12);
+const CHIP_GAP_TWEAK = 12; // reduce space between search bar and chips
 
 const ProductDashboard = () => {
   const { user, setUser } = useAuthStore();
@@ -55,6 +56,7 @@ const ProductDashboard = () => {
   const isAtTopRef = useRef(true)
   const refreshEnabledRef = useRef(true)
   const [refreshEnabled, setRefreshEnabled] = useState(true)
+  const [activeChip, setActiveChip] = useState<any>(null)
 
   // Simple scroll handler
   const handleScroll = RNAnimated.event(
@@ -177,7 +179,7 @@ const ProductDashboard = () => {
     console.log("🚨 Rendering ProductDashboard");
   }
 
-  const headerSpacer = (insets.top || 20) + HEADER_HEIGHT + SEARCH_BAR_HEIGHT
+  const headerSpacer = (insets.top || 20) + HEADER_HEIGHT + SEARCH_BAR_HEIGHT - CHIP_GAP_TWEAK
 
   return (
     <NoticeAnimation noticePosition={noticePosition} enabled={isRaining}>
@@ -265,16 +267,15 @@ const ProductDashboard = () => {
               { id: 'newArrivals', label: 'New Arrivals', icon: 'sparkles', value: 'new' },
               { id: 'deals', label: 'Best Deals', icon: 'flash', value: 'deals' },
             ]}
-            onSelect={(chip) => {
-              if (__DEV__) console.log('Filter selected:', chip)
-              // TODO: Integrate with Content filtering
-            }}
+            onSelect={(chip) => setActiveChip(chip?.id ? chip : null)}
+            style={{ marginTop: -8 }}
           />
 
           <Content
             refreshToken={refreshToken}
             bypassCache={refreshing}
             onLoaded={handleHomeLoaded}
+            filterChip={activeChip}
           />
 
           <View style={{ backgroundColor: '#f8f8f8', padding: 20 }}>
