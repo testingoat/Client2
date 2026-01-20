@@ -161,8 +161,8 @@ const ProductOrder = () => {
 
   const addressDescription = selectedAddress
     ? [selectedAddress.houseNumber, selectedAddress.street, selectedAddress.landmark, selectedAddress.city, selectedAddress.pincode]
-        .filter(Boolean)
-        .join(', ')
+      .filter(Boolean)
+      .join(', ')
     : addresses.length === 0
       ? 'Add an address to continue.'
       : 'Select an address from your address book.';
@@ -187,7 +187,7 @@ const ProductOrder = () => {
       Alert.alert(
         'Out of coverage',
         quoteError?.message ||
-          'Delivery is currently unavailable for your address.',
+        'Delivery is currently unavailable for your address.',
       );
       return;
     }
@@ -216,9 +216,9 @@ const ProductOrder = () => {
     // Try to reuse selected address or cached delivery location first
     let deliveryLocation: DeliveryLocation | null = selectedAddress
       ? {
-          latitude: selectedAddress.latitude,
-          longitude: selectedAddress.longitude,
-        }
+        latitude: selectedAddress.latitude,
+        longitude: selectedAddress.longitude,
+      }
       : deliveryLocationState;
 
     if (!deliveryLocation && user?.address?.latitude && user?.address?.longitude) {
@@ -288,7 +288,10 @@ const ProductOrder = () => {
         }>
         <OrderList etaText={etaText} />
 
-        <View style={styles.flexRowBetween}>
+        <TouchableOpacity
+          style={styles.flexRowBetween}
+          onPress={() => navigate('CouponsScreen')}
+          activeOpacity={0.7}>
           <View style={styles.flexRow}>
             <Image
               source={require('@assets/icons/coupon.png')}
@@ -299,7 +302,7 @@ const ProductOrder = () => {
             </CustomText>
           </View>
           <Icon name="chevron-right" size={RFValue(16)} color={Colors.text} />
-        </View>
+        </TouchableOpacity>
 
         <BillDetails
           totalItemPrice={totalItemPrice}

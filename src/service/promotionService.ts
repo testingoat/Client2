@@ -2,6 +2,7 @@ import { appAxios } from './apiInterceptors';
 
 /**
  * Promotion Service - API calls for Wallet, Coupons, Referral, Loyalty
+ * NOTE: Endpoints do NOT have /api prefix because BASE_URL already includes it
  */
 
 // ============ WALLET ============
@@ -26,19 +27,19 @@ interface Transaction {
 }
 
 export const getWalletBalance = async (): Promise<WalletBalance> => {
-    const response = await appAxios.get('/api/wallet');
+    const response = await appAxios.get('/wallet');
     return response.data.data;
 };
 
 export const getWalletTransactions = async (page = 1, limit = 20) => {
-    const response = await appAxios.get('/api/wallet/transactions', {
+    const response = await appAxios.get('/wallet/transactions', {
         params: { page, limit }
     });
     return response.data.data;
 };
 
 export const getExpiringCredits = async (days = 7) => {
-    const response = await appAxios.get('/api/wallet/expiring', {
+    const response = await appAxios.get('/wallet/expiring', {
         params: { days }
     });
     return response.data.data;
@@ -69,8 +70,9 @@ interface CouponValidation {
 }
 
 export const getAvailableCoupons = async (): Promise<Coupon[]> => {
-    const response = await appAxios.get('/api/coupons/available');
-    return response.data.data?.coupons || [];
+    const response = await appAxios.get('/coupons/available');
+    // Server returns { success, coupons, count } directly
+    return response.data?.coupons || [];
 };
 
 export const validateCoupon = async (
@@ -78,7 +80,7 @@ export const validateCoupon = async (
     cartTotal: number,
     items: Array<{ productId: string; quantity: number }>
 ): Promise<CouponValidation> => {
-    const response = await appAxios.post('/api/coupons/validate', {
+    const response = await appAxios.post('/coupons/validate', {
         code,
         cartTotal,
         items
@@ -87,7 +89,7 @@ export const validateCoupon = async (
 };
 
 export const getCouponHistory = async (page = 1, limit = 20) => {
-    const response = await appAxios.get('/api/coupons/history', {
+    const response = await appAxios.get('/coupons/history', {
         params: { page, limit }
     });
     return response.data.data;
@@ -117,24 +119,24 @@ interface ReferralHistoryItem {
 }
 
 export const getMyReferralCode = async (): Promise<ReferralCode> => {
-    const response = await appAxios.get('/api/referral/my-code');
+    const response = await appAxios.get('/referral/my-code');
     return response.data.data;
 };
 
 export const applyReferralCode = async (code: string) => {
-    const response = await appAxios.post('/api/referral/apply', { code });
+    const response = await appAxios.post('/referral/apply', { code });
     return response.data;
 };
 
 export const getReferralHistory = async (page = 1, limit = 20) => {
-    const response = await appAxios.get('/api/referral/history', {
+    const response = await appAxios.get('/referral/history', {
         params: { page, limit }
     });
     return response.data.data;
 };
 
 export const getReferralLeaderboard = async (limit = 10) => {
-    const response = await appAxios.get('/api/referral/leaderboard', {
+    const response = await appAxios.get('/referral/leaderboard', {
         params: { limit }
     });
     return response.data.data;
@@ -169,28 +171,29 @@ interface LoyaltyStatus {
 }
 
 export const getLoyaltyStatus = async (): Promise<LoyaltyStatus> => {
-    const response = await appAxios.get('/api/loyalty');
+    const response = await appAxios.get('/loyalty');
     return response.data.data;
 };
 
 export const getLoyaltyProgress = async () => {
-    const response = await appAxios.get('/api/loyalty/progress');
+    const response = await appAxios.get('/loyalty/progress');
     return response.data.data;
 };
 
 export const getLoyaltyBenefits = async () => {
-    const response = await appAxios.get('/api/loyalty/benefits');
+    const response = await appAxios.get('/loyalty/benefits');
     return response.data.data;
 };
 
 export const redeemPoints = async (points: number) => {
-    const response = await appAxios.post('/api/loyalty/redeem', { points });
+    const response = await appAxios.post('/loyalty/redeem', { points });
     return response.data.data;
 };
 
 export const getLoyaltyLeaderboard = async (limit = 10) => {
-    const response = await appAxios.get('/api/loyalty/leaderboard', {
+    const response = await appAxios.get('/loyalty/leaderboard', {
         params: { limit }
     });
     return response.data.data;
 };
+
