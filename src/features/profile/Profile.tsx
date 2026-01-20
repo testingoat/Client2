@@ -25,11 +25,19 @@ const Profile = () => {
 
   const menuItems = [
     {
+      title: 'WALLET & REWARDS',
+      items: [
+        { icon: 'wallet-outline', label: 'My Wallet', screen: 'WalletScreen' },
+        { icon: 'pricetag-outline', label: 'Coupons', screen: 'CouponsScreen' },
+        { icon: 'people-outline', label: 'Refer & Earn', screen: 'ReferralScreen' },
+        { icon: 'trophy-outline', label: 'Loyalty Rewards', screen: 'LoyaltyScreen' },
+      ]
+    },
+    {
       title: 'YOUR INFORMATION',
       items: [
         { icon: 'book-outline', label: 'Address Book', screen: 'AddressBookScreen' },
         { icon: 'bookmark-outline', label: 'Saved Items', screen: 'SavedItemsScreen' },
-        { icon: 'gift-outline', label: 'Offers & Rewards', screen: 'OffersRewardsScreen' },
         { icon: 'time-outline', label: 'Transaction History', screen: 'TransactionHistoryScreen' },
       ]
     },

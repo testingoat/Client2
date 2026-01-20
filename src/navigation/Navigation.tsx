@@ -36,6 +36,10 @@ import NotificationSettingsScreen from '@features/profile/screens/NotificationSe
 import LanguageSettingsScreen from '@features/profile/screens/LanguageSettingsScreen';
 import PermissionsScreen from '@features/profile/screens/PermissionsScreen';
 import CustomerProfileScreen from '@features/profile/screens/CustomerProfileScreen';
+import WalletScreen from '@features/profile/screens/WalletScreen';
+import CouponsScreen from '@features/profile/screens/CouponsScreen';
+import ReferralScreen from '@features/profile/screens/ReferralScreen';
+import LoyaltyScreen from '@features/profile/screens/LoyaltyScreen';
 import SearchResults from '@features/search/SearchResults';
 import OfferProductsScreen from '@features/dashboard/OfferProductsScreen';
 import ProductDetailScreen from '@features/product/ProductDetailScreen';
@@ -91,6 +95,12 @@ const Navigation: FC = () => {
         <Stack.Screen name="LanguageSettingsScreen" component={LanguageSettingsScreen} />
         <Stack.Screen name="PermissionsScreen" component={PermissionsScreen} />
         <Stack.Screen name="CustomerProfileScreen" component={CustomerProfileScreen} />
+
+        {/* Promotions Screens */}
+        <Stack.Screen name="WalletScreen" component={WalletScreen} options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="CouponsScreen" component={CouponsScreen} options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="ReferralScreen" component={ReferralScreen} options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="LoyaltyScreen" component={LoyaltyScreen} options={{ animation: 'slide_from_right' }} />
         <Stack.Screen
           options={{
             animation: 'fade',
