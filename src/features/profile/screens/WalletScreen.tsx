@@ -5,9 +5,7 @@ import {
     ScrollView,
     RefreshControl,
     ActivityIndicator,
-    Animated,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CustomHeader from '@components/ui/CustomHeader';
 import CustomText from '@components/ui/CustomText';
@@ -28,6 +26,7 @@ interface Transaction {
 const WalletScreen = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [error, setError] = useState(false);
     const [balance, setBalance] = useState({
         balance: 0,
         availableBalance: 0,
@@ -39,31 +38,25 @@ const WalletScreen = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [expiringAmount, setExpiringAmount] = useState(0);
 
-    const fadeAnim = useState(new Animated.Value(0))[0];
-
     const fetchData = useCallback(async () => {
+        setError(false);
         try {
             const [walletData, txData, expiringData] = await Promise.all([
                 getWalletBalance(),
                 getWalletTransactions(1, 10),
                 getExpiringCredits(7)
             ]);
-            setBalance(walletData);
+            if (walletData) setBalance(walletData);
             setTransactions(txData?.transactions || []);
             setExpiringAmount(expiringData?.totalExpiring || 0);
-
-            Animated.timing(fadeAnim, {
-                toValue: 1,
-                duration: 500,
-                useNativeDriver: true,
-            }).start();
-        } catch (error) {
-            console.log('Error fetching wallet data:', error);
+        } catch (err) {
+            console.log('Error fetching wallet data:', err);
+            setError(true);
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [fadeAnim]);
+    }, []);
 
     useEffect(() => {
         fetchData();
@@ -116,117 +109,123 @@ const WalletScreen = () => {
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
             >
-                <Animated.View style={{ opacity: fadeAnim }}>
-                    {/* Balance Card */}
-                    <LinearGradient
-                        colors={['#0d8320', '#1a5f27', '#0d8320']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.balanceCard}
-                    >
-                        <View style={styles.balanceHeader}>
-                            <Icon name="wallet" size={24} color="#fff" />
-                            <CustomText variant="h7" style={styles.balanceLabel}>
-                                Available Balance
+                {/* Balance Card */}
+                <View style={styles.balanceCard}>
+                    <View style={styles.balanceHeader}>
+                        <Icon name="wallet" size={24} color="#fff" />
+                        <CustomText variant="h7" style={styles.balanceLabel}>
+                            Available Balance
+                        </CustomText>
+                    </View>
+                    <CustomText variant="h1" fontFamily={Fonts.Bold} style={styles.balanceAmount}>
+                        ₹{balance.availableBalance.toFixed(2)}
+                    </CustomText>
+
+                    {balance.isFrozen && (
+                        <View style={styles.frozenBadge}>
+                            <Icon name="lock-closed" size={14} color="#fff" />
+                            <CustomText variant="h8" style={styles.frozenText}>
+                                Wallet Frozen
                             </CustomText>
                         </View>
-                        <CustomText variant="h1" fontFamily={Fonts.Bold} style={styles.balanceAmount}>
-                            ₹{balance.availableBalance.toFixed(2)}
+                    )}
+
+                    <View style={styles.statsRow}>
+                        <View style={styles.statItem}>
+                            <CustomText variant="h8" style={styles.statLabel}>
+                                Total Earned
+                            </CustomText>
+                            <CustomText variant="h6" fontFamily={Fonts.SemiBold} style={styles.statValue}>
+                                ₹{balance.totalEarned.toFixed(0)}
+                            </CustomText>
+                        </View>
+                        <View style={styles.statDivider} />
+                        <View style={styles.statItem}>
+                            <CustomText variant="h8" style={styles.statLabel}>
+                                Total Spent
+                            </CustomText>
+                            <CustomText variant="h6" fontFamily={Fonts.SemiBold} style={styles.statValue}>
+                                ₹{balance.totalSpent.toFixed(0)}
+                            </CustomText>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Error Message */}
+                {error && (
+                    <View style={styles.errorCard}>
+                        <Icon name="cloud-offline-outline" size={20} color="#dc2626" />
+                        <CustomText variant="h8" style={styles.errorText}>
+                            Could not load latest data. Pull to refresh.
                         </CustomText>
+                    </View>
+                )}
 
-                        {balance.isFrozen && (
-                            <View style={styles.frozenBadge}>
-                                <Icon name="lock-closed" size={14} color="#fff" />
-                                <CustomText variant="h8" style={styles.frozenText}>
-                                    Wallet Frozen
+                {/* Expiring Soon Warning */}
+                {expiringAmount > 0 && (
+                    <ScalePress style={styles.expiringCard}>
+                        <View style={styles.expiringContent}>
+                            <Icon name="time-outline" size={24} color="#f59e0b" />
+                            <View style={styles.expiringText}>
+                                <CustomText variant="h7" fontFamily={Fonts.SemiBold}>
+                                    ₹{expiringAmount} expiring soon!
                                 </CustomText>
-                            </View>
-                        )}
-
-                        <View style={styles.statsRow}>
-                            <View style={styles.statItem}>
-                                <CustomText variant="h8" style={styles.statLabel}>
-                                    Total Earned
-                                </CustomText>
-                                <CustomText variant="h6" fontFamily={Fonts.SemiBold} style={styles.statValue}>
-                                    ₹{balance.totalEarned.toFixed(0)}
-                                </CustomText>
-                            </View>
-                            <View style={styles.statDivider} />
-                            <View style={styles.statItem}>
-                                <CustomText variant="h8" style={styles.statLabel}>
-                                    Total Spent
-                                </CustomText>
-                                <CustomText variant="h6" fontFamily={Fonts.SemiBold} style={styles.statValue}>
-                                    ₹{balance.totalSpent.toFixed(0)}
+                                <CustomText variant="h8" style={styles.expiringSubtext}>
+                                    Use within 7 days to avoid losing credits
                                 </CustomText>
                             </View>
                         </View>
-                    </LinearGradient>
+                    </ScalePress>
+                )}
 
-                    {/* Expiring Soon Warning */}
-                    {expiringAmount > 0 && (
-                        <ScalePress style={styles.expiringCard}>
-                            <View style={styles.expiringContent}>
-                                <Icon name="time-outline" size={24} color="#f59e0b" />
-                                <View style={styles.expiringText}>
-                                    <CustomText variant="h7" fontFamily={Fonts.SemiBold}>
-                                        ₹{expiringAmount} expiring soon!
+                {/* Transactions Section */}
+                <View style={styles.transactionsSection}>
+                    <CustomText variant="h5" fontFamily={Fonts.SemiBold} style={styles.sectionTitle}>
+                        Recent Transactions
+                    </CustomText>
+
+                    {transactions.length === 0 ? (
+                        <View style={styles.emptyState}>
+                            <Icon name="receipt-outline" size={48} color={Colors.disabled} />
+                            <CustomText variant="h7" style={styles.emptyText}>
+                                No transactions yet
+                            </CustomText>
+                            <CustomText variant="h8" style={styles.emptySubtext}>
+                                Your wallet activity will appear here
+                            </CustomText>
+                        </View>
+                    ) : (
+                        transactions.map((tx) => (
+                            <ScalePress key={tx._id} style={styles.transactionItem}>
+                                <View style={[
+                                    styles.txIconContainer,
+                                    { backgroundColor: tx.type === 'credit' ? '#dcfce7' : '#fee2e2' }
+                                ]}>
+                                    <Icon
+                                        name={getSourceIcon(tx.source)}
+                                        size={20}
+                                        color={tx.type === 'credit' ? '#16a34a' : '#dc2626'}
+                                    />
+                                </View>
+                                <View style={styles.txDetails}>
+                                    <CustomText variant="h7" fontFamily={Fonts.Medium}>
+                                        {tx.description}
                                     </CustomText>
-                                    <CustomText variant="h8" style={styles.expiringSubtext}>
-                                        Use within 7 days to avoid losing credits
+                                    <CustomText variant="h8" style={styles.txDate}>
+                                        {formatDate(tx.createdAt)}
                                     </CustomText>
                                 </View>
-                            </View>
-                        </ScalePress>
-                    )}
-
-                    {/* Transactions Section */}
-                    <View style={styles.transactionsSection}>
-                        <CustomText variant="h5" fontFamily={Fonts.SemiBold} style={styles.sectionTitle}>
-                            Recent Transactions
-                        </CustomText>
-
-                        {transactions.length === 0 ? (
-                            <View style={styles.emptyState}>
-                                <Icon name="receipt-outline" size={48} color={Colors.disabled} />
-                                <CustomText variant="h7" style={styles.emptyText}>
-                                    No transactions yet
+                                <CustomText
+                                    variant="h6"
+                                    fontFamily={Fonts.SemiBold}
+                                    style={tx.type === 'credit' ? styles.creditAmount : styles.debitAmount}
+                                >
+                                    {tx.type === 'credit' ? '+' : '-'}₹{tx.amount}
                                 </CustomText>
-                            </View>
-                        ) : (
-                            transactions.map((tx) => (
-                                <ScalePress key={tx._id} style={styles.transactionItem}>
-                                    <View style={[
-                                        styles.txIconContainer,
-                                        { backgroundColor: tx.type === 'credit' ? '#dcfce7' : '#fee2e2' }
-                                    ]}>
-                                        <Icon
-                                            name={getSourceIcon(tx.source)}
-                                            size={20}
-                                            color={tx.type === 'credit' ? '#16a34a' : '#dc2626'}
-                                        />
-                                    </View>
-                                    <View style={styles.txDetails}>
-                                        <CustomText variant="h7" fontFamily={Fonts.Medium}>
-                                            {tx.description}
-                                        </CustomText>
-                                        <CustomText variant="h8" style={styles.txDate}>
-                                            {formatDate(tx.createdAt)}
-                                        </CustomText>
-                                    </View>
-                                    <CustomText
-                                        variant="h6"
-                                        fontFamily={Fonts.SemiBold}
-                                        style={tx.type === 'credit' ? styles.creditAmount : styles.debitAmount}
-                                    >
-                                        {tx.type === 'credit' ? '+' : '-'}₹{tx.amount}
-                                    </CustomText>
-                                </ScalePress>
-                            ))
-                        )}
-                    </View>
-                </Animated.View>
+                            </ScalePress>
+                        ))
+                    )}
+                </View>
             </ScrollView>
         </View>
     );
@@ -250,6 +249,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         padding: 24,
         marginBottom: 16,
+        backgroundColor: '#0d8320',
     },
     balanceHeader: {
         flexDirection: 'row',
@@ -300,6 +300,19 @@ const styles = StyleSheet.create({
         width: 1,
         backgroundColor: 'rgba(255,255,255,0.2)',
     },
+    errorCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: '#fee2e2',
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 16,
+    },
+    errorText: {
+        color: '#dc2626',
+        flex: 1,
+    },
     expiringCard: {
         backgroundColor: '#fef3c7',
         borderRadius: 12,
@@ -333,6 +346,10 @@ const styles = StyleSheet.create({
     emptyText: {
         color: Colors.disabled,
         marginTop: 12,
+    },
+    emptySubtext: {
+        color: Colors.disabled,
+        marginTop: 4,
     },
     transactionItem: {
         flexDirection: 'row',

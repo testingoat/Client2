@@ -7,10 +7,8 @@ import {
     ActivityIndicator,
     Share,
     Alert,
-    Animated,
     Clipboard,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CustomHeader from '@components/ui/CustomHeader';
 import CustomText from '@components/ui/CustomText';
@@ -38,7 +36,8 @@ interface ReferralHistoryItem {
 const ReferralScreen = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [referralCode, setReferralCode] = useState('');
+    const [error, setError] = useState(false);
+    const [referralCode, setReferralCode] = useState('REFER100');
     const [shareMessage, setShareMessage] = useState('');
     const [stats, setStats] = useState<ReferralStats>({
         pending: 0,
@@ -47,32 +46,27 @@ const ReferralScreen = () => {
         totalEarned: 0
     });
     const [history, setHistory] = useState<ReferralHistoryItem[]>([]);
-    const fadeAnim = useState(new Animated.Value(0))[0];
 
     const fetchData = useCallback(async () => {
+        setError(false);
         try {
             const [codeData, historyData] = await Promise.all([
                 getMyReferralCode(),
                 getReferralHistory(1, 10)
             ]);
 
-            setReferralCode(codeData.code);
-            setShareMessage(codeData.shareMessage);
-            setStats(codeData.stats);
+            if (codeData?.code) setReferralCode(codeData.code);
+            if (codeData?.shareMessage) setShareMessage(codeData.shareMessage);
+            if (codeData?.stats) setStats(codeData.stats);
             setHistory(historyData?.referrals || []);
-
-            Animated.timing(fadeAnim, {
-                toValue: 1,
-                duration: 500,
-                useNativeDriver: true,
-            }).start();
-        } catch (error) {
-            console.log('Error fetching referral data:', error);
+        } catch (err) {
+            console.log('Error fetching referral data:', err);
+            setError(true);
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [fadeAnim]);
+    }, []);
 
     useEffect(() => {
         fetchData();
@@ -90,11 +84,10 @@ const ReferralScreen = () => {
 
     const handleShare = async () => {
         try {
-            await Share.share({
-                message: shareMessage,
-            });
-        } catch (error) {
-            console.log('Share error:', error);
+            const message = shareMessage || `Use my referral code ${referralCode} to get ₹50 off your first order!`;
+            await Share.share({ message });
+        } catch (err) {
+            console.log('Share error:', err);
         }
     };
 
@@ -144,126 +137,136 @@ const ReferralScreen = () => {
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
             >
-                <Animated.View style={{ opacity: fadeAnim }}>
-                    {/* Hero Section */}
-                    <LinearGradient
-                        colors={[Colors.primary, '#f59e0b', Colors.primary]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.heroCard}
-                    >
-                        <Icon name="people" size={48} color="#fff" />
-                        <CustomText variant="h4" fontFamily={Fonts.Bold} style={styles.heroTitle}>
-                            Invite Friends & Earn
-                        </CustomText>
-                        <CustomText variant="h7" style={styles.heroSubtitle}>
-                            Get ₹100 when your friend places their first order. They get ₹50 too!
-                        </CustomText>
-                    </LinearGradient>
+                {/* Hero Section */}
+                <View style={styles.heroCard}>
+                    <Icon name="people" size={48} color="#fff" />
+                    <CustomText variant="h4" fontFamily={Fonts.Bold} style={styles.heroTitle}>
+                        Invite Friends & Earn
+                    </CustomText>
+                    <CustomText variant="h7" style={styles.heroSubtitle}>
+                        Get ₹100 when your friend places their first order. They get ₹50 too!
+                    </CustomText>
+                </View>
 
-                    {/* Code Card */}
-                    <View style={styles.codeCard}>
-                        <CustomText variant="h7" style={styles.codeLabel}>
-                            YOUR REFERRAL CODE
+                {/* Error Message */}
+                {error && (
+                    <View style={styles.errorCard}>
+                        <Icon name="cloud-offline-outline" size={20} color="#dc2626" />
+                        <CustomText variant="h8" style={styles.errorText}>
+                            Could not load latest data. Pull to refresh.
                         </CustomText>
-                        <View style={styles.codeContainer}>
-                            <CustomText variant="h2" fontFamily={Fonts.Bold} style={styles.codeText}>
-                                {referralCode}
-                            </CustomText>
-                        </View>
-                        <View style={styles.buttonRow}>
-                            <ScalePress style={styles.copyButton} onPress={handleCopyCode}>
+                    </View>
+                )}
+
+                {/* Code Card */}
+                <View style={styles.codeCard}>
+                    <CustomText variant="h7" style={styles.codeLabel}>
+                        YOUR REFERRAL CODE
+                    </CustomText>
+                    <View style={styles.codeContainer}>
+                        <CustomText variant="h2" fontFamily={Fonts.Bold} style={styles.codeText}>
+                            {referralCode}
+                        </CustomText>
+                    </View>
+                    <View style={styles.buttonRow}>
+                        <ScalePress style={styles.copyButton} onPress={handleCopyCode}>
+                            <View style={styles.buttonContent}>
                                 <Icon name="copy-outline" size={20} color={Colors.secondary} />
                                 <CustomText variant="h7" fontFamily={Fonts.Medium} style={styles.copyButtonText}>
                                     Copy
                                 </CustomText>
-                            </ScalePress>
-                            <ScalePress style={styles.shareButton} onPress={handleShare}>
+                            </View>
+                        </ScalePress>
+                        <ScalePress style={styles.shareButton} onPress={handleShare}>
+                            <View style={styles.buttonContent}>
                                 <Icon name="share-social" size={20} color="#fff" />
                                 <CustomText variant="h7" fontFamily={Fonts.SemiBold} style={styles.shareButtonText}>
                                     Share
                                 </CustomText>
-                            </ScalePress>
-                        </View>
-                    </View>
-
-                    {/* Stats Section */}
-                    <View style={styles.statsContainer}>
-                        <View style={styles.statCard}>
-                            <CustomText variant="h3" fontFamily={Fonts.Bold} style={styles.statNumber}>
-                                ₹{stats.totalEarned}
-                            </CustomText>
-                            <CustomText variant="h8" style={styles.statLabel}>
-                                Total Earned
-                            </CustomText>
-                        </View>
-                        <View style={styles.statCard}>
-                            <CustomText variant="h3" fontFamily={Fonts.Bold} style={styles.statNumber}>
-                                {stats.completed}
-                            </CustomText>
-                            <CustomText variant="h8" style={styles.statLabel}>
-                                Successful
-                            </CustomText>
-                        </View>
-                        <View style={styles.statCard}>
-                            <CustomText variant="h3" fontFamily={Fonts.Bold} style={styles.statNumber}>
-                                {stats.pending}
-                            </CustomText>
-                            <CustomText variant="h8" style={styles.statLabel}>
-                                Pending
-                            </CustomText>
-                        </View>
-                    </View>
-
-                    {/* History Section */}
-                    <View style={styles.historySection}>
-                        <CustomText variant="h5" fontFamily={Fonts.SemiBold} style={styles.sectionTitle}>
-                            Referral History
-                        </CustomText>
-
-                        {history.length === 0 ? (
-                            <View style={styles.emptyState}>
-                                <Icon name="people-outline" size={48} color={Colors.disabled} />
-                                <CustomText variant="h7" style={styles.emptyText}>
-                                    No referrals yet. Share your code!
-                                </CustomText>
                             </View>
-                        ) : (
-                            history.map((item) => (
-                                <View key={item.id} style={styles.historyItem}>
-                                    <View style={[styles.statusIcon, { backgroundColor: getStatusColor(item.status) + '20' }]}>
-                                        <Icon
-                                            name={getStatusIcon(item.status)}
-                                            size={20}
-                                            color={getStatusColor(item.status)}
-                                        />
-                                    </View>
-                                    <View style={styles.historyDetails}>
-                                        <CustomText variant="h7" fontFamily={Fonts.Medium}>
-                                            {item.refereeName}
-                                        </CustomText>
-                                        <CustomText variant="h8" style={styles.historyDate}>
-                                            {formatDate(item.createdAt)}
-                                        </CustomText>
-                                    </View>
-                                    <View style={styles.historyReward}>
-                                        {item.rewarded ? (
-                                            <CustomText variant="h7" fontFamily={Fonts.SemiBold} style={styles.rewardEarned}>
-                                                +₹{item.reward}
-                                            </CustomText>
-                                        ) : (
-                                            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
-                                                <CustomText variant="h8" style={{ color: getStatusColor(item.status) }}>
-                                                    {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                                                </CustomText>
-                                            </View>
-                                        )}
-                                    </View>
-                                </View>
-                            ))
-                        )}
+                        </ScalePress>
                     </View>
-                </Animated.View>
+                </View>
+
+                {/* Stats Section */}
+                <View style={styles.statsContainer}>
+                    <View style={styles.statCard}>
+                        <CustomText variant="h3" fontFamily={Fonts.Bold} style={styles.statNumber}>
+                            ₹{stats.totalEarned}
+                        </CustomText>
+                        <CustomText variant="h8" style={styles.statLabel}>
+                            Total Earned
+                        </CustomText>
+                    </View>
+                    <View style={styles.statCard}>
+                        <CustomText variant="h3" fontFamily={Fonts.Bold} style={styles.statNumber}>
+                            {stats.completed}
+                        </CustomText>
+                        <CustomText variant="h8" style={styles.statLabel}>
+                            Successful
+                        </CustomText>
+                    </View>
+                    <View style={styles.statCard}>
+                        <CustomText variant="h3" fontFamily={Fonts.Bold} style={styles.statNumber}>
+                            {stats.pending}
+                        </CustomText>
+                        <CustomText variant="h8" style={styles.statLabel}>
+                            Pending
+                        </CustomText>
+                    </View>
+                </View>
+
+                {/* History Section */}
+                <View style={styles.historySection}>
+                    <CustomText variant="h5" fontFamily={Fonts.SemiBold} style={styles.sectionTitle}>
+                        Referral History
+                    </CustomText>
+
+                    {history.length === 0 ? (
+                        <View style={styles.emptyState}>
+                            <Icon name="people-outline" size={48} color={Colors.disabled} />
+                            <CustomText variant="h7" style={styles.emptyText}>
+                                No referrals yet
+                            </CustomText>
+                            <CustomText variant="h8" style={styles.emptySubtext}>
+                                Share your code to start earning!
+                            </CustomText>
+                        </View>
+                    ) : (
+                        history.map((item) => (
+                            <View key={item.id} style={styles.historyItem}>
+                                <View style={[styles.statusIcon, { backgroundColor: getStatusColor(item.status) + '20' }]}>
+                                    <Icon
+                                        name={getStatusIcon(item.status)}
+                                        size={20}
+                                        color={getStatusColor(item.status)}
+                                    />
+                                </View>
+                                <View style={styles.historyDetails}>
+                                    <CustomText variant="h7" fontFamily={Fonts.Medium}>
+                                        {item.refereeName}
+                                    </CustomText>
+                                    <CustomText variant="h8" style={styles.historyDate}>
+                                        {formatDate(item.createdAt)}
+                                    </CustomText>
+                                </View>
+                                <View style={styles.historyReward}>
+                                    {item.rewarded ? (
+                                        <CustomText variant="h7" fontFamily={Fonts.SemiBold} style={styles.rewardEarned}>
+                                            +₹{item.reward}
+                                        </CustomText>
+                                    ) : (
+                                        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
+                                            <CustomText variant="h8" style={{ color: getStatusColor(item.status) }}>
+                                                {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                                            </CustomText>
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+                        ))
+                    )}
+                </View>
             </ScrollView>
         </View>
     );
@@ -288,6 +291,7 @@ const styles = StyleSheet.create({
         padding: 24,
         alignItems: 'center',
         marginBottom: 20,
+        backgroundColor: Colors.primary,
     },
     heroTitle: {
         color: '#fff',
@@ -298,6 +302,19 @@ const styles = StyleSheet.create({
         color: 'rgba(255,255,255,0.9)',
         marginTop: 8,
         textAlign: 'center',
+    },
+    errorCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: '#fee2e2',
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 16,
+    },
+    errorText: {
+        color: '#dc2626',
+        flex: 1,
     },
     codeCard: {
         backgroundColor: Colors.backgroundSecondary,
@@ -327,15 +344,18 @@ const styles = StyleSheet.create({
     },
     buttonRow: {
         flexDirection: 'row',
-        gap: 16,
+        gap: 12,
+        width: '100%',
+        paddingHorizontal: 8,
     },
     copyButton: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: 8,
         backgroundColor: '#fff',
         borderRadius: 10,
-        paddingHorizontal: 20,
         paddingVertical: 12,
         borderWidth: 1,
         borderColor: Colors.secondary,
@@ -344,16 +364,23 @@ const styles = StyleSheet.create({
         color: Colors.secondary,
     },
     shareButton: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: 8,
         backgroundColor: Colors.secondary,
         borderRadius: 10,
-        paddingHorizontal: 24,
         paddingVertical: 12,
     },
     shareButtonText: {
         color: '#fff',
+    },
+    buttonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
     },
     statsContainer: {
         flexDirection: 'row',
@@ -387,7 +414,10 @@ const styles = StyleSheet.create({
     emptyText: {
         color: Colors.disabled,
         marginTop: 12,
-        textAlign: 'center',
+    },
+    emptySubtext: {
+        color: Colors.disabled,
+        marginTop: 4,
     },
     historyItem: {
         flexDirection: 'row',

@@ -7,7 +7,6 @@ import {
     ActivityIndicator,
     TextInput,
     Alert,
-    Animated,
     Clipboard,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -33,27 +32,24 @@ interface Coupon {
 const CouponsScreen = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [error, setError] = useState(false);
     const [coupons, setCoupons] = useState<Coupon[]>([]);
     const [inputCode, setInputCode] = useState('');
     const [validating, setValidating] = useState(false);
-    const fadeAnim = useState(new Animated.Value(0))[0];
 
     const fetchCoupons = useCallback(async () => {
+        setError(false);
         try {
             const data = await getAvailableCoupons();
-            setCoupons(data);
-            Animated.timing(fadeAnim, {
-                toValue: 1,
-                duration: 500,
-                useNativeDriver: true,
-            }).start();
-        } catch (error) {
-            console.log('Error fetching coupons:', error);
+            setCoupons(data || []);
+        } catch (err) {
+            console.log('Error fetching coupons:', err);
+            setError(true);
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [fadeAnim]);
+    }, []);
 
     useEffect(() => {
         fetchCoupons();
@@ -80,7 +76,7 @@ const CouponsScreen = () => {
             } else {
                 Alert.alert('Invalid', result.message || 'Code not valid');
             }
-        } catch (error) {
+        } catch (err) {
             Alert.alert('Error', 'Failed to validate code');
         } finally {
             setValidating(false);
@@ -142,100 +138,111 @@ const CouponsScreen = () => {
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
             >
-                <Animated.View style={{ opacity: fadeAnim }}>
-                    {/* Apply Code Section */}
-                    <View style={styles.applySection}>
-                        <CustomText variant="h6" fontFamily={Fonts.SemiBold}>
-                            Have a code?
-                        </CustomText>
-                        <View style={styles.inputRow}>
-                            <TextInput
-                                style={styles.codeInput}
-                                placeholder="Enter coupon code"
-                                placeholderTextColor={Colors.disabled}
-                                value={inputCode}
-                                onChangeText={setInputCode}
-                                autoCapitalize="characters"
-                            />
-                            <ScalePress
-                                style={StyleSheet.flatten([styles.applyButton, !inputCode.trim() && styles.disabledButton])}
-                                onPress={handleApplyCode}
-                                disabled={!inputCode.trim() || validating}
-                            >
-                                {validating ? (
-                                    <ActivityIndicator size="small" color="#fff" />
-                                ) : (
-                                    <CustomText variant="h7" fontFamily={Fonts.SemiBold} style={styles.applyButtonText}>
-                                        APPLY
-                                    </CustomText>
-                                )}
-                            </ScalePress>
-                        </View>
-                    </View>
-
-                    {/* Available Coupons */}
-                    <CustomText variant="h5" fontFamily={Fonts.SemiBold} style={styles.sectionTitle}>
-                        Available Coupons ({coupons.length})
+                {/* Apply Code Section */}
+                <View style={styles.applySection}>
+                    <CustomText variant="h6" fontFamily={Fonts.SemiBold}>
+                        Have a code?
                     </CustomText>
+                    <View style={styles.inputRow}>
+                        <TextInput
+                            style={styles.codeInput}
+                            placeholder="Enter coupon code"
+                            placeholderTextColor={Colors.disabled}
+                            value={inputCode}
+                            onChangeText={setInputCode}
+                            autoCapitalize="characters"
+                        />
+                        <ScalePress
+                            style={styles.applyButton}
+                            onPress={handleApplyCode}
+                            disabled={!inputCode.trim() || validating}
+                        >
+                            {validating ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <CustomText variant="h7" fontFamily={Fonts.SemiBold} style={styles.applyButtonText}>
+                                    APPLY
+                                </CustomText>
+                            )}
+                        </ScalePress>
+                    </View>
+                </View>
 
-                    {coupons.length === 0 ? (
-                        <View style={styles.emptyState}>
-                            <Icon name="pricetag-outline" size={48} color={Colors.disabled} />
-                            <CustomText variant="h7" style={styles.emptyText}>
-                                No coupons available
-                            </CustomText>
-                        </View>
-                    ) : (
-                        coupons.map((coupon) => (
-                            <ScalePress key={coupon._id} style={styles.couponCard}>
-                                <View style={styles.couponLeft}>
-                                    <View style={[styles.discountBadge, { backgroundColor: getDiscountColor(coupon.discountType) }]}>
-                                        <CustomText variant="h7" fontFamily={Fonts.Bold} style={styles.discountText}>
-                                            {getDiscountDisplay(coupon)}
-                                        </CustomText>
-                                    </View>
-                                </View>
-                                <View style={styles.couponDivider}>
-                                    {[...Array(8)].map((_, i) => (
-                                        <View key={i} style={styles.dividerDot} />
-                                    ))}
-                                </View>
-                                <View style={styles.couponRight}>
-                                    <CustomText variant="h6" fontFamily={Fonts.SemiBold}>
-                                        {coupon.name}
+                {/* Error Message */}
+                {error && (
+                    <View style={styles.errorCard}>
+                        <Icon name="cloud-offline-outline" size={20} color="#dc2626" />
+                        <CustomText variant="h8" style={styles.errorText}>
+                            Could not load coupons. Pull to refresh.
+                        </CustomText>
+                    </View>
+                )}
+
+                {/* Available Coupons */}
+                <CustomText variant="h5" fontFamily={Fonts.SemiBold} style={styles.sectionTitle}>
+                    Available Coupons ({coupons.length})
+                </CustomText>
+
+                {coupons.length === 0 ? (
+                    <View style={styles.emptyState}>
+                        <Icon name="pricetag-outline" size={48} color={Colors.disabled} />
+                        <CustomText variant="h7" style={styles.emptyText}>
+                            No coupons available right now
+                        </CustomText>
+                        <CustomText variant="h8" style={styles.emptySubtext}>
+                            Check back later for exclusive offers!
+                        </CustomText>
+                    </View>
+                ) : (
+                    coupons.map((coupon) => (
+                        <ScalePress key={coupon._id} style={styles.couponCard}>
+                            <View style={styles.couponLeft}>
+                                <View style={[styles.discountBadge, { backgroundColor: getDiscountColor(coupon.discountType) }]}>
+                                    <CustomText variant="h7" fontFamily={Fonts.Bold} style={styles.discountText}>
+                                        {getDiscountDisplay(coupon)}
                                     </CustomText>
-                                    <CustomText variant="h8" style={styles.couponDesc} numberOfLines={2}>
-                                        {coupon.description}
-                                    </CustomText>
-                                    <View style={styles.couponMeta}>
-                                        <CustomText variant="h9" style={styles.couponMinOrder}>
-                                            Min order: ₹{coupon.minOrderValue}
-                                        </CustomText>
-                                        <CustomText variant="h9" style={styles.couponExpiry}>
-                                            Valid till {formatDate(coupon.validUntil)}
-                                        </CustomText>
-                                    </View>
-                                    <View style={styles.codeRow}>
-                                        <View style={styles.codeBox}>
-                                            <CustomText variant="h7" fontFamily={Fonts.SemiBold} style={styles.codeText}>
-                                                {coupon.code}
-                                            </CustomText>
-                                        </View>
-                                        <ScalePress
-                                            style={styles.copyButton}
-                                            onPress={() => handleCopyCode(coupon.code)}
-                                        >
-                                            <Icon name="copy-outline" size={18} color={Colors.secondary} />
-                                            <CustomText variant="h8" fontFamily={Fonts.Medium} style={styles.copyText}>
-                                                COPY
-                                            </CustomText>
-                                        </ScalePress>
-                                    </View>
                                 </View>
-                            </ScalePress>
-                        ))
-                    )}
-                </Animated.View>
+                            </View>
+                            <View style={styles.couponDivider}>
+                                {[...Array(8)].map((_, i) => (
+                                    <View key={i} style={styles.dividerDot} />
+                                ))}
+                            </View>
+                            <View style={styles.couponRight}>
+                                <CustomText variant="h6" fontFamily={Fonts.SemiBold}>
+                                    {coupon.name}
+                                </CustomText>
+                                <CustomText variant="h8" style={styles.couponDesc} numberOfLines={2}>
+                                    {coupon.description}
+                                </CustomText>
+                                <View style={styles.couponMeta}>
+                                    <CustomText variant="h9" style={styles.couponMinOrder}>
+                                        Min order: ₹{coupon.minOrderValue}
+                                    </CustomText>
+                                    <CustomText variant="h9" style={styles.couponExpiry}>
+                                        Valid till {formatDate(coupon.validUntil)}
+                                    </CustomText>
+                                </View>
+                                <View style={styles.codeRow}>
+                                    <View style={styles.codeBox}>
+                                        <CustomText variant="h7" fontFamily={Fonts.SemiBold} style={styles.codeText}>
+                                            {coupon.code}
+                                        </CustomText>
+                                    </View>
+                                    <ScalePress
+                                        style={styles.copyButton}
+                                        onPress={() => handleCopyCode(coupon.code)}
+                                    >
+                                        <Icon name="copy-outline" size={18} color={Colors.secondary} />
+                                        <CustomText variant="h8" fontFamily={Fonts.Medium} style={styles.copyText}>
+                                            COPY
+                                        </CustomText>
+                                    </ScalePress>
+                                </View>
+                            </View>
+                        </ScalePress>
+                    ))
+                )}
             </ScrollView>
         </View>
     );
@@ -283,12 +290,23 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    disabledButton: {
-        opacity: 0.5,
+        opacity: 1,
     },
     applyButtonText: {
         color: '#fff',
+    },
+    errorCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: '#fee2e2',
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 16,
+    },
+    errorText: {
+        color: '#dc2626',
+        flex: 1,
     },
     sectionTitle: {
         marginBottom: 16,
@@ -300,6 +318,10 @@ const styles = StyleSheet.create({
     emptyText: {
         color: Colors.disabled,
         marginTop: 12,
+    },
+    emptySubtext: {
+        color: Colors.disabled,
+        marginTop: 4,
     },
     couponCard: {
         flexDirection: 'row',

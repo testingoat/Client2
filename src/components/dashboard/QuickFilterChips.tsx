@@ -1,9 +1,16 @@
 import React, { FC, useState, useCallback } from 'react'
-import { View, StyleSheet, ScrollView, Pressable, Animated } from 'react-native'
+import { View, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native'
 import CustomText from '@components/ui/CustomText'
 import { Colors, Fonts } from '@utils/Constants'
 import Icon from 'react-native-vector-icons/Ionicons'
 import LinearGradient from 'react-native-linear-gradient'
+
+// Get screen width for responsive chip sizing
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
+// Max width per chip = ~30% of screen to prevent overflow
+const MAX_CHIP_WIDTH = SCREEN_WIDTH * 0.30
+// Fixed container height for consistency across devices
+const CHIP_CONTAINER_HEIGHT = 44
 
 export interface FilterChip {
     id: string
@@ -30,6 +37,7 @@ const defaultChips: FilterChip[] = [
 
 /**
  * Horizontal scrollable quick filter chips for the dashboard.
+ * Responsive design: chips have maxWidth and fixed height for consistency across devices.
  */
 const QuickFilterChips: FC<QuickFilterChipsProps> = ({
     chips = defaultChips,
@@ -67,7 +75,13 @@ const QuickFilterChips: FC<QuickFilterChipsProps> = ({
                         {chip.icon && (
                             <Icon name={chip.icon} size={14} color="#fff" />
                         )}
-                        <CustomText style={styles.chipTextSelected} fontFamily={Fonts.SemiBold}>
+                        <CustomText
+                            style={styles.chipTextSelected}
+                            fontFamily={Fonts.SemiBold}
+                            numberOfLines={1}
+                            // Limit font scaling for consistent sizing
+                            maxFontSizeMultiplier={1.2}
+                        >
                             {chip.label}
                         </CustomText>
                     </LinearGradient>
@@ -76,7 +90,13 @@ const QuickFilterChips: FC<QuickFilterChipsProps> = ({
                         {chip.icon && (
                             <Icon name={chip.icon} size={14} color={Colors.text} />
                         )}
-                        <CustomText style={styles.chipText} fontFamily={Fonts.Medium}>
+                        <CustomText
+                            style={styles.chipText}
+                            fontFamily={Fonts.Medium}
+                            numberOfLines={1}
+                            // Limit font scaling for consistent sizing
+                            maxFontSizeMultiplier={1.2}
+                        >
                             {chip.label}
                         </CustomText>
                     </View>
@@ -100,16 +120,22 @@ const QuickFilterChips: FC<QuickFilterChipsProps> = ({
 
 const styles = StyleSheet.create({
     container: {
+        // FIX #3: Fixed container height for consistency across all devices
+        height: CHIP_CONTAINER_HEIGHT,
+        justifyContent: 'center',
         marginTop: 0,
         marginBottom: 0,
     },
     scrollContent: {
         paddingHorizontal: 16,
         gap: 8,
+        alignItems: 'center',
     },
     chipContainer: {
         borderRadius: 20,
         overflow: 'hidden',
+        // FIX #1: Max width to prevent chips from being too wide
+        maxWidth: MAX_CHIP_WIDTH,
     },
     chipPressed: {
         opacity: 0.8,
@@ -125,14 +151,20 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderWidth: 1,
         borderColor: '#E8E8E8',
+        // Ensure chip doesn't grow beyond container
+        maxWidth: MAX_CHIP_WIDTH,
     },
     chipText: {
         color: Colors.text,
         fontSize: 12,
+        // FIX #2: Prevent text from wrapping or overflowing
+        flexShrink: 1,
     },
     chipTextSelected: {
         color: '#fff',
         fontSize: 12,
+        // FIX #2: Prevent text from wrapping or overflowing
+        flexShrink: 1,
     },
 })
 

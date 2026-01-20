@@ -25,7 +25,16 @@ const getItemKey = (item: any, index: number) => {
   )
 }
 
-const getItemLabel = (item: any) => String(item?.label || item?.name || 'Unknown')
+const getItemLabel = (item: any) =>
+  String(
+    item?.label ??
+    item?.name ??
+    item?.title ??
+    item?.labelOverride ??
+    item?.categoryName ??
+    item?.category?.name ??
+    'Unknown'
+  )
 
 const CategoryContainer: FC<{ data: any }> = ({ data }) => {
   const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({})
