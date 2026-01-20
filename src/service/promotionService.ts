@@ -52,12 +52,14 @@ interface Coupon {
     code: string;
     name: string;
     description: string;
-    discountType: 'flat' | 'percentage' | 'free_delivery' | 'bogo' | 'cashback';
-    discountValue: number;
+    type: 'flat' | 'percentage' | 'free_delivery' | 'bogo' | 'cashback';
+    displayDiscount: string;  // Pre-formatted from server
     minOrderValue: number;
     maxDiscount?: number;
     terms?: string;
     validUntil: string;
+    canApply?: boolean;
+    amountNeeded?: number;
 }
 
 interface CouponValidation {

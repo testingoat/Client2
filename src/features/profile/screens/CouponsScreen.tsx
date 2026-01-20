@@ -21,12 +21,14 @@ interface Coupon {
     code: string;
     name: string;
     description: string;
-    discountType: 'flat' | 'percentage' | 'free_delivery' | 'bogo' | 'cashback';
-    discountValue: number;
+    type: 'flat' | 'percentage' | 'free_delivery' | 'bogo' | 'cashback';
+    displayDiscount: string;  // Pre-formatted from server like "₹100 OFF"
     minOrderValue: number;
     maxDiscount?: number;
     terms?: string;
     validUntil: string;
+    canApply?: boolean;
+    amountNeeded?: number;
 }
 
 const CouponsScreen = () => {
@@ -84,20 +86,12 @@ const CouponsScreen = () => {
     };
 
     const getDiscountDisplay = (coupon: Coupon) => {
-        switch (coupon.discountType) {
-            case 'flat':
-                return `₹${coupon.discountValue} OFF`;
-            case 'percentage':
-                return `${coupon.discountValue}% OFF`;
-            case 'free_delivery':
-                return 'FREE DELIVERY';
-            case 'bogo':
-                return 'BUY 1 GET 1';
-            case 'cashback':
-                return `₹${coupon.discountValue} CASHBACK`;
-            default:
-                return 'DISCOUNT';
+        // Use pre-formatted displayDiscount from server
+        if (coupon.displayDiscount) {
+            return coupon.displayDiscount;
         }
+        // Fallback if displayDiscount not available
+        return 'DISCOUNT';
     };
 
     const getDiscountColor = (type: string) => {
@@ -108,7 +102,7 @@ const CouponsScreen = () => {
             bogo: '#f59e0b',
             cashback: '#ec4899'
         };
-        return colors[type] || Colors.secondary;
+        return colors[type] || '#10b981'; // Default to green
     };
 
     const formatDate = (dateString: string) => {
@@ -197,7 +191,7 @@ const CouponsScreen = () => {
                     coupons.map((coupon) => (
                         <ScalePress key={coupon._id} style={styles.couponCard}>
                             <View style={styles.couponLeft}>
-                                <View style={[styles.discountBadge, { backgroundColor: getDiscountColor(coupon.discountType) }]}>
+                                <View style={[styles.discountBadge, { backgroundColor: getDiscountColor(coupon.type) }]}>
                                     <CustomText variant="h7" fontFamily={Fonts.Bold} style={styles.discountText}>
                                         {getDiscountDisplay(coupon)}
                                     </CustomText>
