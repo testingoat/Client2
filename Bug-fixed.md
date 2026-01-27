@@ -9199,3 +9199,157 @@ Implemented a rich product detail experience across Client App, Seller App, and 
 - **AdminJS**: Configured resources to view/edit all new fields.
 
 ### **Status:** ✅ Complete
+
+---
+
+## ✅ **Coupon System UI Redesign & Bill Integration** *(2026-01-20 20:15 IST)*
+
+### **Issue Summary:**
+The coupon screen UI was displaying incorrectly with layout issues and text being cut off. Users couldn't easily apply coupons, and the applied coupon discount was not reflected in the bill at checkout.
+
+### **Solution Implemented:**
+
+#### **1. CouponsScreen Complete Redesign** (`CouponsScreen.tsx`)
+**Problem:** Layout was broken, discount text cut off, and no proper "APPLY" button functionality.
+
+**Solution:**
+- Completely redesigned coupon cards with compact horizontal layout (similar to Swiggy/Dominos)
+- Added staggered animations using React Native's Animated API (fadeIn, slideUp, spring scale)
+- Created separate `CouponCard` component with proper structure:
+  - Left: Colored discount badge with discount type indicator
+  - Middle: Coupon code, savings text, description, metadata
+  - Right: APPLY button with text link style
+- Added COPY button with icon for quick code copying
+- Fixed input field text visibility (was white on white)
+- Removed unnecessary client-side validation (copy & alert flow instead)
+
+**Before:** Vertical card layout, broken flexbox, missing APPLY button
+**After:** Compact horizontal cards with animations, clear APPLY/COPY actions
+
+#### **2. Data Model Synchronization**
+**Problem:** Client expected `discountType`/`discountValue` but server returned `type`/`displayDiscount`
+
+**Solution:**
+- Updated `Coupon` interface in `CouponsScreen.tsx` and `promotionService.ts`
+- Changed to use `type` and `displayDiscount` from server response
+- Fixed `getDiscountDisplay()` to use pre-formatted `displayDiscount` string
+
+#### **3. Bill Details Integration** (`BillDetails.tsx`)
+**Problem:** Coupon discount not shown in checkout bill breakdown
+
+**Solution:**
+- Added new props: `couponCode`, `couponDiscount`
+- Created animated `DiscountItem` component with spring animation
+- Added green-highlighted discount row showing "Coupon (CODE) - ₹XX"
+- Added "You're saving ₹XX on this order! 🎉" banner
+- Updated Grand Total to subtract coupon discount
+- Added strikethrough original price when coupon applied
+
+#### **4. ProductOrder Coupon Management** (`ProductOrder.tsx`)
+**Problem:** No state management for applied coupons on checkout screen
+
+**Solution:**
+- Added coupon state: `couponCode`, `couponDiscount`, `validatingCoupon`
+- Created `applyCoupon(code)` function that:
+  - Validates coupon with server via `validateCoupon()` API
+  - Shows success/error alerts
+  - Updates discount state
+- Created `removeCoupon()` function
+- Added clipboard auto-detection on screen focus (checks for coupon codes copied from CouponsScreen)
+- Enhanced coupon section to show:
+  - Applied coupon with green border, code name, savings, and REMOVE button
+  - OR "Use Coupons" link to navigate to CouponsScreen
+- Passed coupon props to `BillDetails`
+
+### **Files Modified:**
+
+| File | Changes |
+|------|---------|
+| `client/src/features/profile/screens/CouponsScreen.tsx` | Complete rewrite with compact cards, animations, APPLY/COPY buttons |
+| `client/src/features/order/BillDetails.tsx` | Added coupon discount row, savings banner, strikethrough price |
+| `client/src/features/order/ProductOrder.tsx` | Added coupon state management, clipboard auto-apply, enhanced UI |
+| `client/src/service/promotionService.ts` | Updated Coupon interface, fixed validateCoupon params |
+
+### **Key Features:**
+- ✅ Compact coupon card design (Swiggy-like)
+- ✅ Staggered fade-in animations on coupon list
+- ✅ One-tap APPLY button copies code & navigates back
+- ✅ COPY button for manual code copying
+- ✅ Auto-apply from clipboard when returning from CouponsScreen
+- ✅ Coupon discount shown in bill with animation
+- ✅ Savings banner on checkout
+- ✅ Remove coupon functionality
+- ✅ No new dependencies added
+
+### **Animation Details:**
+```javascript
+// Staggered entry animation per card
+Animated.parallel([
+  Animated.timing(fadeAnim, { toValue: 1, delay: index * 100 }),
+  Animated.timing(slideAnim, { toValue: 0, delay: index * 100 }),
+  Animated.spring(scaleAnim, { toValue: 1, friction: 8, tension: 40 })
+])
+```
+
+### **Status:** ✅ Complete
+
+---
+
+## ✅ **Profile Section Screens - Support, Help Center & Menu Cleanup** *(2026-01-20 21:00 IST)*
+
+### **Issue Summary:**
+Several profile screens were empty or had minimal content. The user requested enhancements for Google Play review readiness, including adding proper Support contact information, functional Help Center, and removing unfinished features.
+
+### **Changes Made:**
+
+#### **1. Profile Menu Reorganization** (`Profile.tsx`)
+**Removed:**
+- "Raise a Ticket" (pending future implementation)
+- "Language" (pending future implementation)
+
+**Reorganized:**
+- Split "HELP & POLICIES" into "HELP & SUPPORT" and "LEGAL" sections
+- Added "Support" option to menu
+- Renamed labels for clarity ("Terms" → "Terms of Service", "Privacy" → "Privacy Policy")
+
+#### **2. SupportScreen Complete Redesign** (`SupportScreen.tsx`)
+**New Features:**
+- **Hero Section**: Professional "We're Here to Help" banner
+- **Contact Options** (with functional actions):
+  - 📞 Call: +91 84319 89263 (opens phone dialer)
+  - 💬 WhatsApp: Opens WhatsApp chat
+  - 📧 Email: support@goatgoat.in
+- **Working Hours Display**: Monday-Friday 9AM-9PM, Saturday-Sunday 10AM-6PM
+- **Info Cards**: Response time, security, language support
+- **Emergency Notice**: Urgent order issues callout
+
+#### **3. HelpCenterScreen Complete Redesign** (`HelpCenterScreen.tsx`)
+**New Features:**
+- **Quick Links**: Contact Support, Safety & Trust, Terms of Service
+- **Expandable FAQ Sections** with accordion UI:
+  - Orders & Delivery (4 FAQs)
+  - Payments & Refunds (3 FAQs)
+  - Product Quality (3 FAQs)
+  - Account & App (3 FAQs)
+- **"Still Need Help?"** card with Contact Us button
+
+#### **4. Existing Screens (Already Good - No Changes)**
+- `SafetyTrustScreen.tsx` - Already has comprehensive content
+- `TermsScreen.tsx` - Already has proper terms sections
+- `PrivacyScreen.tsx` - Already has privacy policy content
+- `CancellationPolicyScreen.tsx` - Already has refund policy
+
+### **Files Modified:**
+
+| File | Changes |
+|------|---------|
+| `client/src/features/profile/Profile.tsx` | Removed Language & Raise Ticket, added Support, reorganized menu |
+| `client/src/features/profile/SupportScreen.tsx` | Complete rewrite with contact options |
+| `client/src/features/profile/screens/HelpCenterScreen.tsx` | Complete rewrite with FAQ accordion |
+
+### **Contact Information Added:**
+- **Phone**: +91 84319 89263
+- **Email**: support@goatgoat.in
+- **WhatsApp**: Same as phone number
+
+### **Status:** ✅ Complete - Ready for Google Play Review

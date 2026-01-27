@@ -42,21 +42,25 @@ const Profile = () => {
       ]
     },
     {
-      title: 'HELP & POLICIES',
+      title: 'HELP & SUPPORT',
       items: [
+        { icon: 'headset-outline', label: 'Support', screen: 'SupportScreen' },
         { icon: 'help-circle-outline', label: 'Help Center', screen: 'HelpCenterScreen' },
-        { icon: 'ticket-outline', label: 'Raise a Ticket', screen: 'RaiseTicketScreen' },
         { icon: 'shield-checkmark-outline', label: 'Safety & Trust', screen: 'SafetyTrustScreen' },
-        { icon: 'document-text-outline', label: 'Terms', screen: 'TermsScreen' },
-        { icon: 'lock-closed-outline', label: 'Privacy', screen: 'PrivacyScreen' },
-        { icon: 'refresh-circle-outline', label: 'Cancellation/Refund Policy', screen: 'CancellationPolicyScreen' },
+      ]
+    },
+    {
+      title: 'LEGAL',
+      items: [
+        { icon: 'document-text-outline', label: 'Terms of Service', screen: 'TermsScreen' },
+        { icon: 'lock-closed-outline', label: 'Privacy Policy', screen: 'PrivacyScreen' },
+        { icon: 'refresh-circle-outline', label: 'Cancellation & Refund', screen: 'CancellationPolicyScreen' },
       ]
     },
     {
       title: 'SETTINGS',
       items: [
         { icon: 'notifications-outline', label: 'Notifications', screen: 'NotificationScreen' },
-        { icon: 'language-outline', label: 'Language', screen: 'LanguageSettingsScreen' },
         { icon: 'key-outline', label: 'Permissions', screen: 'PermissionsScreen' },
       ]
     }

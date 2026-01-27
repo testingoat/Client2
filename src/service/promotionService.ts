@@ -80,14 +80,15 @@ export const getAvailableCoupons = async (): Promise<Coupon[]> => {
 export const validateCoupon = async (
     code: string,
     cartTotal: number,
-    items: Array<{ productId: string; quantity: number }>
+    cartItems: Array<{ productId: string; price: number; count: number }>
 ): Promise<CouponValidation> => {
     const response = await appAxios.post('/coupons/validate', {
         code,
         cartTotal,
-        items
+        cartItems
     });
-    return response.data.data;
+    // Server returns validation result directly
+    return response.data;
 };
 
 export const getCouponHistory = async (page = 1, limit = 20) => {

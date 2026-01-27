@@ -7,8 +7,9 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  Clipboard,
 } from 'react-native';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import CustomHeader from '@components/ui/CustomHeader';
 import { Colors, Fonts } from '@utils/Constants';
 import OrderList from './OrderList';
@@ -26,6 +27,7 @@ import { DeliveryLocation, getValidatedDeliveryLocation } from '@service/locatio
 import { useDeliveryEta } from '@features/dashboard/hooks/useDeliveryEta';
 import { useDeliveryQuote } from './hooks/useDeliveryQuote';
 import { useAddressStore } from '@state/addressStore';
+import { validateCoupon } from '@service/promotionService';
 
 const ProductOrder = () => {
   const { getTotalPrice, cart, clearCart } = useCartStore();
@@ -33,6 +35,11 @@ const ProductOrder = () => {
   const totalItemPrice = getTotalPrice();
 
   const [loading, setLoading] = useState(false);
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState<string | null>(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
   const {
     state: etaState,
     etaText,
@@ -146,8 +153,78 @@ const ProductOrder = () => {
       setRefreshing(false);
     }
   };
+
+  // Apply coupon function
+  const applyCoupon = useCallback(async (code: string) => {
+    if (!code || validatingCoupon) return;
+
+    setValidatingCoupon(true);
+    try {
+      // Prepare cart items for validation
+      const cartItems = cart.map(cartItem => ({
+        productId: String(cartItem._id),
+        price: cartItem.item?.price || 0,
+        count: cartItem.count,
+      }));
+
+      const result = await validateCoupon(code, totalItemPrice, cartItems);
+
+      if (result.valid && result.discount) {
+        setCouponCode(code);
+        setCouponDiscount(result.discount);
+        Alert.alert(
+          'Coupon Applied! 🎉',
+          `You saved ₹${result.discount} on this order!`
+        );
+      } else {
+        Alert.alert('Invalid Coupon', result.error || result.message || 'This coupon cannot be applied to your order.');
+        setCouponCode(null);
+        setCouponDiscount(0);
+      }
+    } catch (err: any) {
+      console.log('Coupon validation error:', err);
+      Alert.alert('Error', err?.response?.data?.error || 'Failed to validate coupon');
+      setCouponCode(null);
+      setCouponDiscount(0);
+    } finally {
+      setValidatingCoupon(false);
+    }
+  }, [cart, totalItemPrice, validatingCoupon]);
+
+  // Remove coupon function
+  const removeCoupon = useCallback(() => {
+    setCouponCode(null);
+    setCouponDiscount(0);
+  }, []);
+
+  // Check clipboard for coupon when returning from CouponsScreen
+  useEffect(() => {
+    const checkClipboard = async () => {
+      try {
+        const clipboardContent = await Clipboard.getString();
+        if (clipboardContent && clipboardContent.length > 2 && clipboardContent.length < 20) {
+          // Only auto-apply if no coupon is currently applied
+          if (!couponCode && !validatingCoupon) {
+            // Check if it looks like a coupon code (uppercase alphanumeric)
+            const isValidFormat = /^[A-Z0-9]+$/.test(clipboardContent.toUpperCase());
+            if (isValidFormat) {
+              applyCoupon(clipboardContent.toUpperCase());
+              // Clear clipboard after reading
+              Clipboard.setString('');
+            }
+          }
+        }
+      } catch (e) {
+        // Clipboard access failed, ignore
+      }
+    };
+
+    // Check clipboard when screen loads
+    checkClipboard();
+  }, [applyCoupon, couponCode, validatingCoupon]);
+
   const deliveryFeeTotal = quote?.final_fee ?? 0;
-  const grandTotal = totalItemPrice + deliveryFeeTotal;
+  const grandTotal = totalItemPrice + deliveryFeeTotal - couponDiscount;
   const isPlaceOrderDisabled =
     loading ||
     isQuoteLoading ||
@@ -288,27 +365,54 @@ const ProductOrder = () => {
         }>
         <OrderList etaText={etaText} />
 
-        <TouchableOpacity
-          style={styles.flexRowBetween}
-          onPress={() => navigate('CouponsScreen')}
-          activeOpacity={0.7}>
-          <View style={styles.flexRow}>
-            <Image
-              source={require('@assets/icons/coupon.png')}
-              style={styles.couponIcon}
-            />
-            <CustomText variant="h6" fontFamily={Fonts.SemiBold}>
-              Use Coupons
-            </CustomText>
+        {/* Coupon Section */}
+        {couponCode ? (
+          <View style={styles.appliedCouponContainer}>
+            <View style={styles.flexRow}>
+              <Image
+                source={require('@assets/icons/coupon.png')}
+                style={styles.couponIcon}
+              />
+              <View>
+                <CustomText variant="h7" fontFamily={Fonts.SemiBold} style={{ color: Colors.secondary }}>
+                  {couponCode} Applied
+                </CustomText>
+                <CustomText variant="h9" style={{ color: '#666' }}>
+                  You save ₹{couponDiscount}
+                </CustomText>
+              </View>
+            </View>
+            <TouchableOpacity onPress={removeCoupon} activeOpacity={0.7}>
+              <CustomText variant="h8" fontFamily={Fonts.SemiBold} style={{ color: '#dc2626' }}>
+                REMOVE
+              </CustomText>
+            </TouchableOpacity>
           </View>
-          <Icon name="chevron-right" size={RFValue(16)} color={Colors.text} />
-        </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={styles.flexRowBetween}
+            onPress={() => navigate('CouponsScreen')}
+            activeOpacity={0.7}>
+            <View style={styles.flexRow}>
+              <Image
+                source={require('@assets/icons/coupon.png')}
+                style={styles.couponIcon}
+              />
+              <CustomText variant="h6" fontFamily={Fonts.SemiBold}>
+                Use Coupons
+              </CustomText>
+            </View>
+            <Icon name="chevron-right" size={RFValue(16)} color={Colors.text} />
+          </TouchableOpacity>
+        )}
 
         <BillDetails
           totalItemPrice={totalItemPrice}
           quote={quote}
           isLoading={isQuoteLoading}
           errorMessage={quoteInfoMessage}
+          couponCode={couponCode || undefined}
+          couponDiscount={couponDiscount}
         />
 
         <View style={styles.flexRowBetween}>
@@ -490,6 +594,18 @@ const styles = StyleSheet.create({
     marginTop: 6,
     color: Colors.text,
     opacity: 0.8,
+  },
+  appliedCouponContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#e8f5e9',
+    padding: 12,
+    borderRadius: 10,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: Colors.secondary,
+    borderStyle: 'dashed',
   },
 });
 

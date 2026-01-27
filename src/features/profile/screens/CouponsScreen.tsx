@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     View,
     StyleSheet,
@@ -8,13 +8,18 @@ import {
     TextInput,
     Alert,
     Clipboard,
+    Animated,
+    Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 import CustomHeader from '@components/ui/CustomHeader';
 import CustomText from '@components/ui/CustomText';
 import ScalePress from '@components/ui/ScalePress';
 import { Colors, Fonts } from '@utils/Constants';
-import { getAvailableCoupons, validateCoupon } from '@service/promotionService';
+import { getAvailableCoupons } from '@service/promotionService';
+
+const { width } = Dimensions.get('window');
 
 interface Coupon {
     _id: string;
@@ -22,7 +27,7 @@ interface Coupon {
     name: string;
     description: string;
     type: 'flat' | 'percentage' | 'free_delivery' | 'bogo' | 'cashback';
-    displayDiscount: string;  // Pre-formatted from server like "₹100 OFF"
+    displayDiscount: string;
     minOrderValue: number;
     maxDiscount?: number;
     terms?: string;
@@ -31,13 +36,141 @@ interface Coupon {
     amountNeeded?: number;
 }
 
+// Animated Coupon Card Component
+const CouponCard = ({
+    coupon,
+    index,
+    onCopy,
+    onApply
+}: {
+    coupon: Coupon;
+    index: number;
+    onCopy: (code: string) => void;
+    onApply: (code: string) => void;
+}) => {
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const slideAnim = useRef(new Animated.Value(30)).current;
+    const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 400,
+                delay: index * 100,
+                useNativeDriver: true,
+            }),
+            Animated.timing(slideAnim, {
+                toValue: 0,
+                duration: 400,
+                delay: index * 100,
+                useNativeDriver: true,
+            }),
+            Animated.spring(scaleAnim, {
+                toValue: 1,
+                friction: 8,
+                tension: 40,
+                delay: index * 100,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [fadeAnim, slideAnim, scaleAnim, index]);
+
+    const getDiscountColor = () => {
+        const colors: { [key: string]: string } = {
+            flat: '#10b981',
+            percentage: '#3b82f6',
+            free_delivery: '#8b5cf6',
+            bogo: '#f59e0b',
+            cashback: '#ec4899'
+        };
+        return colors[coupon.type] || '#10b981';
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'short'
+        });
+    };
+
+    return (
+        <Animated.View
+            style={[
+                styles.couponCard,
+                {
+                    opacity: fadeAnim,
+                    transform: [
+                        { translateY: slideAnim },
+                        { scale: scaleAnim }
+                    ],
+                },
+            ]}
+        >
+            {/* Left Discount Badge - Vertical */}
+            <View style={[styles.discountBadge, { backgroundColor: getDiscountColor() }]}>
+                <CustomText variant="h8" fontFamily={Fonts.Bold} style={styles.discountText}>
+                    {coupon.displayDiscount || 'DISCOUNT'}
+                </CustomText>
+            </View>
+
+            {/* Middle Content */}
+            <View style={styles.couponContent}>
+                {/* Code Name & Apply Button Row */}
+                <View style={styles.headerRow}>
+                    <CustomText variant="h6" fontFamily={Fonts.Bold} style={styles.couponCode}>
+                        {coupon.code}
+                    </CustomText>
+                    <ScalePress style={styles.applyBtn} onPress={() => onApply(coupon.code)}>
+                        <CustomText variant="h8" fontFamily={Fonts.SemiBold} style={styles.applyBtnText}>
+                            APPLY
+                        </CustomText>
+                    </ScalePress>
+                </View>
+
+                {/* Savings Highlight */}
+                <CustomText variant="h8" fontFamily={Fonts.Medium} style={styles.savingsText}>
+                    {coupon.name}
+                </CustomText>
+
+                {/* Divider */}
+                <View style={styles.dashedDivider} />
+
+                {/* Description */}
+                <CustomText variant="h9" style={styles.descText} numberOfLines={2}>
+                    {coupon.description || `Use code ${coupon.code} & get ${coupon.displayDiscount} on orders above ₹${coupon.minOrderValue}.`}
+                </CustomText>
+
+                {/* Terms & Copy Row */}
+                <View style={styles.bottomRow}>
+                    <View style={styles.metaRow}>
+                        <CustomText variant="h9" style={styles.metaText}>
+                            Min ₹{coupon.minOrderValue}
+                        </CustomText>
+                        <View style={styles.metaDot} />
+                        <CustomText variant="h9" style={styles.metaText}>
+                            Valid till {formatDate(coupon.validUntil)}
+                        </CustomText>
+                    </View>
+                    <ScalePress style={styles.copyBtn} onPress={() => onCopy(coupon.code)}>
+                        <Icon name="copy-outline" size={14} color={Colors.secondary} />
+                        <CustomText variant="h9" fontFamily={Fonts.Medium} style={styles.copyBtnText}>
+                            COPY
+                        </CustomText>
+                    </ScalePress>
+                </View>
+            </View>
+        </Animated.View>
+    );
+};
+
 const CouponsScreen = () => {
+    const navigation = useNavigation<any>();
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(false);
     const [coupons, setCoupons] = useState<Coupon[]>([]);
     const [inputCode, setInputCode] = useState('');
-    const [validating, setValidating] = useState(false);
 
     const fetchCoupons = useCallback(async () => {
         setError(false);
@@ -64,52 +197,27 @@ const CouponsScreen = () => {
 
     const handleCopyCode = (code: string) => {
         Clipboard.setString(code);
-        Alert.alert('Copied!', `Code "${code}" copied to clipboard`);
+        Alert.alert('Copied! ✓', `Code "${code}" copied to clipboard`);
     };
 
     const handleApplyCode = async () => {
         if (!inputCode.trim()) return;
-
-        setValidating(true);
-        try {
-            const result = await validateCoupon(inputCode.trim(), 500, []);
-            if (result.valid) {
-                Alert.alert('Valid!', `Discount: ₹${result.discount}`);
-            } else {
-                Alert.alert('Invalid', result.message || 'Code not valid');
-            }
-        } catch (err) {
-            Alert.alert('Error', 'Failed to validate code');
-        } finally {
-            setValidating(false);
-        }
+        Clipboard.setString(inputCode.trim().toUpperCase());
+        Alert.alert(
+            'Code Copied!',
+            `Use code "${inputCode.trim().toUpperCase()}" at checkout to apply the discount.`,
+            [{ text: 'OK' }]
+        );
+        setInputCode('');
     };
 
-    const getDiscountDisplay = (coupon: Coupon) => {
-        // Use pre-formatted displayDiscount from server
-        if (coupon.displayDiscount) {
-            return coupon.displayDiscount;
-        }
-        // Fallback if displayDiscount not available
-        return 'DISCOUNT';
-    };
-
-    const getDiscountColor = (type: string) => {
-        const colors: { [key: string]: string } = {
-            flat: '#10b981',
-            percentage: '#3b82f6',
-            free_delivery: '#8b5cf6',
-            bogo: '#f59e0b',
-            cashback: '#ec4899'
-        };
-        return colors[type] || '#10b981'; // Default to green
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-IN', {
-            day: 'numeric',
-            month: 'short'
-        });
+    const handleApplyCoupon = (code: string) => {
+        Clipboard.setString(code);
+        Alert.alert(
+            'Coupon Applied! 🎉',
+            `Code "${code}" copied. Proceed to checkout to use this discount.`,
+            [{ text: 'OK', onPress: () => navigation.goBack() }]
+        );
     };
 
     if (loading) {
@@ -117,7 +225,7 @@ const CouponsScreen = () => {
             <View style={styles.container}>
                 <CustomHeader title="Coupons" />
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={Colors.primary} />
+                    <ActivityIndicator size="large" color={Colors.secondary} />
                 </View>
             </View>
         );
@@ -127,114 +235,83 @@ const CouponsScreen = () => {
         <View style={styles.container}>
             <CustomHeader title="Coupons" />
             <ScrollView
+                style={styles.scroll}
                 contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={Colors.secondary}
+                    />
                 }
             >
-                {/* Apply Code Section */}
-                <View style={styles.applySection}>
-                    <CustomText variant="h6" fontFamily={Fonts.SemiBold}>
-                        Have a code?
-                    </CustomText>
-                    <View style={styles.inputRow}>
-                        <TextInput
-                            style={styles.codeInput}
-                            placeholder="Enter coupon code"
-                            placeholderTextColor={Colors.disabled}
-                            value={inputCode}
-                            onChangeText={setInputCode}
-                            autoCapitalize="characters"
-                        />
-                        <ScalePress
-                            style={styles.applyButton}
-                            onPress={handleApplyCode}
-                            disabled={!inputCode.trim() || validating}
-                        >
-                            {validating ? (
-                                <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                                <CustomText variant="h7" fontFamily={Fonts.SemiBold} style={styles.applyButtonText}>
-                                    APPLY
-                                </CustomText>
-                            )}
-                        </ScalePress>
-                    </View>
+                {/* Input Section */}
+                <View style={styles.inputSection}>
+                    <TextInput
+                        style={styles.codeInput}
+                        placeholder="Enter Coupon Code"
+                        placeholderTextColor={Colors.disabled}
+                        value={inputCode}
+                        onChangeText={setInputCode}
+                        autoCapitalize="characters"
+                    />
+                    <ScalePress
+                        style={{
+                            ...styles.inputApplyBtn,
+                            ...(inputCode.trim() ? {} : styles.inputApplyBtnDisabled)
+                        }}
+                        onPress={handleApplyCode}
+                        disabled={!inputCode.trim()}
+                    >
+                        <CustomText variant="h7" fontFamily={Fonts.SemiBold} style={styles.inputApplyBtnText}>
+                            APPLY
+                        </CustomText>
+                    </ScalePress>
                 </View>
 
-                {/* Error Message */}
+                {/* Error */}
                 {error && (
                     <View style={styles.errorCard}>
-                        <Icon name="cloud-offline-outline" size={20} color="#dc2626" />
+                        <Icon name="alert-circle" size={20} color="#dc2626" />
                         <CustomText variant="h8" style={styles.errorText}>
                             Could not load coupons. Pull to refresh.
                         </CustomText>
                     </View>
                 )}
 
-                {/* Available Coupons */}
-                <CustomText variant="h5" fontFamily={Fonts.SemiBold} style={styles.sectionTitle}>
-                    Available Coupons ({coupons.length})
-                </CustomText>
+                {/* Section Header */}
+                <View style={styles.sectionHeader}>
+                    <CustomText variant="h6" fontFamily={Fonts.Bold}>
+                        Available Coupons
+                    </CustomText>
+                    <View style={styles.countBadge}>
+                        <CustomText variant="h9" fontFamily={Fonts.SemiBold} style={styles.countText}>
+                            {coupons.length}
+                        </CustomText>
+                    </View>
+                </View>
 
+                {/* Coupons List */}
                 {coupons.length === 0 ? (
                     <View style={styles.emptyState}>
                         <Icon name="pricetag-outline" size={48} color={Colors.disabled} />
                         <CustomText variant="h7" style={styles.emptyText}>
                             No coupons available right now
                         </CustomText>
-                        <CustomText variant="h8" style={styles.emptySubtext}>
+                        <CustomText variant="h9" style={styles.emptySubtext}>
                             Check back later for exclusive offers!
                         </CustomText>
                     </View>
                 ) : (
-                    coupons.map((coupon) => (
-                        <ScalePress key={coupon._id} style={styles.couponCard}>
-                            <View style={styles.couponLeft}>
-                                <View style={[styles.discountBadge, { backgroundColor: getDiscountColor(coupon.type) }]}>
-                                    <CustomText variant="h7" fontFamily={Fonts.Bold} style={styles.discountText}>
-                                        {getDiscountDisplay(coupon)}
-                                    </CustomText>
-                                </View>
-                            </View>
-                            <View style={styles.couponDivider}>
-                                {[...Array(8)].map((_, i) => (
-                                    <View key={i} style={styles.dividerDot} />
-                                ))}
-                            </View>
-                            <View style={styles.couponRight}>
-                                <CustomText variant="h6" fontFamily={Fonts.SemiBold}>
-                                    {coupon.name}
-                                </CustomText>
-                                <CustomText variant="h8" style={styles.couponDesc} numberOfLines={2}>
-                                    {coupon.description}
-                                </CustomText>
-                                <View style={styles.couponMeta}>
-                                    <CustomText variant="h9" style={styles.couponMinOrder}>
-                                        Min order: ₹{coupon.minOrderValue}
-                                    </CustomText>
-                                    <CustomText variant="h9" style={styles.couponExpiry}>
-                                        Valid till {formatDate(coupon.validUntil)}
-                                    </CustomText>
-                                </View>
-                                <View style={styles.codeRow}>
-                                    <View style={styles.codeBox}>
-                                        <CustomText variant="h7" fontFamily={Fonts.SemiBold} style={styles.codeText}>
-                                            {coupon.code}
-                                        </CustomText>
-                                    </View>
-                                    <ScalePress
-                                        style={styles.copyButton}
-                                        onPress={() => handleCopyCode(coupon.code)}
-                                    >
-                                        <Icon name="copy-outline" size={18} color={Colors.secondary} />
-                                        <CustomText variant="h8" fontFamily={Fonts.Medium} style={styles.copyText}>
-                                            COPY
-                                        </CustomText>
-                                    </ScalePress>
-                                </View>
-                            </View>
-                        </ScalePress>
+                    coupons.map((coupon, index) => (
+                        <CouponCard
+                            key={coupon._id}
+                            coupon={coupon}
+                            index={index}
+                            onCopy={handleCopyCode}
+                            onApply={handleApplyCoupon}
+                        />
                     ))
                 )}
             </ScrollView>
@@ -252,41 +329,41 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    scroll: {
+        flex: 1,
+    },
     scrollContent: {
         padding: 16,
         paddingBottom: 100,
     },
-    applySection: {
-        backgroundColor: Colors.backgroundSecondary,
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 24,
-    },
-    inputRow: {
+    inputSection: {
         flexDirection: 'row',
-        marginTop: 12,
-        gap: 12,
+        marginBottom: 20,
+        gap: 10,
     },
     codeInput: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#f5f5f5',
         borderRadius: 10,
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 14,
         fontFamily: Fonts.Medium,
         fontSize: 14,
+        color: Colors.text,
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: '#e0e0e0',
     },
-    applyButton: {
+    inputApplyBtn: {
         backgroundColor: Colors.secondary,
         borderRadius: 10,
         paddingHorizontal: 24,
         justifyContent: 'center',
         alignItems: 'center',
-        opacity: 1,
     },
-    applyButtonText: {
+    inputApplyBtnDisabled: {
+        opacity: 0.5,
+    },
+    inputApplyBtnText: {
         color: '#fff',
     },
     errorCard: {
@@ -302,12 +379,24 @@ const styles = StyleSheet.create({
         color: '#dc2626',
         flex: 1,
     },
-    sectionTitle: {
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
         marginBottom: 16,
+        gap: 8,
+    },
+    countBadge: {
+        backgroundColor: Colors.secondary,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 10,
+    },
+    countText: {
+        color: '#fff',
     },
     emptyState: {
         alignItems: 'center',
-        paddingVertical: 40,
+        paddingVertical: 60,
     },
     emptyText: {
         color: Colors.disabled,
@@ -317,88 +406,94 @@ const styles = StyleSheet.create({
         color: Colors.disabled,
         marginTop: 4,
     },
+    // Coupon Card Styles
     couponCard: {
         flexDirection: 'row',
-        backgroundColor: Colors.backgroundSecondary,
+        backgroundColor: '#fff',
         borderRadius: 12,
         marginBottom: 12,
         overflow: 'hidden',
-    },
-    couponLeft: {
-        width: 90,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 12,
+        borderWidth: 1,
+        borderColor: '#e8e8e8',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 3,
     },
     discountBadge: {
-        paddingHorizontal: 8,
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
+        width: 70,
         justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 8,
     },
     discountText: {
         color: '#fff',
-        fontSize: 11,
+        fontSize: 12,
         textAlign: 'center',
+        lineHeight: 16,
     },
-    couponDivider: {
-        width: 1,
-        justifyContent: 'space-evenly',
-        alignItems: 'center',
-        paddingVertical: 8,
-    },
-    dividerDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: '#fff',
-    },
-    couponRight: {
+    couponContent: {
         flex: 1,
         padding: 12,
     },
-    couponDesc: {
-        color: Colors.text,
-        marginTop: 4,
-        opacity: 0.7,
-    },
-    couponMeta: {
+    headerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 8,
-    },
-    couponMinOrder: {
-        color: Colors.disabled,
-    },
-    couponExpiry: {
-        color: Colors.disabled,
-    },
-    codeRow: {
-        flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 12,
-        gap: 12,
     },
-    codeBox: {
-        backgroundColor: '#fff',
-        borderRadius: 6,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderWidth: 1,
-        borderColor: Colors.border,
+    couponCode: {
+        color: Colors.text,
+        letterSpacing: 0.5,
+    },
+    applyBtn: {
+        backgroundColor: 'transparent',
+    },
+    applyBtnText: {
+        color: Colors.secondary,
+        letterSpacing: 0.5,
+    },
+    savingsText: {
+        color: Colors.secondary,
+        marginTop: 4,
+    },
+    dashedDivider: {
+        height: 1,
+        backgroundColor: '#e8e8e8',
+        marginVertical: 10,
         borderStyle: 'dashed',
     },
-    codeText: {
-        color: Colors.secondary,
-        letterSpacing: 1,
+    descText: {
+        color: '#666',
+        lineHeight: 18,
     },
-    copyButton: {
+    bottomRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    metaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    metaText: {
+        color: '#999',
+    },
+    metaDot: {
+        width: 3,
+        height: 3,
+        borderRadius: 1.5,
+        backgroundColor: '#999',
+        marginHorizontal: 6,
+    },
+    copyBtn: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
     },
-    copyText: {
+    copyBtnText: {
         color: Colors.secondary,
     },
 });
